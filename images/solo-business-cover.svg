@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title desc">
+  <title id="title">副业一人公司赛道测试抽象信号图</title>
+  <desc id="desc">深空背景中的发光轨道和八个方向节点</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="68%">
+      <stop offset="0" stop-color="#18205b"/>
+      <stop offset=".42" stop-color="#0d1233"/>
+      <stop offset="1" stop-color="#070918"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#22d3ee"/>
+      <stop offset=".5" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#4f7cff"/>
+    </linearGradient>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#b8c1ff" stroke-opacity=".055"/>
+    </pattern>
+  </defs>
+  <rect width="720" height="900" fill="url(#bg)"/>
+  <rect width="720" height="900" fill="url(#grid)"/>
+  <g opacity=".14" fill="none" stroke="#93a4ff">
+    <circle cx="360" cy="430" r="290"/>
+    <circle cx="360" cy="430" r="220"/>
+    <circle cx="360" cy="430" r="150"/>
+    <path d="M70 430h580M360 140v580M155 225l410 410M565 225 155 635"/>
+  </g>
+  <g fill="none" stroke="url(#beam)" filter="url(#glow)">
+    <path d="M360 430 360 176M360 430 540 250M360 430 615 430M360 430 540 610M360 430 360 684M360 430 180 610M360 430 105 430M360 430 180 250" stroke-opacity=".42"/>
+    <circle cx="360" cy="430" r="150" stroke-opacity=".72"/>
+  </g>
+  <g fill="#22d3ee" stroke="#07101d" stroke-width="8" filter="url(#glow)">
+    <circle cx="360" cy="176" r="10"/><circle cx="540" cy="250" r="10"/><circle cx="615" cy="430" r="10"/><circle cx="540" cy="610" r="10"/>
+    <circle cx="360" cy="684" r="10"/><circle cx="180" cy="610" r="10"/><circle cx="105" cy="430" r="10"/><circle cx="180" cy="250" r="10"/>
+  </g>
+  <circle cx="360" cy="430" r="64" fill="#090c20" stroke="url(#beam)" stroke-width="2" filter="url(#glow)"/>
+  <circle cx="360" cy="430" r="39" fill="none" stroke="#a78bfa" stroke-opacity=".46"/>
+  <text x="360" y="425" text-anchor="middle" fill="#f7f8ff" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="5">SOLO</text>
+  <text x="360" y="451" text-anchor="middle" fill="#22d3ee" font-family="monospace" font-size="10" letter-spacing="3">ATLAS 01</text>
+  <g fill="#a8aec9" font-family="monospace" font-size="10" letter-spacing="2">
+    <text x="360" y="140" text-anchor="middle">KNOWLEDGE</text><text x="565" y="225">CONTENT</text><text x="620" y="405">AI TOOL</text><text x="565" y="650">TEMPLATE</text>
+    <text x="360" y="730" text-anchor="middle">PRODUCT</text><text x="155" y="650" text-anchor="end">SERVICE</text><text x="95" y="405" text-anchor="end">COMMUNITY</text><text x="155" y="225" text-anchor="end">RESOURCE</text>
+  </g>
+  <g transform="translate(50 795)">
+    <text fill="#8b5cf6" font-family="monospace" font-size="11" font-weight="700" letter-spacing="4">SIGNAL MAPPING / 8 ROUTES</text>
+    <path d="M0 28h620" stroke="#9ea9dc" stroke-opacity=".18"/>
+    <text y="57" fill="#747b9c" font-family="monospace" font-size="9" letter-spacing="2">PERSONAL DECISION PATTERN EVALUATION</text>
+  </g>
+</svg>

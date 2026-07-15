@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title desc">
+  <title id="title">恋爱相处人格测试封面</title>
+  <desc id="desc">酒红与柔粉色构成的双人关系轨迹抽象图</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3d202b"/>
+      <stop offset=".52" stop-color="#7f4353"/>
+      <stop offset="1" stop-color="#d48a94"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#fff5ed" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#fff5ed" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="720" height="900" rx="34" fill="url(#bg)"/>
+  <circle cx="560" cy="180" r="210" fill="url(#glow)" opacity=".33"/>
+  <circle cx="125" cy="730" r="230" fill="url(#glow)" opacity=".16"/>
+  <g fill="none" stroke="#fcece5" opacity=".26">
+    <circle cx="360" cy="420" r="240"/>
+    <circle cx="360" cy="420" r="176"/>
+    <circle cx="360" cy="420" r="112"/>
+  </g>
+  <path d="M213 433c0-92 126-111 147-27 21-84 147-65 147 27 0 111-147 196-147 196S213 544 213 433Z" fill="none" stroke="#fff8f3" stroke-width="7"/>
+  <circle cx="284" cy="410" r="34" fill="#fff8f3"/>
+  <circle cx="436" cy="410" r="34" fill="#f4bdc1"/>
+  <path d="M284 410c38-76 114-76 152 0" fill="none" stroke="#fff8f3" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 17"/>
+  <circle cx="360" cy="410" r="50" fill="#fff5ed" opacity=".22" filter="url(#blur)"/>
+  <g fill="#fff8f3">
+    <circle cx="156" cy="208" r="5"/><circle cx="592" cy="316" r="4"/><circle cx="540" cy="684" r="5"/><circle cx="196" cy="642" r="3"/>
+  </g>
+  <text x="64" y="92" fill="#fff8f3" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="8">LOVE PROFILE</text>
+  <text x="64" y="810" fill="#fff8f3" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="47" font-weight="700">恋爱相处人格</text>
+  <text x="64" y="858" fill="#f6d9d8" font-family="Arial, sans-serif" font-size="20" letter-spacing="5">30 QUESTIONS · 8 TYPES</text>
+</svg>

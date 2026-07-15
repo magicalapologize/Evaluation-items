@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title desc">
+  <title id="title">打工人发疯人格测试封面</title>
+  <desc id="desc">酸性绿、警报橙和办公网格构成的工位精神状态扫描图</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#182000"/>
+      <stop offset=".5" stop-color="#496400"/>
+      <stop offset="1" stop-color="#9bb21b"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#fff8a6" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#fff8a6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0v48" fill="none" stroke="#f4f7c5" stroke-opacity=".1"/>
+    </pattern>
+  </defs>
+  <rect width="720" height="900" rx="34" fill="url(#bg)"/>
+  <rect width="720" height="900" rx="34" fill="url(#grid)"/>
+  <circle cx="582" cy="170" r="220" fill="url(#glow)" opacity=".32"/>
+  <g fill="none" stroke="#eff6b8" opacity=".25">
+    <circle cx="360" cy="410" r="250"/>
+    <circle cx="360" cy="410" r="184"/>
+    <circle cx="360" cy="410" r="118"/>
+  </g>
+  <path d="M250 288h220l38 244H212z" fill="#263600" fill-opacity=".78" stroke="#f5f8ce" stroke-width="6"/>
+  <rect x="270" y="330" width="180" height="116" rx="12" fill="#f7f8df"/>
+  <path d="M304 385h30m52 0h30" stroke="#263600" stroke-width="10" stroke-linecap="round"/>
+  <path d="M318 420c27 28 57 28 84 0" fill="none" stroke="#ff7a00" stroke-width="10" stroke-linecap="round"/>
+  <path d="M360 288v-56m-54 74-32-46m140 46 32-46" stroke="#ff7a00" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#ff7a00">
+    <circle cx="360" cy="208" r="11"/><circle cx="260" cy="238" r="8"/><circle cx="460" cy="238" r="8"/>
+  </g>
+  <path d="M180 588h360M236 588v76m248-76v76" stroke="#eff6b8" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#eff6b8">
+    <circle cx="124" cy="208" r="5"/><circle cx="594" cy="332" r="4"/><circle cx="565" cy="672" r="5"/><circle cx="154" cy="690" r="3"/>
+  </g>
+  <text x="64" y="92" fill="#f6f9cf" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="7">WORK MODE: UNSTABLE</text>
+  <text x="64" y="810" fill="#ffffe8" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="47" font-weight="700">打工人发疯人格</text>
+  <text x="64" y="858" fill="#e8efa9" font-family="Arial, sans-serif" font-size="20" letter-spacing="5">30 QUESTIONS · 10 TYPES</text>
+</svg>
