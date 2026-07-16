@@ -1387,6 +1387,15 @@
         margin-bottom: 12px;
       }
 
+      #quiz-screen .shell {
+        padding: 60px 0 20px;
+      }
+
+      #quiz-screen .status-card {
+        padding: 12px 14px;
+        margin-bottom: 8px;
+      }
+
       #quiz-screen .question-top {
         position: relative;
         display: block;
@@ -1401,9 +1410,9 @@
       }
 
       #quiz-screen .status-card strong {
-        margin-top: 4px;
-        font-size: 14px;
-        line-height: 1.4;
+        margin-top: 2px;
+        font-size: 13px;
+        line-height: 1.35;
         letter-spacing: -.02em;
         white-space: nowrap;
       }
@@ -1412,8 +1421,8 @@
         position: absolute;
         top: 0;
         right: 0;
-        padding: 7px 11px;
-        font-size: 13px;
+        padding: 5px 9px;
+        font-size: 12px;
       }
 
       .progress-card {
@@ -1421,13 +1430,18 @@
         margin-bottom: 12px;
       }
 
-      .progress-meta {
-        font-size: 15px;
+      #quiz-screen .progress-card {
+        padding: 10px 14px;
+        margin-bottom: 8px;
       }
 
-      .progress-track {
-        height: 9px;
-        margin-top: 10px;
+      #quiz-screen .progress-meta {
+        font-size: 13px;
+      }
+
+      #quiz-screen .progress-track {
+        height: 6px;
+        margin-top: 7px;
       }
 
       .section-pill {
@@ -1436,53 +1450,68 @@
         font-size: 15px;
       }
 
+      #quiz-screen .section-pill {
+        display: none;
+      }
+
       #quiz-screen .question-card {
-        padding: 20px;
+        padding: 14px;
       }
 
-      .scene-row {
-        margin-bottom: 18px;
+      #quiz-screen .scene-row {
+        margin-bottom: 10px;
       }
 
-      .scene-title {
-        font-size: 13px;
-        letter-spacing: 3px;
-      }
-
-      .scene-tag {
-        padding: 7px 12px;
+      #quiz-screen .scene-title {
         font-size: 12px;
-        letter-spacing: 3px;
+        letter-spacing: 2px;
       }
 
-      .question-text {
-        margin-bottom: 22px;
-        font-size: clamp(24px, 7vw, 30px);
+      #quiz-screen .scene-tag {
+        padding: 5px 9px;
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+
+      #quiz-screen .question-text {
+        margin-bottom: 12px;
+        font-size: clamp(20px, 6vw, 24px);
+        line-height: 1.28;
+      }
+
+      #quiz-screen .answer-list {
+        gap: 6px;
+      }
+
+      #quiz-screen .answer-btn {
+        min-height: 52px;
+        grid-template-columns: 34px 1fr;
+        padding: 7px 10px;
+        border-radius: 13px;
+      }
+
+      #quiz-screen .answer-letter {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+      }
+
+      #quiz-screen .answer-text {
+        font-size: 14px;
         line-height: 1.35;
       }
 
-      .answer-list {
-        gap: 10px;
+      #quiz-screen .question-actions {
+        margin-top: 8px;
       }
 
-      .answer-btn {
-        min-height: 62px;
-        grid-template-columns: 40px 1fr;
-        padding: 11px 14px;
-      }
-
-      .answer-text {
-        font-size: 16px;
-        line-height: 1.45;
-      }
-
-      .question-actions {
-        margin-top: 16px;
+      #quiz-screen .ghost-btn {
+        min-height: 38px;
+        padding: 0 16px;
       }
 
       #quiz-screen .hint {
-        margin-top: 18px;
-        font-size: 14px;
+        display: none;
       }
 
       .report-head {
@@ -1490,10 +1519,19 @@
         gap: 12px;
       }
 
+      #result-screen .report-head {
+        position: relative;
+      }
+
+      #result-screen .report-head > div:first-child {
+        width: 100%;
+      }
+
       .report-brand {
         margin-bottom: 7px;
-        font-size: 22px;
-        letter-spacing: 6px;
+        padding-right: 58px;
+        font-size: clamp(16px, 5vw, 19px);
+        letter-spacing: 4px;
         white-space: nowrap;
       }
 
@@ -1503,8 +1541,14 @@
         white-space: nowrap;
       }
 
-      .report-date {
-        text-align: left;
+      #result-screen .report-date {
+        position: absolute;
+        top: 22px;
+        right: 20px;
+        font-size: 12px;
+        line-height: 1;
+        white-space: nowrap;
+        text-align: right;
       }
 
       .hero-report {
@@ -1614,7 +1658,7 @@
 
     @media (max-width: 380px) {
       #quiz-screen .question-card {
-        padding: 18px 16px;
+        padding: 12px;
       }
 
       .scene-tag {
