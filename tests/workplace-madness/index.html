@@ -217,7 +217,12 @@
       .answer-text { font-size: 16px; }
       .content-grid { grid-template-columns: 1fr; }
       .result-hero { padding: 34px 22px; }
-      .result-name { font-size: 49px; }
+      .result-name {
+        font-size: clamp(29px, 8.8vw, 38px);
+        line-height: 1.2;
+        letter-spacing: -.06em;
+        white-space: nowrap;
+      }
       .hint { display: none; }
       .report-actions { gap: 10px; }
       .report-action-btn { min-height: 54px; padding: 0 10px; border-radius: 16px; font-size: 15px; }
