@@ -203,30 +203,73 @@ p { color: var(--muted); }
 .trust-note { color: var(--faint); font-size: 12px; }
 .trust-note i { display: inline-block; width: 6px; height: 6px; margin-right: 9px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
 
-.signal-orbit { width: min(31vw, 370px); aspect-ratio: 1; position: relative; justify-self: end; z-index: 1; }
-.signal-orbit::before { content: ""; position: absolute; inset: 13%; border-radius: 50%; background: radial-gradient(circle, rgba(139, 92, 246, 0.17), rgba(57, 216, 242, 0.025) 47%, transparent 69%); filter: blur(4px); }
-.orbit { position: absolute; inset: 8%; border: 1px solid rgba(129, 146, 226, 0.2); border-radius: 50%; }
-.orbit::before,
-.orbit::after { content: ""; position: absolute; left: 50%; top: 50%; background: rgba(129, 145, 216, 0.15); transform: translate(-50%, -50%); }
-.orbit::before { width: 146%; height: 1px; }
-.orbit::after { width: 1px; height: 146%; }
-.orbit-two { inset: 23%; border-color: rgba(139, 92, 246, 0.36); }
-.orbit-two::before,
-.orbit-two::after { display: none; }
-.orbit-three { inset: 36%; border-color: rgba(57, 216, 242, 0.42); box-shadow: 0 0 34px rgba(57, 216, 242, 0.08); }
-.orbit-three::before,
-.orbit-three::after { display: none; }
-.signal-core { position: absolute; inset: 41%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(57, 216, 242, 0.76); border-radius: 50%; background: rgba(5, 7, 17, 0.92); box-shadow: 0 0 34px rgba(57, 216, 242, 0.22), inset 0 0 20px rgba(139, 92, 246, 0.22); }
-.signal-core span { font-size: 10px; font-weight: 900; letter-spacing: 0.17em; }
-.signal-core small { color: var(--cyan); font-size: 8px; }
-.signal-point { position: absolute; width: 9px; height: 9px; border: 2px solid var(--space); border-radius: 50%; background: var(--cyan); box-shadow: 0 0 17px var(--cyan); }
-.point-a { left: 12%; top: 29%; }
-.point-b { right: 6%; top: 48%; background: var(--purple); box-shadow: 0 0 17px var(--purple); }
-.point-c { left: 39%; bottom: 4%; }
-.signal-label { position: absolute; margin: 0; color: #707a9d; font-family: monospace; font-size: 8px; letter-spacing: 0.2em; }
-.label-a { left: 0; top: 22%; }
-.label-b { right: -3%; top: 40%; }
-.label-c { left: 31%; bottom: -2%; }
+.yundu-voyage {
+	width: min(31vw, 370px);
+	aspect-ratio: 1;
+	position: relative;
+	justify-self: end;
+	z-index: 1;
+	overflow: hidden;
+}
+
+.yundu-voyage::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: -15%;
+	width: 92%;
+	height: 68%;
+	border-radius: 50%;
+	background: radial-gradient(ellipse, rgba(57, 216, 242, 0.16), rgba(89, 105, 244, 0.08) 39%, transparent 70%);
+	filter: blur(8px);
+	transform: translateX(-50%);
+}
+
+.yundu-voyage::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: radial-gradient(rgba(213, 221, 255, 0.42) 0.6px, transparent 0.8px);
+	background-size: 29px 29px;
+	-webkit-mask-image: linear-gradient(to bottom, black, transparent 58%);
+	mask-image: linear-gradient(to bottom, black, transparent 58%);
+	opacity: 0.16;
+}
+
+.voyage-heading { position: absolute; z-index: 3; left: 50%; top: 6%; width: 100%; text-align: center; transform: translateX(-50%); }
+.voyage-heading small { display: block; color: var(--cyan); font-family: monospace; font-size: 8px; letter-spacing: 0.32em; }
+.voyage-heading strong { display: block; margin-top: 10px; color: var(--ink); font-family: "Songti SC", "STSong", serif; font-size: 38px; font-weight: 600; letter-spacing: 0.22em; text-indent: 0.22em; text-shadow: 0 0 32px rgba(139, 92, 246, 0.32); }
+.voyage-heading span { display: block; margin-top: 6px; color: #747e9f; font-size: 9px; letter-spacing: 0.16em; }
+
+.cloud-trace { position: absolute; z-index: 1; height: 34px; border-top: 1px solid rgba(181, 193, 242, 0.2); border-radius: 50%; transform: skewX(-18deg); }
+.cloud-trace::before,
+.cloud-trace::after { content: ""; position: absolute; top: -14px; height: 24px; border-top: 1px solid rgba(139, 92, 246, 0.28); border-radius: 50%; }
+.cloud-trace-one { left: 1%; top: 34%; width: 42%; }
+.cloud-trace-one::before { left: 18%; width: 42%; }
+.cloud-trace-one::after { left: 48%; width: 32%; }
+.cloud-trace-two { right: 0; top: 29%; width: 34%; transform: scaleX(-1) skewX(-18deg); }
+.cloud-trace-two::before { left: 15%; width: 46%; }
+.cloud-trace-two::after { left: 48%; width: 36%; }
+
+.voyage-horizon { position: absolute; z-index: 2; left: 3%; right: 3%; top: 55%; height: 1px; background: linear-gradient(90deg, transparent, rgba(57, 216, 242, 0.54), rgba(178, 154, 255, 0.48), transparent); box-shadow: 0 0 18px rgba(57, 216, 242, 0.12); }
+.voyage-horizon::before { content: ""; position: absolute; left: 50%; top: -74px; width: 1px; height: 148px; background: linear-gradient(transparent, rgba(57, 216, 242, 0.42), transparent); }
+.voyage-horizon i { position: absolute; left: 50%; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 18px var(--cyan), 0 0 45px rgba(57, 216, 242, 0.68); transform: translateX(-50%); }
+
+.voyage-gate { position: absolute; z-index: 3; left: 50%; top: 44%; width: 42px; height: 42px; border: 1px solid rgba(178, 154, 255, 0.72); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 30px rgba(139, 92, 246, 0.18), inset 0 0 20px rgba(57, 216, 242, 0.08); }
+.voyage-gate::before,
+.voyage-gate::after { content: ""; position: absolute; inset: 7px; border: 1px solid rgba(57, 216, 242, 0.36); }
+.voyage-gate::after { inset: 14px; background: var(--cyan); border: 0; box-shadow: 0 0 14px var(--cyan); }
+.voyage-gate i { position: absolute; left: 50%; top: 50%; width: 88px; height: 88px; border: 1px solid rgba(139, 92, 246, 0.12); transform: translate(-50%, -50%); }
+.voyage-gate span { position: absolute; left: 50%; top: 50%; width: 134px; height: 134px; border: 1px solid rgba(57, 216, 242, 0.08); transform: translate(-50%, -50%); }
+
+.sea-line { position: absolute; z-index: 2; left: 50%; border-top: 1px solid; border-radius: 50%; transform: translateX(-50%); }
+.sea-line-one { top: 64%; width: 88%; height: 54px; border-color: rgba(57, 216, 242, 0.38); }
+.sea-line-two { top: 72%; width: 104%; height: 74px; border-color: rgba(139, 92, 246, 0.3); }
+.sea-line-three { top: 82%; width: 118%; height: 92px; border-color: rgba(92, 124, 255, 0.2); }
+
+.voyage-coordinate { position: absolute; z-index: 3; bottom: 6%; margin: 0; color: #596486; font-family: monospace; font-size: 7px; letter-spacing: 0.2em; }
+.coordinate-left { left: 6%; }
+.coordinate-right { right: 6%; }
 
 .metric-strip {
 	display: grid;
@@ -318,7 +361,7 @@ p { color: var(--muted); }
 	.hero-section { padding-top: 24px; }
 	.hero-grid { grid-template-columns: 1fr; gap: 34px; padding: 52px; }
 	.hero-copy { max-width: 650px; }
-	.signal-orbit { width: min(62vw, 420px); justify-self: center; }
+	.yundu-voyage { width: min(62vw, 400px); justify-self: center; }
 	.metric-strip { grid-template-columns: repeat(2, 1fr); }
 	.metric-strip > div:nth-child(2) { border-right: 0; }
 	.metric-strip > div:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
@@ -351,7 +394,8 @@ p { color: var(--muted); }
 	.hero-actions { align-items: stretch; flex-direction: column; gap: 17px; margin-top: 30px; }
 	.primary-action { width: 100%; }
 	.trust-note { text-align: center; }
-	.signal-orbit { width: min(80vw, 320px); }
+	.yundu-voyage { width: min(80vw, 310px); }
+	.voyage-heading strong { font-size: 32px; }
 	.metric-strip { margin-top: 14px; border-radius: 16px; }
 	.metric-strip > div { min-height: 78px; padding: 17px 14px; flex-wrap: wrap; gap: 7px; }
 	.metric-strip strong { font-size: 20px; }
