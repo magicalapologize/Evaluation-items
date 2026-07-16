@@ -4,6 +4,8 @@
 > 最后更新：2026-07-16  
 > 当前方案：GitHub 托管代码 + Cloudflare 部署 + D1 保存每日通用测试码
 
+> 当前实际项目类型：Cloudflare Worker + Static Assets。不要再使用 `functions/` Pages Functions 目录，也不要只在控制台临时添加 D1 Binding；运行时配置统一由 `wrangler.jsonc` 管理。
+
 ---
 
 ## 1. 手册目标
@@ -47,14 +49,16 @@ Cloudflare Function 查询 D1
 - [x] NameSilo 域名的 Nameserver 已修改为 Cloudflare 提供的地址。
 - [x] Cloudflare 正式域名已经成功绑定。
 - [x] D1 数据库和每日测试码表已经创建。
-- [x] `/api/verify-code` Pages Function 已在本地项目中开发完成。
+- [x] `/api/verify-code` Worker 接口已在本地项目中开发完成。
 - [x] 三个测试页面已删除前端固定测试码并接入统一校验接口。
+- [x] 已确认项目实际类型为 Worker 静态资源项目。
+- [x] 已新增 `worker.js` 处理 API 并转发静态资源。
+- [x] 已新增 `wrangler.jsonc`，永久声明 `DB` 和 `ASSETS` Binding。
 
 ### 正在进行
 
 - [x] Cloudflare 域名状态从 `Pending` 变成 `Active`。
 - [x] 在 Cloudflare Pages 项目中绑定正式域名。
-- [ ] 将 D1 以变量名 `DB` 绑定到网站项目。
 - [ ] 将本次代码提交并推送到 GitHub。
 - [ ] 等待 Cloudflare 自动完成新版本部署。
 
@@ -63,10 +67,10 @@ Cloudflare Function 查询 D1
 - [x] 确认当前 Cloudflare 项目类型是 Pages 还是 Worker。
 - [x] 创建 D1 数据库。
 - [x] 创建每日测试码数据表。
-- [ ] 确认线上项目已经读取变量名为 `DB` 的 D1 Binding。
+- [ ] 确认线上部署详情显示 `DB → yundu-evaluation`。
 - [ ] 完成线上正确码、错误码和过期码测试。
 
-重要：代码已经完成，但在推送 GitHub、Cloudflare 部署成功并完成 `DB` Binding 前，线上网站仍可能运行旧版本或提示“验证服务暂不可用”。
+重要：旧部署将 `functions/` 当成普通静态目录，因此 `/api/verify-code` 返回404；控制台临时添加的 D1 Binding 又会被下一次 GitHub 部署覆盖。当前修复已将 Worker 入口和 D1 Binding 全部写入代码配置，推送后才会正式生效。
 
 ---
 
@@ -189,33 +193,27 @@ https://example.com/api/verify-code
 
 ---
 
-## 5. 确认 Cloudflare 项目类型
+## 5. 当前 Cloudflare 项目类型
 
-添加 D1 前必须先确认项目类型。
-
-进入：
+当前项目已经确认是：
 
 ```text
-Cloudflare
-→ Workers & Pages
-→ 当前网站项目
+Cloudflare Worker + Static Assets
+Worker 名称：evaluationitems
+正式域名：https://magicassess.top
 ```
 
-根据默认域名判断：
+因此项目使用以下结构：
 
-| 默认域名 | 项目类型 | 后续接口方式 |
-|---|---|---|
-| `项目名.pages.dev` | Cloudflare Pages | 使用 `functions/` Pages Functions |
-| `项目名.workers.dev` | Cloudflare Worker | 使用 Worker 入口文件和 Worker Binding |
+```text
+worker.js          处理 /api/verify-code，并转发静态资源
+wrangler.jsonc     固定 Worker、静态资源和 D1 Binding
+.assetsignore      排除不需要公开上传的工程文件
+index.html         网站首页
+tests/             三款测试静态页面
+```
 
-本手册后续代码默认项目是 `pages.dev` 类型。
-
-如果当前项目是 `workers.dev`：
-
-1. 不要直接照搬 `functions/` 目录方案。
-2. 可以重新创建一个连接 GitHub 的 Pages 项目。
-3. 或者将校验接口改成 Worker 路由。
-4. 确认项目类型后再继续，避免 D1 已创建但代码无法读取。
+不要再创建 `functions/api/verify-code.js`。`functions/` 目录是 Pages Functions 的约定，Worker 静态资源项目不会自动将它变成接口。
 
 ---
 
@@ -283,86 +281,56 @@ ORDER BY product_id;
 
 ---
 
-## 7. 将 D1 绑定到网站项目
+## 7. 将 D1 永久绑定到 Worker
 
-### 7.1 Pages 项目
+当前 D1 Binding 不再依赖控制台手动添加，而是写在 `wrangler.jsonc`：
 
-进入：
-
-```text
-Workers & Pages
-→ 当前 Pages 项目
-→ Settings
-→ Bindings
-→ Add
-→ D1 database bindings
+```jsonc
+"d1_databases": [
+  {
+    "binding": "DB",
+    "database_name": "yundu-evaluation",
+    "database_id": "8058b11b-2f6b-4b1d-964f-09a21b48aa1b"
+  }
+]
 ```
 
-填写：
+每次 GitHub 部署执行 `npx wrangler deploy` 时，Cloudflare 会按照此配置自动建立：
 
 ```text
-Variable name：DB
-D1 database：yundu-evaluation
+env.DB → yundu-evaluation
 ```
 
-如果页面区分 `Production` 和 `Preview`：
+不要再在控制台临时添加同名 Binding。控制台临时配置可能在下一次代码部署时被 Wrangler 配置覆盖。
 
-- Production 绑定正式 D1。
-- Preview 也可以绑定同一个 D1，方便预览环境测试。
-- 如果担心预览测试误改正式数据，后续再创建单独测试数据库。
-
-### 7.2 Worker 项目
-
-进入：
+部署详情中应能看到：
 
 ```text
-Workers & Pages
-→ 当前 Worker 项目
-→ Settings
-→ Bindings
-→ Add binding
-→ D1 Database
+DB       D1 Database      yundu-evaluation
+ASSETS   Static Assets
 ```
-
-同样使用：
-
-```text
-Variable name：DB
-D1 database：yundu-evaluation
-```
-
-### 7.3 数据库无法出现在下拉框
-
-依次检查：
-
-1. 网站项目和 D1 是否属于同一个 Cloudflare 账号。
-2. 是否从 `Workers & Pages → 项目 → Settings` 进入，而不是从域名设置进入。
-3. D1 数据库是否已经真正创建成功。
-4. 当前是 Pages 项目还是 Worker 项目。
-5. 项目是否由 `wrangler.toml` 或 `wrangler.jsonc` 管理绑定。
-6. 当前登录账号是否有编辑项目和 D1 的权限。
 
 ---
 
-## 8. 开发测试码校验接口（代码已完成，待线上部署）
+## 8. 测试码校验接口（Worker 代码已完成）
 
-本步骤需要修改 GitHub 项目代码。
+接口位于 `worker.js`，Worker 收到请求后按路径处理：
 
-### 8.1 Pages 项目目录结构
+```javascript
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
 
-在网站项目根目录创建：
+    if (url.pathname === "/api/verify-code") {
+      return verifyCode(request, env);
+    }
 
-```text
-functions/
-└── api/
-    └── verify-code.js
+    return env.ASSETS.fetch(request);
+  }
+};
 ```
 
-注意：只有 Pages Git 集成或 Wrangler 部署能够正常部署 `functions/` 目录。控制台 Drag and drop 部署不能编译 `functions/` 目录。
-
-### 8.2 接口参考代码
-
-`functions/api/verify-code.js`：
+校验逻辑使用 `env.DB` 查询 D1：
 
 ```javascript
 function getShanghaiDate() {
@@ -389,11 +357,11 @@ function json(data, status = 200) {
   });
 }
 
-export async function onRequestPost(context) {
+async function verifyCode(request, env) {
   let body;
 
   try {
-    body = await context.request.json();
+    body = await request.json();
   } catch {
     return json({ success: false, message: "请求格式不正确" }, 400);
   }
@@ -405,7 +373,7 @@ export async function onRequestPost(context) {
     return json({ success: false, message: "请输入测试码" }, 400);
   }
 
-  const record = await context.env.DB
+  const record = await env.DB
     .prepare(`
       SELECT product_id, valid_date
       FROM daily_codes
@@ -428,7 +396,7 @@ export async function onRequestPost(context) {
 }
 ```
 
-这个接口只返回校验结果，不把数据库中的正确测试码返回给浏览器。
+完整实现以项目根目录的 `worker.js` 为准。接口只返回校验结果，不把数据库中的正确测试码返回给浏览器。
 
 ---
 
@@ -715,12 +683,13 @@ WHERE product_id = 'love-personality';
 
 ### 接口返回 404
 
-说明 `/api/verify-code` 没有成功部署：
+说明 Worker API 路由没有进入当前部署：
 
-1. 确认项目是 Pages。
-2. 确认 `functions/api/verify-code.js` 位于部署项目根目录。
-3. 确认使用 GitHub 集成或 Wrangler 部署。
-4. 如果是 Drag and drop 部署，改用 GitHub/Pages 或 `_worker.js`。
+1. 检查 GitHub 最新提交是否包含 `worker.js` 和 `wrangler.jsonc`。
+2. 检查 Cloudflare Deploy command 是否为 `npx wrangler deploy`。
+3. 检查 `wrangler.jsonc` 的 `main` 是否为 `./worker.js`。
+4. 检查 `assets.run_worker_first` 是否包含 `/api/*`。
+5. 查看 Cloudflare 最新部署详情是否显示 Worker code，而不是只有 Static Assets。
 
 ### 接口返回 500
 
@@ -729,14 +698,16 @@ WHERE product_id = 'love-personality';
 1. 检查变量名是否为 `DB`。
 2. 检查数据库是否与项目属于同一账号。
 3. 检查 `daily_codes` 表是否存在。
-4. 查看 Cloudflare Function 日志中的具体错误。
+4. 查看 Cloudflare Worker Logs 中的具体错误。
 
-### D1 下拉框无法选择数据库
+### 部署后 D1 Binding 消失
 
-1. 检查项目和 D1 是否在同一 Cloudflare账号。
-2. 检查当前进入的是项目设置，不是域名设置。
-3. 检查项目类型是 Pages 还是 Worker。
-4. 检查账号权限。
+当前项目的 Binding 由 `wrangler.jsonc` 管理，控制台临时配置被部署覆盖属于正常现象。检查：
+
+1. `wrangler.jsonc` 是否已经提交到 GitHub。
+2. `d1_databases.binding` 是否为 `DB`。
+3. `database_id` 是否为 `8058b11b-2f6b-4b1d-964f-09a21b48aa1b`。
+4. Cloudflare Deploy command 是否使用 `npx wrangler deploy`。
 
 ### 更新 D1 后网站仍使用旧码
 
@@ -813,9 +784,9 @@ VALUES ('new-product-id', 'NP-8X2M-K7QD', '2026-07-16', 1);
 
 - Cloudflare Pages 自定义域名：<https://developers.cloudflare.com/pages/configuration/custom-domains/>
 - Cloudflare D1 入门：<https://developers.cloudflare.com/d1/get-started/>
-- Pages Functions Binding：<https://developers.cloudflare.com/pages/functions/bindings/#d1-databases>
-- Pages GitHub 集成：<https://developers.cloudflare.com/pages/configuration/git-integration/>
-- Pages Direct Upload：<https://developers.cloudflare.com/pages/get-started/direct-upload/>
+- Worker Static Assets：<https://developers.cloudflare.com/workers/static-assets/>
+- Wrangler D1 配置：<https://developers.cloudflare.com/workers/wrangler/configuration/#d1-databases>
+- Workers Builds 配置：<https://developers.cloudflare.com/workers/ci-cd/builds/configuration/>
 
 ---
 
@@ -823,9 +794,9 @@ VALUES ('new-product-id', 'NP-8X2M-K7QD', '2026-07-16', 1);
 
 按顺序执行，不要跳步：
 
-1. 完成 D1 Binding，变量名必须为 `DB`。
-2. 将本次接口和三个页面改造提交到 GitHub。
-3. 等待 Cloudflare 部署成功。
-4. 打开 `https://你的域名/api/verify-code`，确认 GET 返回“仅支持 POST 请求”，而不是404。
+1. 将 `worker.js`、`wrangler.jsonc`、`.assetsignore` 和本次页面修改提交到 GitHub。
+2. 确认 Cloudflare Build command 为空，Deploy command 为 `npx wrangler deploy`，Root directory 为空或仓库根目录。
+3. 等待 Cloudflare 部署成功，部署详情应显示 `DB` 和 `ASSETS` 两个 Binding。
+4. 打开 `https://magicassess.top/api/verify-code`，确认 GET 返回“仅支持 POST 请求”，而不是404。
 5. 完成正确码、错误码、跨产品码和过期码测试。
 6. 正式开始每日更新 D1 + 小红书发货内容。

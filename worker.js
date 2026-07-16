@@ -25,19 +25,14 @@ function getShanghaiDate() {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-export async function onRequest(context) {
-  if (context.request.method !== "POST") {
+async function verifyCode(request, env) {
+  if (request.method !== "POST") {
     return json({ success: false, message: "仅支持 POST 请求" }, 405);
-  }
-
-  if (!context.env.DB) {
-    console.error("Missing D1 binding: DB");
-    return json({ success: false, message: "验证服务暂不可用，请稍后再试" }, 503);
   }
 
   let body;
   try {
-    body = await context.request.json();
+    body = await request.json();
   } catch {
     return json({ success: false, message: "请求格式不正确" }, 400);
   }
@@ -54,7 +49,7 @@ export async function onRequest(context) {
   }
 
   try {
-    const record = await context.env.DB
+    const record = await env.DB
       .prepare(`
         SELECT valid_date
         FROM daily_codes
@@ -79,3 +74,15 @@ export async function onRequest(context) {
     return json({ success: false, message: "验证服务暂不可用，请稍后再试" }, 503);
   }
 }
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/api/verify-code") {
+      return verifyCode(request, env);
+    }
+
+    return env.ASSETS.fetch(request);
+  }
+};

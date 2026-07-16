@@ -27,12 +27,15 @@ http://127.0.0.1:8765/
 - 打工人发疯人格测试
 - 路径：`tests/workplace-madness/`
 
-三款测试统一通过 `/api/verify-code` 查询 D1 中的每日测试码，前端不保存固定正确码。
+三款测试统一通过 Worker 路由 `/api/verify-code` 查询 D1 中的每日测试码，前端不保存固定正确码。
 
 ## 目录说明
 
 ```text
 index.html                    网站首页
+worker.js                     Worker 入口与测试码校验接口
+wrangler.jsonc                Worker、静态资源和 D1 Binding 配置
+.assetsignore                 静态资源上传排除规则
 assets/css/main.css           Phantom 模板基础样式
 assets/css/site.css           首页品牌与响应式样式
 images/solo-business-cover.svg  测试卡片封面
@@ -52,4 +55,4 @@ tests/workplace-madness/      打工人发疯人格测试页面
 
 ## 发布说明
 
-发布时必须部署整个 `Evaluation-items` 目录，并确保 `functions/` 被 Cloudflare Pages 构建。Pages 项目需要将 D1 数据库绑定为变量 `DB`。
+当前项目使用 Cloudflare Worker + Static Assets，不是 Pages Functions。GitHub 部署命令使用 `npx wrangler deploy`，D1 Binding 已在 `wrangler.jsonc` 中固定为变量 `DB`。

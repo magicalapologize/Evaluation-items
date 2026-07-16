@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "evaluationitems",
+  "main": "./worker.js",
+  "compatibility_date": "2026-07-16",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "yundu-evaluation",
+      "database_id": "8058b11b-2f6b-4b1d-964f-09a21b48aa1b"
+    }
+  ]
+}
