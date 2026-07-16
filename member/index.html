@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="云渡超级会员：使用会员激活码登录，解锁全部测评。" />
+  <meta name="theme-color" content="#070916" />
+  <title>云渡超级会员｜激活与登录</title>
+  <link rel="stylesheet" href="../assets/css/member.css?v=20260716" />
+</head>
+<body>
+  <div class="member-noise" aria-hidden="true"></div>
+  <header class="member-header">
+    <a class="member-brand" href="../" aria-label="返回云渡测评实验室首页">
+      <span class="member-mark"><i></i></span>
+      <span><strong>云渡测评实验室</strong><small>YUNDU EVALUATION LAB</small></span>
+    </a>
+    <a class="back-link" href="../">返回全部测试</a>
+  </header>
+
+  <main class="member-main">
+    <section class="member-hero">
+      <div class="member-intro">
+        <p class="member-kicker">SUPER MEMBER / ALL ACCESS</p>
+        <h1>一枚激活码，<br /><em>解锁全部测评。</em></h1>
+        <p class="member-lead">无需手机号和密码。购买会员后输入激活码，即可开通超级会员；以后仍使用同一枚激活码登录。</p>
+        <div class="member-benefits">
+          <span>全部测试不限次数</span>
+          <span>后续新测试同步解锁</span>
+          <span>最多 2 台设备登录</span>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <div id="logged-out-panel">
+          <span class="member-badge">◆ SUPER MEMBER</span>
+          <h2>激活 / 登录</h2>
+          <p>首次输入自动开通，以后输入同一激活码即可登录。</p>
+          <label for="member-code">会员激活码</label>
+          <input id="member-code" autocomplete="off" spellcheck="false" placeholder="例如：YD-Y-AB12-CD34-EF56-GH78" />
+          <button id="login-btn" type="button">验证激活码</button>
+          <p id="auth-message" class="auth-message" aria-live="polite"></p>
+          <small>请妥善保存激活码，它是你的唯一登录凭证。</small>
+        </div>
+
+        <div id="logged-in-panel" hidden>
+          <span class="member-badge active-badge">◆ SUPER MEMBER</span>
+          <h2>云渡超级会员</h2>
+          <p id="member-welcome" class="member-welcome">全部测试已经解锁，随时测、无限次重测。</p>
+          <dl class="member-detail">
+            <div><dt>会员类型</dt><dd id="member-plan">-</dd></div>
+            <div><dt>有效期至</dt><dd id="member-expiry">-</dd></div>
+            <div><dt>激活码尾号</dt><dd id="member-hint">-</dd></div>
+          </dl>
+          <a class="all-tests-btn" href="../#tests">进入全部测试</a>
+          <div class="renew-row">
+            <input id="renew-code" autocomplete="off" spellcheck="false" placeholder="输入新的激活码续费" />
+            <button id="renew-btn" type="button">续费</button>
+          </div>
+          <p id="renew-message" class="auth-message" aria-live="polite"></p>
+          <button id="logout-btn" class="text-btn" type="button">退出当前设备</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="plans-section" aria-labelledby="plans-title">
+      <div class="plans-heading">
+        <p>MEMBERSHIP PLANS</p>
+        <h2 id="plans-title">选择适合你的会员时长</h2>
+        <span>四种会员权益完全一致，只区分有效期。</span>
+      </div>
+      <div class="plans-grid">
+        <article><small>30 DAYS</small><h3>月度会员</h3><strong><b>¥</b>12.9</strong><p>低门槛体验全部测试</p></article>
+        <article><small>90 DAYS</small><h3>季度会员</h3><strong><b>¥</b>29.9</strong><p>适合持续探索与重测</p></article>
+        <article class="recommended"><span>推荐</span><small>365 DAYS</small><h3>年度会员</h3><strong><b>¥</b>79.9</strong><p>主力套餐，性价比最高</p></article>
+        <article><small>LIFETIME</small><h3>终身会员</h3><strong><b>¥</b>199</strong><p>网站持续运营期间有效</p></article>
+      </div>
+      <p class="purchase-note">会员激活码通过小红书店铺购买并发货，每个订单对应一枚唯一激活码。</p>
+    </section>
+  </main>
+
+  <script src="../assets/js/member-auth.js?v=20260716"></script>
+  <script>
+    const byId = (id) => document.getElementById(id);
+
+    function renderMember(member) {
+      const loggedIn = Boolean(member && member.authenticated);
+      byId("logged-out-panel").hidden = loggedIn;
+      byId("logged-in-panel").hidden = !loggedIn;
+      if (!loggedIn) return;
+
+      byId("member-plan").textContent = member.planLabel || "超级会员";
+      byId("member-expiry").textContent = member.active
+        ? YunduMember.formatExpiry(member)
+        : "已过期";
+      byId("member-hint").textContent = `•••• ${member.codeHint || "----"}`;
+      byId("member-welcome").textContent = member.active
+        ? "全部测试已经解锁，随时测、无限次重测。"
+        : "当前会员已经过期，输入新的激活码续费后即可恢复全部权益。";
+      byId("renew-btn").disabled = Boolean(member.lifetime);
+      byId("renew-code").disabled = Boolean(member.lifetime);
+      byId("renew-code").placeholder = member.lifetime ? "终身会员无需续费" : "输入新的激活码续费";
+    }
+
+    byId("login-btn").addEventListener("click", async () => {
+      const button = byId("login-btn");
+      const message = byId("auth-message");
+      const code = byId("member-code").value.trim().toUpperCase();
+      button.disabled = true;
+      button.textContent = "正在验证...";
+      message.textContent = "";
+      try {
+        const member = await YunduMember.login(code);
+        renderMember(member);
+      } catch (error) {
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "验证激活码";
+      }
+    });
+
+    byId("member-code").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") byId("login-btn").click();
+    });
+
+    byId("renew-btn").addEventListener("click", async () => {
+      const button = byId("renew-btn");
+      const message = byId("renew-message");
+      button.disabled = true;
+      button.textContent = "续费中...";
+      message.textContent = "";
+      try {
+        const member = await YunduMember.redeem(byId("renew-code").value.trim().toUpperCase());
+        byId("renew-code").value = "";
+        renderMember(member);
+        message.textContent = "续费成功，有效期已更新。";
+        message.classList.add("success");
+      } catch (error) {
+        message.classList.remove("success");
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "续费";
+      }
+    });
+
+    byId("logout-btn").addEventListener("click", async () => {
+      try {
+        await YunduMember.logout();
+        renderMember({ authenticated: false, active: false });
+      } catch (error) {
+        byId("renew-message").textContent = error.message;
+      }
+    });
+
+    YunduMember.getMember().then(renderMember).catch(() => {
+      renderMember({ authenticated: false, active: false });
+    });
+  </script>
+</body>
+</html>

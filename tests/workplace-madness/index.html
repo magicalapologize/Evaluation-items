@@ -238,6 +238,7 @@
       *, *::before, *::after { transition: none !important; }
     }
   </style>
+  <link rel="stylesheet" href="../../assets/css/test-member.css?v=20260716" />
 </head>
 <body>
   <a class="site-return" href="../../" aria-label="返回云渡测评实验室首页">&larr; 返回全部测试</a>
@@ -255,6 +256,7 @@
             <span class="chip">专属工位指南</span>
           </div>
           <div class="gate">
+			<div id="member-unlock" class="member-unlock"><strong><i>◆</i>云渡超级会员已解锁</strong><span id="member-plan-label">全部测试不限次数</span></div>
             <div class="gate-title"><strong>输入测试码，读取你的工位精神状态</strong><span>ACCESS / 003</span></div>
             <div class="gate-row">
               <input id="access-code" class="access-input" autocomplete="off" placeholder="例如：YF-AB12-CD34" aria-label="测试码" />
@@ -360,7 +362,26 @@
     </div>
   </main>
 
+  <script src="../../assets/js/member-auth.js?v=20260716"></script>
   <script>
+	let activeMember = null;
+	const gateRow = document.querySelector("#home-screen .gate-row");
+	const gateDemo = document.querySelector("#home-screen .demo");
+
+	function applyMemberAccess(member) {
+	  activeMember = member && member.active ? member : null;
+	  document.getElementById("member-unlock").classList.toggle("is-visible", Boolean(activeMember));
+	  gateRow.classList.toggle("member-access-active", Boolean(activeMember));
+	  gateDemo.classList.toggle("member-access-hidden", Boolean(activeMember));
+	  if (activeMember) {
+		document.getElementById("member-plan-label").textContent = `${activeMember.planLabel} · ${YunduMember.formatExpiry(activeMember)}`;
+		document.querySelector("#home-screen .gate-title strong").textContent = "会员通道已开启，可直接开始测试";
+		document.getElementById("start-btn").textContent = "会员直接开始测试";
+	  }
+	}
+
+	const memberReady = YunduMember.getMember().then(applyMemberAccess).catch(() => null);
+
     async function verifyDailyAccessCode(productId, code) {
       let response;
       try {
@@ -783,7 +804,8 @@
       $("gate-error").textContent = "";
 
       try {
-        await verifyDailyAccessCode("workplace-madness", code);
+		await memberReady;
+		if (!activeMember) await verifyDailyAccessCode("workplace-madness", code);
         state.index = 0;
         state.answers = [];
         state.lastResult = null;
@@ -793,7 +815,7 @@
         $("gate-error").textContent = error.message;
       } finally {
         button.disabled = false;
-        button.textContent = "开始测试";
+		button.textContent = activeMember ? "会员直接开始测试" : "开始测试";
       }
     });
 

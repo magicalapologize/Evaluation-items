@@ -7,11 +7,16 @@
 .wrangler/**
 worker.js
 wrangler.jsonc
+migrations
+migrations/**
+scripts
+scripts/**
 functions
 functions/**
 README.md
 README.txt
 Cloudflare部署与每日测试码操作手册.md
+会员系统部署与激活码操作手册.md
 LICENSE.txt
 assets/sass
 assets/sass/**
