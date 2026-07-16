@@ -75,4 +75,4 @@ tests/workplace-madness/      打工人发疯人格测试页面
 
 当前项目使用 Cloudflare Worker + Static Assets，不是 Pages Functions。GitHub 部署命令使用 `npx wrangler deploy`，D1 Binding 已在 `wrangler.jsonc` 中固定为变量 `DB`。
 
-会员数据库迁移与激活码生成、导入、发货流程见：`会员系统部署与激活码操作手册.md`。
+会员数据库迁移与激活码生成、导入、发货流程见：`../../../产品手册/云渡超级会员/会员系统部署与激活码操作手册.md`。
