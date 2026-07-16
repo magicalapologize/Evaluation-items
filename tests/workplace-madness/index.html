@@ -256,7 +256,7 @@
               <button id="start-btn" class="primary-btn" type="button">开始测试</button>
             </div>
             <p id="gate-error" class="error" aria-live="polite"></p>
-            <p class="demo">演示码：CRAZY-2026 · 请按第一反应作答，别替老板美化自己</p>
+            <p class="demo">测试码限发货当日使用 · 请按第一反应作答，别替老板美化自己</p>
           </div>
           <p class="home-byline">作者：云云 ｜ 公众号：云渡沧海</p>
         </div>
@@ -356,7 +356,30 @@
   </main>
 
   <script>
-    const ACCESS_CODE = "CRAZY-2026";
+    async function verifyDailyAccessCode(productId, code) {
+      let response;
+      try {
+        response = await fetch("/api/verify-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId, code })
+        });
+      } catch {
+        throw new Error("网络连接失败，请检查网络后重试");
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("验证服务返回异常，请稍后再试");
+      }
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "测试码验证失败");
+      }
+    }
+
     const TYPES = {
       jellyfish: {
         name: "静音内耗水母", alias: "表面平静 × 内心弹幕 × 情绪吸收", icon: "~",
@@ -746,18 +769,27 @@
       ctx.textBaseline = "alphabetic";
     }
 
-    $("start-btn").addEventListener("click", () => {
+    $("start-btn").addEventListener("click", async () => {
+      const button = $("start-btn");
       const code = $("access-code").value.trim().toUpperCase();
-      if (code !== ACCESS_CODE) {
-        $("gate-error").textContent = "测试码不正确，请检查后重新输入。";
-        return;
-      }
+
+      button.disabled = true;
+      button.textContent = "正在验证...";
       $("gate-error").textContent = "";
-      state.index = 0;
-      state.answers = [];
-      state.lastResult = null;
-      renderQuestion();
-      showScreen("quiz-screen");
+
+      try {
+        await verifyDailyAccessCode("workplace-madness", code);
+        state.index = 0;
+        state.answers = [];
+        state.lastResult = null;
+        renderQuestion();
+        showScreen("quiz-screen");
+      } catch (error) {
+        $("gate-error").textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "开始测试";
+      }
     });
 
     $("access-code").addEventListener("keydown", (event) => {

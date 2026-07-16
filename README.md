@@ -2,6 +2,8 @@
 
 静态评估测试网站首页，基于 HTML5 UP Phantom 模板改造。
 
+Cloudflare 上线、D1 测试码接入和每日运维流程见：`Cloudflare部署与每日测试码操作手册.md`。
+
 ## 本地预览
 
 在当前目录启动静态服务器：
@@ -20,13 +22,12 @@ http://127.0.0.1:8765/
 
 - 副业 / 一人公司赛道测试
 - 路径：`tests/solo-business/`
-- 演示测试码：`SOLO-2026`
 - 恋爱相处人格测试
 - 路径：`tests/love-personality/`
-- 演示测试码：`LOVE-2026`
 - 打工人发疯人格测试
 - 路径：`tests/workplace-madness/`
-- 演示测试码：`CRAZY-2026`
+
+三款测试统一通过 `/api/verify-code` 查询 D1 中的每日测试码，前端不保存固定正确码。
 
 ## 目录说明
 
@@ -51,4 +52,4 @@ tests/workplace-madness/      打工人发疯人格测试页面
 
 ## 发布说明
 
-发布时上传整个 `Evaluation-items` 目录，不能只上传首页文件。当前测试码在前端代码中，仅用于体验门槛，不具备安全鉴权能力。
+发布时必须部署整个 `Evaluation-items` 目录，并确保 `functions/` 被 Cloudflare Pages 构建。Pages 项目需要将 D1 数据库绑定为变量 `DB`。

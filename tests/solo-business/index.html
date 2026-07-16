@@ -1605,12 +1605,12 @@
             </div>
             <div class="divider"></div>
             <div class="gate-row">
-              <input id="access-code" class="access-input" autocomplete="off" placeholder="例如：SOLO-2026" />
+              <input id="access-code" class="access-input" autocomplete="off" placeholder="请输入测试码" aria-label="测试码" />
               <button id="start-btn" class="primary-btn" type="button">验证并开始测试</button>
             </div>
             <p id="gate-error" class="error" aria-live="polite"></p>
             <div class="notes">
-              <span class="note-pill">演示码：SOLO-2026</span>
+              <span class="note-pill">测试码限发货当日使用</span>
               <span class="note-pill">重测可在结果页重新开始</span>
             </div>
           </div>
@@ -1778,7 +1778,30 @@
   </main>
 
   <script>
-    const ACCESS_CODE = "SOLO-2026";
+    async function verifyDailyAccessCode(productId, code) {
+      let response;
+      try {
+        response = await fetch("/api/verify-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId, code })
+        });
+      } catch {
+        throw new Error("网络连接失败，请检查网络后重试");
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("验证服务返回异常，请稍后再试");
+      }
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "测试码验证失败");
+      }
+    }
+
     const TYPES = {
       data: {
         name: "资料整理型",
@@ -2571,14 +2594,23 @@
       return `<polygon points="${points}" fill="none" stroke="#e6ded1" stroke-width="1" />`;
     }
 
-    $("start-btn").addEventListener("click", () => {
+    $("start-btn").addEventListener("click", async () => {
+      const button = $("start-btn");
       const code = $("access-code").value.trim().toUpperCase();
-      if (code !== ACCESS_CODE) {
-        $("gate-error").textContent = "测试码无效或已失效，请检查发货说明中的数字字符。";
-        return;
-      }
+
+      button.disabled = true;
+      button.textContent = "正在验证...";
       $("gate-error").textContent = "";
-      showScreen("persona-screen");
+
+      try {
+        await verifyDailyAccessCode("solo-business", code);
+        showScreen("persona-screen");
+      } catch (error) {
+        $("gate-error").textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "验证并开始测试";
+      }
     });
 
     $("access-code").addEventListener("keydown", (event) => {
@@ -2597,7 +2629,6 @@
       state.answers = [];
       state.persona = null;
       state.lastResult = null;
-      $("access-code").value = ACCESS_CODE;
       showScreen("persona-screen");
     });
 
