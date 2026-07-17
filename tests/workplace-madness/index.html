@@ -734,10 +734,12 @@
         drawWrappedTextBlock(ctx, advice, 190, rowY + 33, 550, 25, 17, "#263600", "left");
       });
 
-      drawRoundRect(ctx, 90, 1248, 120, 92, 12, "#ffffff", "#dce4b0");
-      ctx.drawImage(qrImage, 100, 1258, 72, 72);
-      drawText(ctx, "测试你是哪种打工人发疯人格", 530, 1280, 23, "#263600", "center", "700");
-      drawText(ctx, "云渡测评实验室 · 结果仅用于娱乐与自我观察", 530, 1320, 16, "#8e7e81", "center", "500");
+      drawRoundRect(ctx, 90, 1240, 720, 90, 18, "#f7f8dc", "#dce4b0");
+      drawRoundRect(ctx, 112, 1250, 70, 70, 10, "#ffffff", "#dce4b0");
+      ctx.drawImage(qrImage, 115, 1253, 64, 64);
+      drawText(ctx, "测测你是哪种打工人发疯人格", 212, 1266, 23, "#202416", "left", "700");
+      drawText(ctx, "长按识别二维码 · 解锁完整人格报告", 212, 1296, 18, "#68705b", "left", "500");
+      drawText(ctx, "分享给同事，看看谁才是你的发疯同类", 212, 1322, 17, "#496400", "left", "600");
       return canvas.toDataURL("image/png");
     }
 

@@ -687,10 +687,12 @@
         drawWrappedTextBlock(ctx, advice, 190, rowY + 33, 550, 25, 17, "#613542", "left");
       });
 
-      drawRoundRect(ctx, 90, 1248, 120, 92, 12, "#ffffff", "#ead4d4");
-      ctx.drawImage(qrImage, 100, 1258, 72, 72);
-      drawText(ctx, "测试你是哪种恋爱相处人格", 530, 1280, 23, "#613542", "center", "700");
-      drawText(ctx, "云渡测评实验室 · 结果仅用于娱乐与自我观察", 530, 1320, 16, "#8e7e81", "center", "500");
+      drawRoundRect(ctx, 90, 1240, 720, 90, 18, "#fff3ef", "#ead4d4");
+      drawRoundRect(ctx, 112, 1250, 70, 70, 10, "#ffffff", "#ead4d4");
+      ctx.drawImage(qrImage, 115, 1253, 64, 64);
+      drawText(ctx, "测测你是哪种恋爱相处人格", 212, 1266, 23, "#352b2d", "left", "700");
+      drawText(ctx, "长按识别二维码 · 解锁完整人格报告", 212, 1296, 18, "#796b6e", "left", "500");
+      drawText(ctx, "分享给朋友，看看谁才是你的恋爱同类", 212, 1322, 17, "#b35f72", "left", "600");
       return canvas.toDataURL("image/png");
     }
 
