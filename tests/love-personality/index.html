@@ -258,7 +258,7 @@
               <button id="start-btn" class="primary-btn" type="button">开始测试</button>
             </div>
             <p id="gate-error" class="error" aria-live="polite"></p>
-            <p class="demo">测试码限发货当日使用 · 请按真实反应作答，不用寻找“正确答案”</p>
+            <p class="demo">测试码以商品当前发货信息为准 · 请按真实反应作答，不用寻找“正确答案”</p>
           </div>
           <p class="home-byline">作者：云云 ｜ 公众号：云渡沧海</p>
         </div>
@@ -632,8 +632,9 @@
       $("copy-btn").dataset.summary = `我的恋爱相处人格是「${result.name}」：${result.alias}。${result.quote}`;
     }
 
-    function createPosterImage() {
+    async function createPosterImage() {
       const { result, scores } = state.lastResult;
+      const qrImage = await loadPosterImage("../../assets/product-qrs/love-personality.png");
       const canvas = document.createElement("canvas");
       const scale = 2;
       const width = 900;
@@ -686,9 +687,20 @@
         drawWrappedTextBlock(ctx, advice, 190, rowY + 33, 550, 25, 17, "#613542", "left");
       });
 
-      drawText(ctx, "测试你是哪种恋爱相处人格", width / 2, 1280, 23, "#613542", "center", "700");
-      drawText(ctx, "云渡测评实验室 · 结果仅用于娱乐与自我观察", width / 2, 1320, 16, "#8e7e81", "center", "500");
+      drawRoundRect(ctx, 90, 1248, 120, 92, 12, "#ffffff", "#ead4d4");
+      ctx.drawImage(qrImage, 100, 1258, 72, 72);
+      drawText(ctx, "测试你是哪种恋爱相处人格", 530, 1280, 23, "#613542", "center", "700");
+      drawText(ctx, "云渡测评实验室 · 结果仅用于娱乐与自我观察", 530, 1320, 16, "#8e7e81", "center", "500");
       return canvas.toDataURL("image/png");
+    }
+
+    function loadPosterImage(src) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+      });
     }
 
     function drawRoundRect(ctx, x, y, width, height, radius, fill, stroke = null) {
@@ -801,9 +813,9 @@
       setTimeout(() => { button.textContent = "复制结果摘要"; }, 1800);
     });
 
-    $("save-poster-btn").addEventListener("click", () => {
+    $("save-poster-btn").addEventListener("click", async () => {
       if (!state.lastResult) return;
-      $("poster-image").src = createPosterImage();
+      $("poster-image").src = await createPosterImage();
       $("poster-modal").classList.add("active");
     });
 

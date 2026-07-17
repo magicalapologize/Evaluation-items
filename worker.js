@@ -26,18 +26,6 @@ function json(data, status = 200, headers = {}) {
   });
 }
 
-function getShanghaiDate() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(new Date());
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-
-  return `${values.year}-${values.month}-${values.day}`;
-}
-
 function normalizeCode(value) {
   return String(value || "").trim().toUpperCase().replace(/\s+/g, "");
 }
@@ -139,7 +127,7 @@ async function verifyCode(request, env) {
   try {
     const record = await env.DB
       .prepare(`
-        SELECT valid_date
+        SELECT 1
         FROM daily_codes
         WHERE product_id = ?
           AND UPPER(code) = ?
@@ -149,10 +137,10 @@ async function verifyCode(request, env) {
       .bind(productId, code)
       .first();
 
-    if (!record || record.valid_date !== getShanghaiDate()) {
+    if (!record) {
       return json({
         success: false,
-        message: "测试码无效或已过期，请检查发货信息"
+        message: "测试码无效或已停用，请检查发货信息"
       }, 403);
     }
 
