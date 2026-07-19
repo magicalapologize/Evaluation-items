@@ -26,8 +26,12 @@ http://127.0.0.1:8765/
 - 路径：`tests/love-personality/`
 - 打工人发疯人格测试
 - 路径：`tests/workplace-madness/`
+- 三国谋士测试
+- 路径：`tests/three-kingdoms-advisor/`
+- 历史帝王测试
+- 路径：`tests/historical-emperor/`
 
-三款测试统一通过 Worker 路由 `/api/verify-code` 查询 D1 中当前启用的测试码，前端不保存固定正确码。测试码不会在零点自动失效，只有手动更新 D1 或将 `enabled` 改为 `0` 后才会失效。
+五款测试统一通过 Worker 路由 `/api/verify-code` 查询 D1 中当前启用的测试码，前端不保存固定正确码。测试码不会在零点自动失效，只有手动更新 D1 或将 `enabled` 改为 `0` 后才会失效。
 
 网站同时提供“云渡超级会员”通道：会员使用唯一激活码开通和登录，登录成功后通过安全 Cookie 解锁全部测试；未登录用户仍可继续使用对应产品当前启用的单项测试码。
 
@@ -58,9 +62,12 @@ scripts/                      会员激活码生成工具
 images/solo-business-cover.svg  测试卡片封面
 images/love-personality-cover.svg  恋爱相处人格测试卡片封面
 images/workplace-madness-cover.svg  打工人发疯人格测试卡片封面
+images/historical-emperor-cover.svg  历史帝王测试卡片封面
 tests/solo-business/          可独立部署的测试页面副本
 tests/love-personality/       恋爱相处人格测试页面
 tests/workplace-madness/      打工人发疯人格测试页面
+tests/three-kingdoms-advisor/ 三国谋士测试页面
+tests/historical-emperor/     历史帝王测试页面
 ```
 
 ## 新增测试
