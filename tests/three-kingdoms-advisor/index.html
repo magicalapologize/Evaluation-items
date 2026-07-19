@@ -577,7 +577,7 @@ const QUESTIONS = [
       const canvas = document.createElement("canvas");
       const scale = 2;
       const width = 900;
-      const height = 1380;
+      const height = 1450;
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext("2d");
@@ -588,46 +588,50 @@ const QUESTIONS = [
       background.addColorStop(1, "#e8c8cd");
       ctx.fillStyle = background;
       ctx.fillRect(0, 0, width, height);
-      drawRoundRect(ctx, 48, 42, width - 96, height - 84, 34, "#fffaf6", "#dcbfc2");
+      drawRoundRect(ctx, 42, 34, width - 84, height - 68, 34, "#fffaf6", "#dcbfc2");
 
-      drawText(ctx, "THREE KINGDOMS STRATEGIST", width / 2, 112, 24, "#8f4f5f", "center", "700");
-      drawRoundRect(ctx, width / 2 - 48, 132, 96, 3, 1.5, "#d98b96");
-      drawText(ctx, "我的三国谋士是", width / 2, 198, 25, "#796b6e", "center", "600");
-      drawText(ctx, result.icon, width / 2, 286, 56, "#8f4f5f", "center", "500");
-      drawText(ctx, result.name, width / 2, 365, 60, "#352b2d", "center", "700", "serif");
-      drawText(ctx, result.alias, width / 2, 418, 23, "#8f4f5f", "center", "700");
-      drawWrappedTextBlock(ctx, `“${result.quote}”`, width / 2, 485, 650, 32, 21, "#796b6e", "center");
+      drawText(ctx, "THREE KINGDOMS STRATEGIST", width / 2, 96, 24, "#8f4f5f", "center", "700");
+      drawRoundRect(ctx, width / 2 - 48, 116, 96, 3, 1.5, "#d98b96");
+      drawText(ctx, "我的三国谋士是", width / 2, 166, 24, "#796b6e", "center", "600");
+      drawText(ctx, result.icon, width / 2, 246, 52, "#8f4f5f", "center", "500");
+      drawText(ctx, result.name, width / 2, 326, 64, "#352b2d", "center", "700", "serif");
+      drawText(ctx, result.alias, width / 2, 368, 22, "#8f4f5f", "center", "700");
+      drawWrappedTextBlock(ctx, `“${result.quote}”`, width / 2, 432, 670, 29, 20, "#796b6e", "center");
 
       const dimensions = [["全局谋划", scorePercent(scores.strategist, scores), "低", "高"], ["蓄势耐心", scorePercent(scores.tactician, scores), "低", "高"], ["号召协同", scorePercent(scores.commander, scores), "低", "高"], ["联盟经营", scorePercent(scores.diplomat, scores), "低", "高"], ["破局试错", scorePercent(scores.innovator, scores), "低", "高"], ["价值判断", scorePercent(scores.analyst, scores), "低", "高"]];
-      drawRoundRect(ctx, 90, 555, 720, 300, 22, "#fff3ef", "#ead4d4");
-      drawText(ctx, "我的六条谋士维度", 125, 610, 28, "#352b2d", "left", "700");
-      dimensions.slice(0, 3).forEach(([name, value, left, right], index) => {
-        const y = 665 + index * 62;
-        drawText(ctx, name, 125, y, 19, "#613542", "left", "700");
-        drawText(ctx, `${value}% 偏向${value >= 50 ? right : left}`, 775, y, 17, "#8f4f5f", "right", "700");
-        drawRoundRect(ctx, 125, y + 17, 650, 10, 5, "#efd9d8");
-        drawRoundRect(ctx, 125, y + 17, 650 * value / 100, 10, 5, "#b96778");
+      drawRoundRect(ctx, 80, 505, 740, 350, 22, "#fff3ef", "#ead4d4");
+      drawText(ctx, "我的六条谋士维度", 116, 552, 27, "#352b2d", "left", "700");
+      dimensions.forEach(([name, value, left, right], index) => {
+        const column = index % 2;
+        const row = Math.floor(index / 2);
+        const x = 116 + column * 360;
+        const y = 607 + row * 78;
+        drawText(ctx, name, x, y, 16, "#613542", "left", "700");
+        drawText(ctx, `${value}%`, x + 320, y, 15, "#8f4f5f", "right", "700");
+        drawRoundRect(ctx, x, y + 12, 320, 9, 4.5, "#efd9d8");
+        drawRoundRect(ctx, x, y + 12, 320 * value / 100, 9, 4.5, "#b96778");
+        drawText(ctx, `${left}　　　　　　　　　${right}`, x, y + 39, 12, "#9b8586", "left", "500");
       });
 
-      drawRoundRect(ctx, 90, 885, 720, 350, 22, "#fffdfb", "#ead4d4");
-      drawText(ctx, "给我的谋略建议", 125, 940, 28, "#352b2d", "left", "700");
+      drawRoundRect(ctx, 80, 882, 740, 320, 22, "#fffdfb", "#ead4d4");
+      drawText(ctx, "给我的谋略建议", 116, 930, 27, "#352b2d", "left", "700");
       result.advices.forEach((advice, index) => {
-        const rowY = 968 + index * 78;
-        drawRoundRect(ctx, 120, rowY, 660, 66, 14, "#fff8f5", "#efdedd");
+        const rowY = 950 + index * 78;
+        drawRoundRect(ctx, 112, rowY, 676, 66, 14, "#fff8f5", "#efdedd");
         ctx.fillStyle = "#8f4f5f";
         ctx.beginPath();
         ctx.arc(152, rowY + 33, 18, 0, Math.PI * 2);
         ctx.fill();
         drawText(ctx, `${index + 1}`, 152, rowY + 39, 16, "#ffffff", "center", "700");
-        drawWrappedTextBlock(ctx, advice, 190, rowY + 33, 550, 25, 17, "#613542", "left");
+        drawWrappedTextBlock(ctx, advice, 190, rowY + 33, 560, 22, 16, "#613542", "left");
       });
 
-      drawRoundRect(ctx, 90, 1240, 720, 90, 18, "#fff3ef", "#ead4d4");
-      drawRoundRect(ctx, 112, 1250, 70, 70, 10, "#ffffff", "#ead4d4");
-      ctx.drawImage(qrImage, 115, 1253, 64, 64);
-      drawText(ctx, "测测你是哪位三国谋士", 212, 1266, 23, "#352b2d", "left", "700");
-      drawText(ctx, "长按识别二维码 · 解锁完整谋士报告", 212, 1296, 18, "#796b6e", "left", "500");
-      drawText(ctx, "分享给朋友，看看谁是你的同门谋士", 212, 1322, 17, "#b35f72", "left", "600");
+      drawRoundRect(ctx, 80, 1230, 740, 112, 18, "#fff3ef", "#ead4d4");
+      drawRoundRect(ctx, 108, 1245, 82, 82, 10, "#ffffff", "#ead4d4");
+      ctx.drawImage(qrImage, 114, 1251, 70, 70);
+      drawText(ctx, "测测你是哪位三国谋士", 220, 1260, 22, "#352b2d", "left", "700");
+      drawText(ctx, "长按识别二维码 · 解锁完整谋士报告", 220, 1291, 17, "#796b6e", "left", "500");
+      drawText(ctx, "分享给朋友，看看谁是你的同门谋士", 220, 1320, 16, "#b35f72", "left", "600");
       return canvas.toDataURL("image/png");
     }
 
