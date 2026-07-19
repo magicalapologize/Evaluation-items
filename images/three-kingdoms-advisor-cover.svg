@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title desc">
+  <title id="title">三国谋士测试封面</title>
+  <desc id="desc">朱砂红、鎏金和棋局线条构成的三国谋略测试封面</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b1018"/>
+      <stop offset=".5" stop-color="#6f2028"/>
+      <stop offset="1" stop-color="#bd8153"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#ffe6a5" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#ffe6a5" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0v48" fill="none" stroke="#ffe6a5" stroke-opacity=".1"/>
+    </pattern>
+  </defs>
+  <rect width="720" height="900" rx="34" fill="url(#bg)"/>
+  <rect width="720" height="900" rx="34" fill="url(#grid)"/>
+  <circle cx="570" cy="180" r="240" fill="url(#glow)" opacity=".34"/>
+  <g fill="none" stroke="#f8d99b" stroke-opacity=".46" stroke-width="3">
+    <path d="M105 260h510M105 380h510M105 500h510M225 160v440M360 160v440M495 160v440"/>
+    <circle cx="360" cy="380" r="205"/>
+  </g>
+  <g fill="#f8d99b" stroke="#4a1720" stroke-width="7">
+    <circle cx="225" cy="260" r="31"/><circle cx="495" cy="260" r="31"/>
+    <circle cx="360" cy="380" r="31"/><circle cx="225" cy="500" r="31"/>
+  </g>
+  <path d="M360 178l20 42 46 7-33 32 8 46-41-22-41 22 8-46-33-32 46-7z" fill="#fff0c7" opacity=".88"/>
+  <text x="64" y="92" fill="#ffe9b2" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="7">THREE KINGDOMS / SIGNAL</text>
+  <text x="64" y="810" fill="#fff8e9" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="48" font-weight="700">三国谋士测试</text>
+  <text x="64" y="858" fill="#f4d49b" font-family="Arial, sans-serif" font-size="20" letter-spacing="5">30 QUESTIONS · 12 TYPES</text>
+</svg>
