@@ -460,6 +460,30 @@ const QUESTIONS = [
       ][index]) };
     });
 
+    const DIMENSIONS = [
+      ["strategist", "全局远见", "局部", "全局"],
+      ["tactician", "克制蓄力", "速攻", "蓄力"],
+      ["commander", "目标决断", "协商", "决断"],
+      ["diplomat", "因势用人", "独断", "平衡"],
+      ["innovator", "开拓试验", "守成", "开拓"],
+      ["analyst", "制度收束", "弹性", "制度"]
+    ];
+
+    const EMPEROR_PROFILES = {
+      strategist: [90, 58, 72, 88, 58, 76],
+      strategist_prime: [86, 52, 88, 75, 82, 68],
+      tactician: [65, 91, 48, 72, 42, 84],
+      tactician_prime: [78, 90, 64, 86, 61, 70],
+      commander: [82, 45, 93, 42, 74, 90],
+      commander_prime: [76, 50, 91, 64, 90, 74],
+      diplomat: [78, 72, 56, 92, 58, 83],
+      diplomat_prime: [85, 88, 62, 94, 55, 76],
+      innovator: [80, 46, 89, 54, 94, 58],
+      innovator_prime: [76, 61, 86, 48, 90, 94],
+      analyst: [73, 79, 66, 62, 48, 94],
+      analyst_prime: [84, 73, 82, 54, 62, 92]
+    };
+
     const state = { index: 0, answers: [], lastResult: null };
     const $ = (id) => document.getElementById(id);
 
@@ -514,17 +538,32 @@ const QUESTIONS = [
 
     function resultKey(scores) {
       const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-      return `${ranked[0][0]}${ranked[1][1] >= 5 ? "_prime" : ""}`;
+      return `${ranked[0][0]}${ranked[0][1] - ranked[1][1] >= 4 ? "_prime" : ""}`;
     }
 
-    function scorePercent(score) {
-      return Math.round(Math.max(0, Math.min(100, score / QUESTIONS.length * 100 * 2)));
+    function relativeScore(score, scores) {
+      const values = Object.values(scores);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      if (max === min) return 60;
+      return Math.round(36 + ((score - min) / (max - min)) * 48);
+    }
+
+    function buildDimensions(scores, key) {
+      const profile = EMPEROR_PROFILES[key];
+      return DIMENSIONS.map(([scoreKey, name, left, right], index) => {
+        const answerSignal = relativeScore(scores[scoreKey], scores);
+        const value = Math.round(profile[index] * .8 + answerSignal * .2);
+        return [name, value, left, right];
+      });
     }
 
     function renderResult() {
       const scores = calculateScores();
-      const result = TYPES[resultKey(scores)];
-      state.lastResult = { result, scores };
+      const key = resultKey(scores);
+      const result = TYPES[key];
+      const dimensions = buildDimensions(scores, key);
+      state.lastResult = { result, scores, key, dimensions };
       $("result-icon").textContent = result.icon;
       $("result-name").textContent = result.name;
       $("result-alias").textContent = result.alias;
@@ -537,14 +576,6 @@ const QUESTIONS = [
       $("advice-list").innerHTML = result.advices.map((advice) => `<div class="advice-item">${advice}</div>`).join("");
       $("partner-note").textContent = result.partner || `你的帝王优势是${result.tags.join("、")}。把它用在合适的局面里，别让优势变成单一套路。`;
 
-      const dimensions = [
-        ["全局远见", scorePercent(scores.strategist), "局部", "全局"],
-        ["克制蓄力", scorePercent(scores.tactician), "速攻", "蓄力"],
-        ["目标决断", scorePercent(scores.commander), "协商", "决断"],
-        ["因势用人", scorePercent(scores.diplomat), "独断", "平衡"],
-        ["开拓试验", scorePercent(scores.innovator), "守成", "开拓"],
-        ["制度收束", scorePercent(scores.analyst), "弹性", "制度"]
-      ];
       $("dimension-list").innerHTML = dimensions.map(([name, value, left, right]) => `
         <div>
           <div class="dimension-head"><span>${name}</span><span>${value}% 偏向${value >= 50 ? right : left}</span></div>
@@ -557,62 +588,81 @@ const QUESTIONS = [
     }
 
     async function createPosterImage() {
-      const { result, scores } = state.lastResult;
+      const { result, dimensions } = state.lastResult;
       const qrImage = await loadPosterImage("../../assets/product-qrs/historical-emperor.png");
       const canvas = document.createElement("canvas");
       const scale = 2;
       const width = 900;
-      const height = 1380;
+      const height = 1580;
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext("2d");
       ctx.scale(scale, scale);
 
       const background = ctx.createLinearGradient(0, 0, 0, height);
-      background.addColorStop(0, "#dce9ed");
-      background.addColorStop(1, "#c4d7df");
+      background.addColorStop(0, "#0d3045");
+      background.addColorStop(.52, "#1f5876");
+      background.addColorStop(1, "#cfddd9");
       ctx.fillStyle = background;
       ctx.fillRect(0, 0, width, height);
-      drawRoundRect(ctx, 48, 42, width - 96, height - 84, 34, "#fbf8ef", "#c8dadd");
+      drawRoundRect(ctx, 38, 34, width - 76, height - 68, 38, "#f8f4e9", "rgba(255,255,255,.36)");
 
-      drawText(ctx, "HISTORICAL EMPEROR", width / 2, 112, 24, "#1f5876", "center", "700");
-      drawRoundRect(ctx, width / 2 - 48, 132, 96, 3, 1.5, "#c8963e");
-      drawText(ctx, "我的历史帝王是", width / 2, 198, 25, "#61727b", "center", "600");
-      drawText(ctx, result.icon, width / 2, 286, 56, "#1f5876", "center", "500");
-      drawText(ctx, result.name, width / 2, 365, 60, "#172b3a", "center", "700", "serif");
-      drawText(ctx, result.alias, width / 2, 418, 23, "#1f5876", "center", "700");
-      drawWrappedTextBlock(ctx, `“${result.quote}”`, width / 2, 485, 650, 32, 21, "#61727b", "center");
+      drawRoundRect(ctx, 66, 62, 768, 410, 30, "#102f43", "#b98c3d");
+      drawText(ctx, "YUNDU · EMPEROR ARCHIVE", 102, 112, 18, "#d8b869", "left", "700");
+      drawText(ctx, "NO. 005", 798, 112, 17, "#a9c1c9", "right", "600");
+      drawRoundRect(ctx, 102, 137, 696, 1.5, .75, "rgba(216,184,105,.46)");
+      drawText(ctx, "我的历史帝王是", width / 2, 188, 22, "#b8cbd0", "center", "600");
+      drawText(ctx, result.icon, width / 2, 248, 40, "#d8b869", "center", "500");
+      drawText(ctx, result.name, width / 2, 326, 66, "#fffaf0", "center", "700", "serif");
+      drawText(ctx, result.alias, width / 2, 370, 22, "#d8b869", "center", "700");
+      result.tags.forEach((tag, index) => {
+        const tagWidth = 112;
+        const x = width / 2 - 178 + index * 122;
+        drawRoundRect(ctx, x, 394, tagWidth, 38, 19, "rgba(255,255,255,.08)", "rgba(216,184,105,.42)");
+        drawText(ctx, tag, x + tagWidth / 2, 420, 16, "#e8efe9", "center", "600");
+      });
+      drawWrappedTextBlock(ctx, `“${result.quote}”`, width / 2, 450, 650, 27, 18, "#c6d3d5", "center");
 
-      const dimensions = [["全局远见", scorePercent(scores.strategist), "局部", "全局"], ["克制蓄力", scorePercent(scores.tactician), "速攻", "蓄力"], ["目标决断", scorePercent(scores.commander), "协商", "决断"], ["因势用人", scorePercent(scores.diplomat), "独断", "平衡"], ["开拓试验", scorePercent(scores.innovator), "守成", "开拓"], ["制度收束", scorePercent(scores.analyst), "弹性", "制度"]];
-      drawRoundRect(ctx, 90, 555, 720, 300, 22, "#eef4f2", "#c8dadd");
-      drawText(ctx, "我的六条帝王维度", 125, 610, 28, "#172b3a", "left", "700");
-      dimensions.slice(0, 3).forEach(([name, value, left, right], index) => {
-        const y = 665 + index * 62;
-        drawText(ctx, name, 125, y, 19, "#173b52", "left", "700");
-        drawText(ctx, `${value}% 偏向${value >= 50 ? right : left}`, 775, y, 17, "#1f5876", "right", "700");
-        drawRoundRect(ctx, 125, y + 17, 650, 10, 5, "#d9e4e8");
-        drawRoundRect(ctx, 125, y + 17, 650 * value / 100, 10, 5, "#c8963e");
+      drawRoundRect(ctx, 66, 498, 768, 386, 28, "#eef3ee", "#cbd8d4");
+      drawText(ctx, "EMPEROR SIGNALS", 102, 546, 16, "#1f5876", "left", "700");
+      drawText(ctx, "我的六条帝王维度", 102, 582, 29, "#172b3a", "left", "700");
+      dimensions.forEach(([name, value, left, right], index) => {
+        const column = index % 2;
+        const row = Math.floor(index / 2);
+        const x = 102 + column * 363;
+        const y = 632 + row * 82;
+        drawText(ctx, name, x, y, 18, "#173b52", "left", "700");
+        drawText(ctx, `${value}%`, x + 330, y, 17, "#1f5876", "right", "700");
+        drawRoundRect(ctx, x, y + 15, 330, 10, 5, "#d5e0e1");
+        const signal = ctx.createLinearGradient(x, 0, x + 330, 0);
+        signal.addColorStop(0, "#c8963e");
+        signal.addColorStop(1, "#1f5876");
+        drawRoundRect(ctx, x, y + 15, 330 * value / 100, 10, 5, signal);
+        drawText(ctx, left, x, y + 48, 13, "#7a898d", "left", "500");
+        drawText(ctx, right, x + 330, y + 48, 13, "#7a898d", "right", "500");
       });
 
-      drawRoundRect(ctx, 90, 885, 720, 350, 22, "#fffdfb", "#c8dadd");
-      drawText(ctx, "给我的治理建议", 125, 940, 28, "#172b3a", "left", "700");
+      drawRoundRect(ctx, 66, 910, 768, 394, 28, "#fffdf8", "#ddd5c2");
+      drawText(ctx, "ACTION ADVICE", 102, 958, 16, "#b27d27", "left", "700");
+      drawText(ctx, "给我的三条治理建议", 102, 994, 29, "#172b3a", "left", "700");
       result.advices.forEach((advice, index) => {
-        const rowY = 968 + index * 78;
-        drawRoundRect(ctx, 120, rowY, 660, 66, 14, "#f7f3e8", "#e7dcc0");
+        const rowY = 1020 + index * 86;
+        drawRoundRect(ctx, 96, rowY, 708, 72, 16, index === 0 ? "#f1ead9" : "#f7f3e9", "#e4dbc5");
         ctx.fillStyle = "#1f5876";
         ctx.beginPath();
-        ctx.arc(152, rowY + 33, 18, 0, Math.PI * 2);
+        ctx.arc(132, rowY + 36, 18, 0, Math.PI * 2);
         ctx.fill();
-        drawText(ctx, `${index + 1}`, 152, rowY + 39, 16, "#ffffff", "center", "700");
-        drawWrappedTextBlock(ctx, advice, 190, rowY + 33, 550, 25, 17, "#173b52", "left");
+        drawText(ctx, `${index + 1}`, 132, rowY + 42, 15, "#ffffff", "center", "700");
+        drawWrappedTextBlock(ctx, advice, 168, rowY + 36, 600, 24, 17, "#314a57", "left");
       });
 
-      drawRoundRect(ctx, 90, 1240, 720, 90, 18, "#eef4f2", "#c8dadd");
-      drawRoundRect(ctx, 112, 1250, 70, 70, 10, "#ffffff", "#c8dadd");
-      ctx.drawImage(qrImage, 115, 1253, 64, 64);
-      drawText(ctx, "测测你是哪位历史帝王", 212, 1266, 23, "#172b3a", "left", "700");
-      drawText(ctx, "长按识别二维码 · 解锁完整帝王报告", 212, 1296, 18, "#61727b", "left", "500");
-      drawText(ctx, "分享给朋友，看看谁和你是同款帝王", 212, 1322, 17, "#1f5876", "left", "600");
+      drawRoundRect(ctx, 66, 1332, 768, 160, 26, "#102f43", "#b98c3d");
+      drawRoundRect(ctx, 96, 1354, 116, 116, 14, "#ffffff", "#d8b869");
+      ctx.drawImage(qrImage, 103, 1361, 102, 102);
+      drawText(ctx, "测测你是哪位历史帝王", 246, 1380, 25, "#fffaf0", "left", "700");
+      drawText(ctx, "长按识别二维码 · 解锁完整帝王报告", 246, 1418, 18, "#c6d3d5", "left", "500");
+      drawText(ctx, "分享给朋友，看看谁和你是同款帝王", 246, 1454, 17, "#d8b869", "left", "600");
+      drawText(ctx, "云渡测评实验室 · YUNDU EVALUATION LAB", width / 2, 1532, 15, "#647d86", "center", "600");
       return canvas.toDataURL("image/png");
     }
 

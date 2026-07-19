@@ -3,7 +3,8 @@ const PRODUCT_IDS = new Set([
   "love-personality",
   "workplace-madness",
   "three-kingdoms-advisor",
-  "historical-emperor"
+  "historical-emperor",
+  "historical-heroines"
 ]);
 
 const PLAN_LABELS = {
