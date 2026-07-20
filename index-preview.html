@@ -458,6 +458,16 @@
 		<!-- Carousel: auto-scroll + free drag/swipe with momentum -->
 		<script>
 		(function() {
+			const allTests = document.getElementById('all-tests');
+			if (allTests) {
+				allTests.querySelectorAll('a, img').forEach(function(element) {
+					element.draggable = false;
+				});
+				allTests.addEventListener('dragstart', function(e) {
+					e.preventDefault();
+				});
+			}
+
 			const stage = document.querySelector('.carousel-stage');
 			const scrollArea = stage ? stage.querySelector(':scope > .carousel-scroll-area') : null;
 			const mainTrack = scrollArea ? scrollArea.querySelector(':scope > .carousel-track') : null;
@@ -465,13 +475,19 @@
 			if (!mainTrack || !reflectionTrack) return;
 
 			mainTrack.style.animation = 'none';
+			scrollArea.querySelectorAll('a, img').forEach(function(element) {
+				element.draggable = false;
+			});
 			const SET_WIDTH = mainTrack.scrollWidth / 2;
 			let position = 0;
 			const SPEED = 0.8;
 
-			let dragging = false, startX = 0, startPos = 0;
+			let pointerActive = false, dragging = false, suppressClick = false;
+			let startX = 0, startPos = 0;
 			let lastX = 0, lastTime = 0, velocity = 0;
 			let gliding = false, glideId = 0;
+			let pressedCard = null;
+			const DRAG_THRESHOLD = 6;
 
 			function apply() {
 				if (position <= -SET_WIDTH) position += SET_WIDTH;
@@ -482,27 +498,37 @@
 			}
 
 			function tick() {
-				if (!dragging && !gliding) position -= SPEED;
+				if (!pointerActive && !gliding) position -= SPEED;
 				apply();
 				requestAnimationFrame(tick);
 			}
 
 			scrollArea.addEventListener('pointerdown', function(e) {
+				if (e.button !== 0) return;
 				glideId += 1;
 				gliding = false;
-				dragging = true;
+				pointerActive = true;
+				dragging = false;
+				suppressClick = false;
 				startX = e.clientX;
 				startPos = position;
 				lastX = e.clientX;
 				lastTime = Date.now();
 				velocity = 0;
-				scrollArea.setPointerCapture(e.pointerId);
-				scrollArea.style.cursor = 'grabbing';
+				pressedCard = e.target.closest('.carousel-card');
 			});
 
 			scrollArea.addEventListener('pointermove', function(e) {
-				if (!dragging) return;
-				position = startPos + (e.clientX - startX);
+				if (!pointerActive) return;
+				const offset = e.clientX - startX;
+				if (!dragging) {
+					if (Math.abs(offset) < DRAG_THRESHOLD) return;
+					dragging = true;
+					suppressClick = true;
+					scrollArea.setPointerCapture(e.pointerId);
+					scrollArea.style.cursor = 'grabbing';
+				}
+				position = startPos + offset;
 				const now = Date.now(), dt = now - lastTime;
 				if (dt > 0) velocity = (e.clientX - lastX) / dt;
 				lastX = e.clientX;
@@ -510,9 +536,39 @@
 				apply();
 			});
 
-			function endDrag() {
-				if (!dragging) return;
+			scrollArea.addEventListener('dragstart', function(e) {
+				e.preventDefault();
+			});
+
+			scrollArea.addEventListener('wheel', function(e) {
+				if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 1) return;
+				e.preventDefault();
+				glideId += 1;
+				gliding = false;
+				const delta = Math.max(-60, Math.min(60, e.deltaX));
+				position -= delta;
+				apply();
+			}, { passive: false });
+
+			scrollArea.addEventListener('click', function(e) {
+				if (!suppressClick) return;
+				e.preventDefault();
+				e.stopPropagation();
+				suppressClick = false;
+			}, true);
+
+			function endDrag(e) {
+				if (!pointerActive) return;
+				pointerActive = false;
+				if (!dragging) {
+					if (e.type === 'pointerup' && pressedCard && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+						window.location.href = pressedCard.href;
+					}
+					pressedCard = null;
+					return;
+				}
 				dragging = false;
+				pressedCard = null;
 				scrollArea.style.cursor = 'grab';
 				const maxDistance = Math.min(scrollArea.clientWidth * 0.75, 420);
 				const distance = Math.max(-maxDistance, Math.min(maxDistance, velocity * 260));
