@@ -471,6 +471,7 @@
 
 			let dragging = false, startX = 0, startPos = 0;
 			let lastX = 0, lastTime = 0, velocity = 0;
+			let gliding = false, glideId = 0;
 
 			function apply() {
 				if (position <= -SET_WIDTH) position += SET_WIDTH;
@@ -481,12 +482,14 @@
 			}
 
 			function tick() {
-				if (!dragging) position -= SPEED;
+				if (!dragging && !gliding) position -= SPEED;
 				apply();
 				requestAnimationFrame(tick);
 			}
 
 			scrollArea.addEventListener('pointerdown', function(e) {
+				glideId += 1;
+				gliding = false;
 				dragging = true;
 				startX = e.clientX;
 				startPos = position;
@@ -511,15 +514,24 @@
 				if (!dragging) return;
 				dragging = false;
 				scrollArea.style.cursor = 'grab';
-				let m = velocity * 180;
-				function decay() {
-					if (dragging || Math.abs(m) < 0.3) return;
-					position += m;
-					m *= 0.94;
+				const maxDistance = Math.min(scrollArea.clientWidth * 0.75, 420);
+				const distance = Math.max(-maxDistance, Math.min(maxDistance, velocity * 260));
+				if (Math.abs(distance) < 8) return;
+
+				const id = ++glideId;
+				const from = position;
+				const duration = 360;
+				const startedAt = performance.now();
+				gliding = true;
+				function glide(now) {
+					if (dragging || id !== glideId) return;
+					const progress = Math.min((now - startedAt) / duration, 1);
+					position = from + distance * (1 - Math.pow(1 - progress, 3));
 					apply();
-					requestAnimationFrame(decay);
+					if (progress < 1) requestAnimationFrame(glide);
+					else gliding = false;
 				}
-				if (Math.abs(m) > 0.3) requestAnimationFrame(decay);
+				requestAnimationFrame(glide);
 			}
 
 			scrollArea.addEventListener('pointerup', endDrag);
@@ -559,7 +571,7 @@
 			startAuto();
 		})();
 		</script>
-		<script src="assets/js/member-auth.js?v=20260716"></script>
+		<script src="assets/js/member-auth.js?v=20260721"></script>
 		<script>
 			const memberEntry = document.getElementById("member-entry");
 			YunduMember.getMember().then((member) => {

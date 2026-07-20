@@ -44,11 +44,20 @@
     return pending;
   }
 
-  async function login(code) {
+  async function register(code, username, password) {
+    const result = await request("/api/member/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, username, password })
+    });
+    return publish(result.member);
+  }
+
+  async function login(username, password) {
     const result = await request("/api/member/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code })
+      body: JSON.stringify({ username, password })
     });
     return publish(result.member);
   }
@@ -87,6 +96,7 @@
 
   window.YunduMember = {
     getMember,
+    register,
     login,
     redeem,
     logout,

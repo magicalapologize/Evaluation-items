@@ -45,13 +45,14 @@ python3 -m http.server 8765
 
 七款测试统一通过 Worker 路由 `/api/verify-code` 查询 D1 中当前启用的测试码，前端不保存固定正确码。测试码不会在零点自动失效，只有手动更新 D1 或将 `enabled` 改为 `0` 后才会失效。
 
-网站同时提供“云渡超级会员”通道：会员使用唯一激活码开通和登录，登录成功后通过安全 Cookie 解锁全部测试；未登录用户仍可继续使用对应产品当前启用的单项测试码。
+网站同时提供“云渡超级会员”通道：会员首次使用唯一激活码创建用户名和密码，注册或登录成功后通过安全 Cookie 解锁全部测试；未登录用户仍可继续使用对应产品当前启用的单项测试码。
 
 会员中心：`member/`
 
 会员接口：
 
-- `POST /api/member/login`：首次激活或再次登录
+- `POST /api/member/register`：使用激活码创建会员账号
+- `POST /api/member/login`：使用用户名和密码登录
 - `GET /api/member/me`：读取当前会员状态
 - `POST /api/member/logout`：退出当前设备
 - `POST /api/member/redeem`：使用新激活码续费

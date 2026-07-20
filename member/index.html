@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="云渡超级会员：使用会员激活码登录，解锁全部测评。" />
+  <meta name="description" content="云渡超级会员：使用激活码创建账号，登录后解锁全部测评。" />
   <meta name="theme-color" content="#070916" />
-  <title>云渡超级会员｜激活与登录</title>
-  <link rel="stylesheet" href="../assets/css/member.css?v=20260716" />
+  <title>云渡超级会员｜注册与登录</title>
+  <link rel="stylesheet" href="../assets/css/member.css?v=20260721" />
 </head>
 <body>
   <div class="member-noise" aria-hidden="true"></div>
@@ -23,7 +23,7 @@
       <div class="member-intro">
         <p class="member-kicker">SUPER MEMBER / ALL ACCESS</p>
         <h1>一枚激活码，<br /><em>解锁全部测评。</em></h1>
-        <p class="member-lead">无需手机号和密码。购买会员后输入激活码，即可开通超级会员；以后仍使用同一枚激活码登录。</p>
+        <p class="member-lead">购买会员后，用激活码创建自己的用户名和密码。以后直接登录账号，全部测试自动解锁。</p>
         <div class="member-benefits">
           <span>全部测试不限次数</span>
           <span>后续新测试同步解锁</span>
@@ -34,13 +34,34 @@
       <div class="auth-card">
         <div id="logged-out-panel">
           <span class="member-badge">◆ SUPER MEMBER</span>
-          <h2>激活 / 登录</h2>
-          <p>首次输入自动开通，以后输入同一激活码即可登录。</p>
-          <label for="member-code">会员激活码</label>
-          <input id="member-code" autocomplete="off" spellcheck="false" placeholder="例如：YD-Y-AB12-CD34-EF56-GH78" />
-          <button id="login-btn" type="button">验证激活码</button>
+          <div class="auth-tabs" role="tablist" aria-label="会员注册与登录">
+            <button id="register-tab" class="auth-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="register-form">激活注册</button>
+            <button id="login-tab" class="auth-tab" type="button" role="tab" aria-selected="false" aria-controls="login-form">账号登录</button>
+          </div>
+
+          <div id="register-form" role="tabpanel" aria-labelledby="register-tab">
+            <h2>创建会员账号</h2>
+            <p>输入激活码，并设置以后登录使用的用户名和密码。</p>
+            <label for="member-code">会员激活码</label>
+            <input id="member-code" class="code-input" autocomplete="off" spellcheck="false" placeholder="例如：YD-Y-AB12-CD34-EF56-GH78" />
+            <label for="register-username">用户名</label>
+            <input id="register-username" maxlength="6" autocomplete="username" spellcheck="false" placeholder="最多 6 位中文、字母或数字" />
+            <label for="register-password">密码</label>
+            <input id="register-password" type="password" minlength="6" maxlength="64" autocomplete="new-password" placeholder="6-64 位数字、字母或标点符号" />
+            <button id="register-btn" type="button">激活并创建账号</button>
+          </div>
+
+          <div id="login-form" role="tabpanel" aria-labelledby="login-tab" hidden>
+            <h2>登录会员账号</h2>
+            <p>登录后当前设备将自动解锁全部测试。</p>
+            <label for="login-username">用户名</label>
+            <input id="login-username" maxlength="6" autocomplete="username" spellcheck="false" placeholder="输入用户名" />
+            <label for="login-password">密码</label>
+            <input id="login-password" type="password" maxlength="64" autocomplete="current-password" placeholder="输入密码" />
+            <button id="login-btn" type="button">登录并解锁</button>
+          </div>
           <p id="auth-message" class="auth-message" aria-live="polite"></p>
-          <small>请妥善保存激活码，它是你的唯一登录凭证。</small>
+          <small>一个激活码只能创建一个会员账号，请妥善保管账号密码。</small>
         </div>
 
         <div id="logged-in-panel" hidden>
@@ -48,13 +69,14 @@
           <h2>云渡超级会员</h2>
           <p id="member-welcome" class="member-welcome">全部测试已经解锁，随时测、无限次重测。</p>
           <dl class="member-detail">
+            <div><dt>用户名</dt><dd id="member-username">-</dd></div>
             <div><dt>会员类型</dt><dd id="member-plan">-</dd></div>
             <div><dt>有效期至</dt><dd id="member-expiry">-</dd></div>
             <div><dt>激活码尾号</dt><dd id="member-hint">-</dd></div>
           </dl>
           <a class="all-tests-btn" href="../#tests">进入全部测试</a>
           <div class="renew-row">
-            <input id="renew-code" autocomplete="off" spellcheck="false" placeholder="输入新的激活码续费" />
+            <input id="renew-code" class="code-input" autocomplete="off" spellcheck="false" placeholder="输入新的激活码续费" />
             <button id="renew-btn" type="button">续费</button>
           </div>
           <p id="renew-message" class="auth-message" aria-live="polite"></p>
@@ -79,16 +101,22 @@
     </section>
   </main>
 
-  <script src="../assets/js/member-auth.js?v=20260716"></script>
+  <script src="../assets/js/member-auth.js?v=20260721"></script>
   <script>
     const byId = (id) => document.getElementById(id);
 
     function renderMember(member) {
-      const loggedIn = Boolean(member && member.authenticated);
+      const needsAccount = Boolean(member && member.authenticated && !member.username);
+      const loggedIn = Boolean(member && member.authenticated && !needsAccount);
       byId("logged-out-panel").hidden = loggedIn;
       byId("logged-in-panel").hidden = !loggedIn;
+      if (needsAccount) {
+        showAuthMode("register");
+        byId("auth-message").textContent = "已识别旧会员，请使用原激活码创建用户名和密码。";
+      }
       if (!loggedIn) return;
 
+      byId("member-username").textContent = member.username;
       byId("member-plan").textContent = member.planLabel || "超级会员";
       byId("member-expiry").textContent = member.active
         ? YunduMember.formatExpiry(member)
@@ -102,26 +130,69 @@
       byId("renew-code").placeholder = member.lifetime ? "终身会员无需续费" : "输入新的激活码续费";
     }
 
-    byId("login-btn").addEventListener("click", async () => {
-      const button = byId("login-btn");
+    function showAuthMode(mode) {
+      const registering = mode === "register";
+      byId("register-form").hidden = !registering;
+      byId("login-form").hidden = registering;
+      byId("register-tab").classList.toggle("is-active", registering);
+      byId("login-tab").classList.toggle("is-active", !registering);
+      byId("register-tab").setAttribute("aria-selected", String(registering));
+      byId("login-tab").setAttribute("aria-selected", String(!registering));
+      byId("auth-message").textContent = "";
+    }
+
+    byId("register-tab").addEventListener("click", () => showAuthMode("register"));
+    byId("login-tab").addEventListener("click", () => showAuthMode("login"));
+
+    byId("register-btn").addEventListener("click", async () => {
+      const button = byId("register-btn");
       const message = byId("auth-message");
       const code = byId("member-code").value.trim().toUpperCase();
+      const username = byId("register-username").value.trim();
+      const password = byId("register-password").value;
       button.disabled = true;
-      button.textContent = "正在验证...";
+      button.textContent = "正在创建账号...";
       message.textContent = "";
       try {
-        const member = await YunduMember.login(code);
+        const member = await YunduMember.register(code, username, password);
         renderMember(member);
       } catch (error) {
         message.textContent = error.message;
       } finally {
         button.disabled = false;
-        button.textContent = "验证激活码";
+        button.textContent = "激活并创建账号";
       }
     });
 
-    byId("member-code").addEventListener("keydown", (event) => {
-      if (event.key === "Enter") byId("login-btn").click();
+    byId("login-btn").addEventListener("click", async () => {
+      const button = byId("login-btn");
+      const message = byId("auth-message");
+      button.disabled = true;
+      button.textContent = "正在登录...";
+      message.textContent = "";
+      try {
+        const member = await YunduMember.login(
+          byId("login-username").value.trim(),
+          byId("login-password").value
+        );
+        renderMember(member);
+      } catch (error) {
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "登录并解锁";
+      }
+    });
+
+    ["member-code", "register-username", "register-password"].forEach((id) => {
+      byId(id).addEventListener("keydown", (event) => {
+        if (event.key === "Enter") byId("register-btn").click();
+      });
+    });
+    ["login-username", "login-password"].forEach((id) => {
+      byId(id).addEventListener("keydown", (event) => {
+        if (event.key === "Enter") byId("login-btn").click();
+      });
     });
 
     byId("renew-btn").addEventListener("click", async () => {

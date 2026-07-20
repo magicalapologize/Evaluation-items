@@ -19,6 +19,7 @@ const SESSION_COOKIE = "yundu_member_session";
 const SESSION_DAYS = 30;
 const MAX_ACTIVE_SESSIONS = 2;
 const MAX_LOGIN_FAILURES = 10;
+const PASSWORD_ITERATIONS = 100000;
 
 function json(data, status = 200, headers = {}) {
   return Response.json(data, {
@@ -76,6 +77,47 @@ async function sha256(value) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function normalizeUsername(value) {
+  return String(value || "").trim().normalize("NFKC");
+}
+
+function isValidUsername(username) {
+  const length = Array.from(username).length;
+  return length >= 1 && length <= 6 && /^[\p{Script=Han}A-Za-z0-9]+$/u.test(username);
+}
+
+function isValidPassword(password) {
+  if (typeof password !== "string") return false;
+  const length = Array.from(password).length;
+  return length >= 6 && length <= 64 && /^[\p{L}\p{N}\p{P}]+$/u.test(password);
+}
+
+async function hashPassword(password, saltHex, iterations = PASSWORD_ITERATIONS) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  const salt = new Uint8Array(saltHex.match(/.{2}/g).map((byte) => parseInt(byte, 16)));
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt, iterations },
+    key,
+    256
+  );
+  return Array.from(new Uint8Array(bits), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function hashesMatch(left, right) {
+  if (!left || !right || left.length !== right.length) return false;
+  let difference = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return difference === 0;
+}
+
 function isMemberActive(member, now = new Date()) {
   if (!member || member.status !== "active") return false;
   if (!member.expires_at) return true;
@@ -89,6 +131,7 @@ function serializeMember(member) {
     active,
     tier: "super",
     tierLabel: "超级会员",
+    username: member.username,
     planType: member.plan_type,
     planLabel: PLAN_LABELS[member.plan_type] || "超级会员",
     codeHint: member.code_hint,
@@ -162,7 +205,7 @@ async function getMemberFromRequest(request, env) {
   const tokenHash = await sha256(token);
   const member = await env.DB
     .prepare(`
-      SELECT m.id, m.code_hint, m.plan_type, m.status, m.activated_at, m.expires_at,
+      SELECT m.id, m.username, m.code_hint, m.plan_type, m.status, m.activated_at, m.expires_at,
              s.id AS session_id
       FROM member_sessions s
       JOIN members m ON m.id = s.member_id
@@ -246,14 +289,23 @@ async function recordAuthAttempt(request, env, success) {
     .run();
 }
 
-async function memberLogin(request, env) {
+async function memberRegister(request, env) {
   if (request.method !== "POST") return json({ success: false, message: "仅支持 POST 请求" }, 405);
   if (!isSameOrigin(request)) return json({ success: false, message: "请求来源不正确" }, 403);
 
   const body = await readJson(request);
   const code = normalizeCode(body?.code);
+  const username = normalizeUsername(body?.username);
+  const usernameNormalized = username.toLocaleLowerCase("zh-CN");
+  const password = body?.password;
   if (!code || code.length < 16 || code.length > 64) {
     return json({ success: false, message: "请输入有效的会员激活码" }, 400);
+  }
+  if (!isValidUsername(username)) {
+    return json({ success: false, message: "用户名仅支持中文、字母或数字，最多 6 个字符" }, 400);
+  }
+  if (!isValidPassword(password)) {
+    return json({ success: false, message: "密码需为 6-64 位数字、字母或标点符号，不能包含空格" }, 400);
   }
 
   try {
@@ -262,9 +314,18 @@ async function memberLogin(request, env) {
     }
 
     const codeHash = await sha256(code);
+    const usernameExists = await env.DB
+      .prepare("SELECT 1 FROM members WHERE username_normalized = ? LIMIT 1")
+      .bind(usernameNormalized)
+      .first();
+    if (usernameExists) {
+      await recordAuthAttempt(request, env, false);
+      return json({ success: false, message: "该用户名已被使用，请换一个用户名" }, 409);
+    }
+
     let member = await env.DB
       .prepare(`
-        SELECT id, code_hint, plan_type, status, activated_at, expires_at
+        SELECT id, username, code_hint, plan_type, status, activated_at, expires_at
         FROM members
         WHERE login_code_hash = ?
         LIMIT 1
@@ -272,7 +333,30 @@ async function memberLogin(request, env) {
       .bind(codeHash)
       .first();
 
-    if (!member) {
+    const salt = randomToken(16);
+    const passwordHash = await hashPassword(password, salt);
+
+    if (member) {
+      if (member.username) {
+        await recordAuthAttempt(request, env, false);
+        return json({ success: false, message: "该激活码已经创建过账号，请直接使用用户名和密码登录" }, 409);
+      }
+
+      const claimed = await env.DB
+        .prepare(`
+          UPDATE members
+          SET username = ?, username_normalized = ?, password_hash = ?, password_salt = ?,
+              password_iterations = ?, updated_at = ?
+          WHERE id = ? AND username IS NULL
+        `)
+        .bind(username, usernameNormalized, passwordHash, salt, PASSWORD_ITERATIONS, new Date().toISOString(), member.id)
+        .run();
+      if (Number(claimed.meta?.changes || 0) !== 1) {
+        await recordAuthAttempt(request, env, false);
+        return json({ success: false, message: "该激活码已经创建过账号，请直接登录" }, 409);
+      }
+      member.username = username;
+    } else {
       const activation = await env.DB
         .prepare(`
           SELECT id, code_hint, plan_type, duration_days
@@ -299,12 +383,14 @@ async function memberLogin(request, env) {
           env.DB
             .prepare(`
               INSERT INTO members
-                (id, login_code_hash, code_hint, plan_type, status, activated_at, expires_at, created_at, updated_at)
-              SELECT ?, ?, ?, ?, 'active', ?, ?, ?, ?
+                (id, login_code_hash, username, username_normalized, password_hash, password_salt,
+                 password_iterations, code_hint, plan_type, status, activated_at, expires_at, created_at, updated_at)
+              SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?
               FROM member_activation_codes
               WHERE id = ? AND status = 'unused'
             `)
-            .bind(memberId, codeHash, activation.code_hint, activation.plan_type, now.toISOString(), expiresAt, now.toISOString(), now.toISOString(), activation.id),
+            .bind(memberId, codeHash, username, usernameNormalized, passwordHash, salt, PASSWORD_ITERATIONS,
+              activation.code_hint, activation.plan_type, now.toISOString(), expiresAt, now.toISOString(), now.toISOString(), activation.id),
           env.DB
             .prepare(`
               UPDATE member_activation_codes
@@ -317,32 +403,26 @@ async function memberLogin(request, env) {
         ]);
 
         if (Number(activationResults[0]?.meta?.changes || 0) !== 1 || Number(activationResults[1]?.meta?.changes || 0) !== 1) {
-          member = await env.DB
-            .prepare(`
-              SELECT id, code_hint, plan_type, status, activated_at, expires_at
-              FROM members WHERE login_code_hash = ? LIMIT 1
-            `)
-            .bind(codeHash)
-            .first();
-          if (!member) {
-            await recordAuthAttempt(request, env, false);
-            return json({ success: false, message: "该激活码已被使用，请使用首次激活的会员码登录" }, 409);
-          }
+          await recordAuthAttempt(request, env, false);
+          return json({ success: false, message: "该激活码已被使用，请使用已创建的账号登录" }, 409);
         }
       } catch (error) {
-        member = await env.DB
+        const existingMember = await env.DB
           .prepare(`
-            SELECT id, code_hint, plan_type, status, activated_at, expires_at
+            SELECT id, username, code_hint, plan_type, status, activated_at, expires_at
             FROM members WHERE login_code_hash = ? LIMIT 1
           `)
           .bind(codeHash)
           .first();
-        if (!member) throw error;
+        if (!existingMember) throw error;
+        await recordAuthAttempt(request, env, false);
+        return json({ success: false, message: "该激活码已被使用，请使用已创建的账号登录" }, 409);
       }
 
       if (!member) {
         member = {
           id: memberId,
+          username,
           code_hint: activation.code_hint,
           plan_type: activation.plan_type,
           status: "active",
@@ -363,8 +443,64 @@ async function memberLogin(request, env) {
       "Set-Cookie": sessionCookie(token)
     });
   } catch (error) {
+    if (String(error?.message || "").includes("members.username_normalized")) {
+      return json({ success: false, message: "该用户名已被使用，请换一个用户名" }, 409);
+    }
+    console.error("Member registration failed", error);
+    return json({ success: false, message: "会员注册服务暂不可用，请稍后再试" }, 503);
+  }
+}
+
+async function memberLogin(request, env) {
+  if (request.method !== "POST") return json({ success: false, message: "仅支持 POST 请求" }, 405);
+  if (!isSameOrigin(request)) return json({ success: false, message: "请求来源不正确" }, 403);
+
+  const body = await readJson(request);
+  const username = normalizeUsername(body?.username);
+  const password = body?.password;
+  if (!isValidUsername(username) || !isValidPassword(password)) {
+    return json({ success: false, message: "用户名或密码不正确" }, 400);
+  }
+
+  try {
+    if (await isRateLimited(request, env)) {
+      return json({ success: false, message: "尝试次数过多，请15分钟后再试" }, 429);
+    }
+
+    const member = await env.DB
+      .prepare(`
+        SELECT id, username, password_hash, password_salt, password_iterations,
+               code_hint, plan_type, status, activated_at, expires_at
+        FROM members
+        WHERE username_normalized = ?
+        LIMIT 1
+      `)
+      .bind(username.toLocaleLowerCase("zh-CN"))
+      .first();
+
+    if (!member || !member.password_hash || !member.password_salt) {
+      await recordAuthAttempt(request, env, false);
+      return json({ success: false, message: "用户名或密码不正确" }, 403);
+    }
+
+    const passwordHash = await hashPassword(password, member.password_salt, Number(member.password_iterations || PASSWORD_ITERATIONS));
+    if (!hashesMatch(passwordHash, member.password_hash)) {
+      await recordAuthAttempt(request, env, false);
+      return json({ success: false, message: "用户名或密码不正确" }, 403);
+    }
+    if (member.status === "disabled") {
+      await recordAuthAttempt(request, env, false);
+      return json({ success: false, message: "该会员已被停用，请联系店铺客服" }, 403);
+    }
+
+    const token = await createSession(env, member.id);
+    await recordAuthAttempt(request, env, true);
+    return json({ success: true, member: serializeMember(member) }, 200, {
+      "Set-Cookie": sessionCookie(token)
+    });
+  } catch (error) {
     console.error("Member login failed", error);
-    return json({ success: false, message: "会员服务暂不可用，请稍后再试" }, 503);
+    return json({ success: false, message: "会员登录服务暂不可用，请稍后再试" }, 503);
   }
 }
 
@@ -482,6 +618,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/verify-code") return verifyCode(request, env);
+    if (url.pathname === "/api/member/register") return memberRegister(request, env);
     if (url.pathname === "/api/member/login") return memberLogin(request, env);
     if (url.pathname === "/api/member/me") return memberMe(request, env);
     if (url.pathname === "/api/member/logout") return memberLogout(request, env);

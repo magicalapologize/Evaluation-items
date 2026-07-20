@@ -45,7 +45,8 @@ button, input { font: inherit; }
 .auth-card h2 { margin: 26px 0 10px; font-size: 32px; letter-spacing: -.04em; }
 .auth-card p { margin: 0; color: #9099b7; font-size: 13px; line-height: 1.7; }
 .auth-card label { display: block; margin: 28px 0 9px; color: #9da7c6; font-size: 11px; }
-.auth-card input { width: 100%; height: 54px; padding: 0 16px; border: 1px solid rgba(163,174,224,.2); border-radius: 12px; outline: 0; color: var(--ink); background: rgba(4,7,18,.72); font-family: monospace; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; }
+.auth-card input { width: 100%; height: 54px; padding: 0 16px; border: 1px solid rgba(163,174,224,.2); border-radius: 12px; outline: 0; color: var(--ink); background: rgba(4,7,18,.72); font-size: 13px; }
+.auth-card .code-input { font-family: monospace; letter-spacing: .05em; text-transform: uppercase; }
 .auth-card input::placeholder { color: #505873; text-transform: none; }
 .auth-card input:focus { border-color: rgba(57,216,242,.54); box-shadow: 0 0 0 4px rgba(57,216,242,.06); }
 .auth-card button, .all-tests-btn { width: 100%; height: 52px; margin-top: 14px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,.14); border-radius: 12px; color: white; background: linear-gradient(135deg, #8157f2, #6176f8 58%, #35c8e5); font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 15px 38px rgba(91,89,238,.22); }
@@ -53,6 +54,10 @@ button, input { font: inherit; }
 .auth-message { min-height: 22px; margin-top: 10px !important; color: #e38eae !important; }
 .auth-message.success { color: #75e4d1 !important; }
 .auth-card small { display: block; margin-top: 12px; color: #626b89; font-size: 10px; text-align: center; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 24px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: rgba(4,7,18,.55); }
+.auth-card .auth-tab { height: 38px; margin: 0; border: 0; color: #77809e; background: transparent; box-shadow: none; font-size: 12px; }
+.auth-card .auth-tab.is-active { color: #f5f2ff; background: linear-gradient(135deg, rgba(129,87,242,.38), rgba(53,200,229,.15)); }
+#register-form label + input, #login-form label + input { margin-bottom: 0; }
 .member-welcome { margin-bottom: 24px !important; }
 .member-detail { margin: 0; border-top: 1px solid var(--line); }
 .member-detail div { padding: 14px 0; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); }
