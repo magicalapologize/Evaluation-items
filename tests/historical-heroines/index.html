@@ -274,6 +274,20 @@
       ["担当", "最后一问", "如果只能带走一种能力，你会选？", ["看见更大的局", "在风浪里稳住自己", "让不同的人愿意一起走", "把未知变成新的可能"]]
     ];
 
+    const SCORE_KEYS = ["vision", "reserve", "resolve", "bond", "venture", "craft"];
+    const OPTION_DIMENSIONS = [
+      "VSBE", "VSBE", "CSBE", "VSBE", "VSBE", "VSBE",
+      "CSBE", "VSBE", "CSBE", "CSBR", "CSBE", "CSBE",
+      "VSBE", "CSBR", "CSBE", "VSBE", "CSBE", "VSBE",
+      "VSBE", "VSBE", "VSBE", "VSBR", "VSBE", "VSBE",
+      "VSBR", "CSRE", "CSBE", "VSBE", "VSBE", "VSBE"
+    ];
+    const DIMENSION_BY_CODE = { V: "vision", S: "reserve", R: "resolve", B: "bond", E: "venture", C: "craft" };
+    const DIMENSION_OPPORTUNITIES = OPTION_DIMENSIONS.reduce((counts, mapping) => {
+      [...mapping].forEach((code) => { counts[DIMENSION_BY_CODE[code]] += 1; });
+      return counts;
+    }, Object.fromEntries(SCORE_KEYS.map((key) => [key, 0])));
+
     const state = { index: 0, answers: [], lastResult: null };
     const $ = (id) => document.getElementById(id);
     function showScreen(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active")); $(id).classList.add("active"); window.scrollTo({ top: 0, behavior: "smooth" }); }
@@ -283,11 +297,33 @@
       $("answer-list").innerHTML = answers.map((answer, index) => `<button class="answer-btn${state.answers[state.index] === index ? " selected" : ""}" type="button" data-answer="${index}"><span class="letter">${String.fromCharCode(65 + index)}</span><span class="answer-text">${answer}</span></button>`).join(""); $("prev-btn").disabled = state.index === 0;
       document.querySelectorAll("[data-answer]").forEach((button) => button.addEventListener("click", () => { state.answers[state.index] = Number(button.dataset.answer); button.classList.add("selected"); setTimeout(() => { if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else { renderResult(); showScreen("result-screen"); } }, 120); }));
     }
-    function calculateScores() { const keys = ["vision", "reserve", "resolve", "bond", "venture", "craft"]; return state.answers.reduce((scores, answerIndex, questionIndex) => { scores[keys[(questionIndex + answerIndex) % keys.length]] += 1; return scores; }, { vision: 0, reserve: 0, resolve: 0, bond: 0, venture: 0, craft: 0 }); }
-    function resultKey(scores) { const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]); return `${ranked[0][0]}${ranked[0][1] - ranked[1][1] >= 4 ? "_prime" : ""}`; }
-    function relativeScore(score, scores) { const values = Object.values(scores); const min = Math.min(...values); const max = Math.max(...values); if (max === min) return 60; return Math.round(36 + ((score - min) / (max - min)) * 48); }
+    function calculateScores() {
+      const rawScores = Object.fromEntries(SCORE_KEYS.map((key) => [key, 0]));
+      state.answers.forEach((answerIndex, questionIndex) => {
+        const code = OPTION_DIMENSIONS[questionIndex][answerIndex];
+        rawScores[DIMENSION_BY_CODE[code]] += 1;
+      });
+      return rawScores;
+    }
+    function standardize(values) { const mean = values.reduce((sum, value) => sum + value, 0) / values.length; const deviation = Math.sqrt(values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length) || 1; return values.map((value) => (value - mean) / deviation); }
+    function standardizedAnswerSignals(scores) {
+      return standardize(SCORE_KEYS.map((key) => {
+        const opportunities = DIMENSION_OPPORTUNITIES[key];
+        const expected = opportunities / 4;
+        const deviation = Math.sqrt(opportunities * .25 * .75);
+        return (scores[key] - expected) / deviation;
+      }));
+    }
+    function resultKey(scores) {
+      const answerProfile = standardizedAnswerSignals(scores);
+      return Object.entries(PROFILES).map(([key, profile]) => {
+        const heroineProfile = standardize(profile);
+        const distance = answerProfile.reduce((sum, value, index) => sum + (value - heroineProfile[index]) ** 2, 0);
+        return [key, distance];
+      }).sort((a, b) => a[1] - b[1])[0][0];
+    }
     const PROFILES = { vision: [92,58,72,76,62,78], vision_prime: [86,55,90,72,84,65], reserve: [62,92,58,72,45,82], reserve_prime: [74,88,62,90,58,76], resolve: [76,48,94,58,74,64], resolve_prime: [70,54,96,60,88,58], bond: [68,72,54,93,56,76], bond_prime: [80,70,64,96,62,78], venture: [74,50,76,70,92,48], venture_prime: [78,56,84,68,96,52], craft: [72,80,62,82,54,94], craft_prime: [84,68,78,88,62,96] };
-    function buildDimensions(scores, key) { return DIMENSIONS.map(([scoreKey, name, left, right], index) => { const value = Math.round(PROFILES[key][index] * .8 + relativeScore(scores[scoreKey], scores) * .2); return [name, value, left, right]; }); }
+    function buildDimensions(scores, key) { const signals = standardizedAnswerSignals(scores); return DIMENSIONS.map(([scoreKey, name, left, right], index) => { const answerValue = Math.max(36, Math.min(84, Math.round(60 + signals[index] * 12))); const value = Math.round(PROFILES[key][index] * .8 + answerValue * .2); return [name, value, left, right]; }); }
     function renderResult() {
       const scores = calculateScores(); const key = resultKey(scores); const result = TYPES[key]; const dimensions = buildDimensions(scores, key); state.lastResult = { result, scores, key, dimensions };
       $("result-icon").textContent = result.icon; $("result-name").textContent = result.name; $("result-alias").textContent = result.alias; $("result-quote").textContent = `“${result.quote}”`; $("trait-tags").innerHTML = result.tags.map((tag) => `<span class="chip">${tag}</span>`).join(""); $("portrait").textContent = result.portrait; $("strength").textContent = result.strength; $("risk").textContent = result.risk; $("fit").textContent = result.fit; $("advice-list").innerHTML = result.advices.map((advice) => `<div class="advice-item">${advice}</div>`).join(""); $("partner-note").textContent = result.note;
