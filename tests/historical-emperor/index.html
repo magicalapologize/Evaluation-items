@@ -469,6 +469,29 @@ const QUESTIONS = [
       ["analyst", "制度收束", "弹性", "制度"]
     ];
 
+    const SIGNAL_KEYS = {
+      S: "strategist",
+      T: "tactician",
+      C: "commander",
+      D: "diplomat",
+      I: "innovator",
+      A: "analyst"
+    };
+
+    // 每个选项的首字母为主信号（3分），第二个字母为辅助信号（1分）。
+    const OPTION_SIGNALS = [
+      ["SA", "TS", "CD", "IC"], ["S", "TA", "DS", "IC"], ["SA", "T", "D", "IC"],
+      ["SA", "TA", "DC", "IC"], ["SA", "T", "D", "IC"], ["S", "T", "D", "I"],
+      ["AS", "TD", "D", "IA"], ["S", "TA", "D", "I"], ["AS", "T", "D", "I"],
+      ["AS", "TD", "D", "IC"], ["AS", "TD", "DC", "I"], ["AC", "TD", "DA", "I"],
+      ["AS", "TA", "D", "I"], ["AC", "T", "DA", "I"], ["AS", "T", "D", "IC"],
+      ["A", "TD", "D", "IC"], ["AS", "T", "D", "I"], ["AS", "T", "D", "I"],
+      ["SA", "TA", "D", "IC"], ["S", "TA", "D", "I"], ["SA", "T", "D", "I"],
+      ["AS", "T", "D", "I"], ["AS", "T", "D", "I"], ["SA", "T", "D", "I"],
+      ["SA", "TA", "D", "IC"], ["SA", "T", "D", "I"], ["AS", "T", "D", "IC"],
+      ["AS", "T", "D", "IC"], ["AS", "TD", "D", "I"], ["S", "T", "D", "I"]
+    ];
+
     const EMPEROR_PROFILES = {
       strategist: [90, 58, 72, 88, 58, 76],
       strategist_prime: [86, 52, 88, 75, 82, 68],
@@ -483,6 +506,11 @@ const QUESTIONS = [
       analyst: [73, 79, 66, 62, 48, 94],
       analyst_prime: [84, 73, 82, 54, 62, 92]
     };
+
+    const DIMENSION_MAX_SCORES = Object.fromEntries(DIMENSIONS.map(([key]) => [
+      key,
+      OPTION_SIGNALS.reduce((total, options) => total + Math.max(...options.map((signal) => signalScore(signal, key))), 0)
+    ]));
 
     const state = { index: 0, answers: [], lastResult: null };
     const $ = (id) => document.getElementById(id);
@@ -527,34 +555,49 @@ const QUESTIONS = [
       });
     }
 
+    function signalScore(signal, key) {
+      return [...signal].reduce((score, code, index) => score + (SIGNAL_KEYS[code] === key ? (index === 0 ? 3 : 1) : 0), 0);
+    }
+
     function calculateScores() {
-      const keys = ["strategist", "tactician", "commander", "diplomat", "innovator", "analyst"];
       return state.answers.reduce((scores, answerIndex, questionIndex) => {
-        const key = keys[(questionIndex + answerIndex) % keys.length];
-        scores[key] += 1;
+        const signal = OPTION_SIGNALS[questionIndex][answerIndex];
+        Object.keys(scores).forEach((key) => { scores[key] += signalScore(signal, key); });
         return scores;
       }, { strategist: 0, tactician: 0, commander: 0, diplomat: 0, innovator: 0, analyst: 0 });
     }
 
-    function resultKey(scores) {
-      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-      return `${ranked[0][0]}${ranked[0][1] - ranked[1][1] >= 4 ? "_prime" : ""}`;
+    function dimensionValues(scores) {
+      return normalizeShape(DIMENSIONS.map(([key]) => scores[key])).map(Math.round);
     }
 
-    function relativeScore(score, scores) {
-      const values = Object.values(scores);
+    function matchingValues(scores) {
+      return DIMENSIONS.map(([key]) => 35 + scores[key] / DIMENSION_MAX_SCORES[key] * 60);
+    }
+
+    function normalizeShape(values) {
       const min = Math.min(...values);
       const max = Math.max(...values);
-      if (max === min) return 60;
-      return Math.round(36 + ((score - min) / (max - min)) * 48);
+      if (max === min) return values.map(() => 60);
+      return values.map((value) => 35 + (value - min) / (max - min) * 60);
     }
 
-    function buildDimensions(scores, key) {
-      const profile = EMPEROR_PROFILES[key];
+    function resultKey(scores) {
+      const userShape = normalizeShape(matchingValues(scores));
+      const ranked = Object.entries(EMPEROR_PROFILES).map(([key, profile]) => ({
+        key,
+        distance: normalizeShape(profile).reduce((total, value, index) => total + (userShape[index] - value) ** 2, 0)
+      })).sort((a, b) => a.distance - b.distance);
+      const tied = ranked.filter((item) => Math.abs(item.distance - ranked[0].distance) < .000001);
+      if (tied.length === 1) return tied[0].key;
+      const fingerprint = state.answers.reduce((total, answer, index) => total + (index + 1) * (answer + 1), 0);
+      return tied[fingerprint % tied.length].key;
+    }
+
+    function buildDimensions(scores) {
+      const values = dimensionValues(scores);
       return DIMENSIONS.map(([scoreKey, name, left, right], index) => {
-        const answerSignal = relativeScore(scores[scoreKey], scores);
-        const value = Math.round(profile[index] * .8 + answerSignal * .2);
-        return [name, value, left, right];
+        return [name, values[index], left, right];
       });
     }
 
@@ -562,7 +605,7 @@ const QUESTIONS = [
       const scores = calculateScores();
       const key = resultKey(scores);
       const result = TYPES[key];
-      const dimensions = buildDimensions(scores, key);
+      const dimensions = buildDimensions(scores);
       state.lastResult = { result, scores, key, dimensions };
       $("result-icon").textContent = result.icon;
       $("result-name").textContent = result.name;
