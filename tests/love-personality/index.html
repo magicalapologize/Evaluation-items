@@ -529,12 +529,56 @@
       ["长期关系", "爱的确认", "很多年后，你最希望伴侣怎样形容你？", ["是一个愿意沟通、始终可靠的人", "是最懂我、也最温暖我的人", "让我安心做自己，也一直在身边的人", "和他在一起，人生始终有光和新鲜感"]]
     ];
 
-    const ANSWER_SCORES = [
-      { expressive: 2, close: 0, steady: 2 },
-      { expressive: -2, close: 2, steady: 1 },
-      { expressive: -1, close: -2, steady: 1 },
-      { expressive: 1, close: 0, steady: -2 }
+    const DIMENSIONS = ["expressive", "close", "steady"];
+
+    // Each row matches one question; each option stores [expression, closeness, rhythm].
+    const QUESTION_SCORES = [
+      [[ 2, 1, 0], [-2, 1, 1], [-1,-1,-2], [ 2, 0,-1]],
+      [[ 2, 2, 0], [-2, 2, 0], [-1,-2, 1], [ 1,-1,-1]],
+      [[ 2, 1, 2], [-2, 1, 2], [-1,-2,-2], [ 1, 1,-2]],
+      [[ 1, 0, 2], [-1, 2, 1], [ 0,-1,-2], [ 2, 1,-2]],
+      [[ 2, 1, 2], [-2, 1, 1], [-1,-1,-1], [ 1, 2,-2]],
+      [[ 2, 0, 1], [-2, 1, 1], [-1,-2, 0], [ 0,-2,-2]],
+      [[ 1, 2, 2], [ 0, 2, 1], [ 0,-2, 0], [ 1, 0,-2]],
+      [[ 2, 1, 0], [-2, 2, 1], [ 0,-2, 1], [ 1, 1,-2]],
+      [[ 1, 1, 2], [ 0, 2, 1], [ 0,-2, 1], [ 1, 1,-2]],
+      [[ 1, 2, 2], [ 0, 2, 0], [ 0,-2, 1], [ 0,-1,-2]],
+      [[ 1, 1, 2], [-1, 2, 1], [ 0,-1,-1], [ 1, 1,-2]],
+      [[ 2, 1, 2], [-1, 2, 1], [ 0,-1, 0], [ 1, 0,-2]],
+      [[ 2, 0, 2], [-1, 1, 1], [ 0,-2, 0], [ 1, 0,-1]],
+      [[ 2, 1, 1], [-1, 2, 0], [ 0,-2, 1], [ 1, 1,-2]],
+      [[ 2, 0, 2], [ 0, 2, 1], [-1,-2, 1], [ 0,-1,-2]],
+      [[ 2, 0, 1], [-2, 1, 0], [ 0,-2, 1], [ 1,-1,-1]],
+      [[ 1, 0, 2], [-1, 2, 1], [ 0,-2, 0], [ 1, 0,-2]],
+      [[ 2, 0, 2], [-2, 2, 1], [-1,-2, 0], [ 0, 0,-2]],
+      [[ 2, 1, 1], [-2, 2, 0], [ 0,-2, 2], [ 2, 0,-2]],
+      [[ 2,-1, 2], [-1, 2, 0], [ 0,-2, 1], [ 0,-1,-2]],
+      [[ 2, 0, 2], [-2, 1, 1], [ 0,-1, 2], [ 1, 1,-2]],
+      [[ 1, 1, 2], [-1, 2, 1], [ 0,-2, 0], [ 1, 0,-2]],
+      [[ 2,-1, 2], [-2, 1, 1], [-1,-2, 0], [ 2, 1,-2]],
+      [[ 2, 0, 2], [ 0, 2, 1], [-1,-2, 1], [ 1, 1,-2]],
+      [[ 1, 0, 2], [ 0, 2, 2], [ 0,-2, 1], [ 1, 1,-2]],
+      [[ 2, 0, 2], [-1, 2, 1], [ 0,-2, 1], [ 1, 0,-2]],
+      [[ 1, 1, 2], [ 0, 2, 1], [ 0,-2, 0], [ 1, 1,-2]],
+      [[ 2, 0, 2], [-1, 2, 1], [ 0,-2, 1], [ 1,-1,-2]],
+      [[ 1, 0, 2], [-1, 2, 1], [ 0,-2, 1], [ 1, 1,-1]],
+      [[ 2, 0, 2], [-1, 2, 1], [ 0,-2, 1], [ 1, 1,-2]]
     ];
+
+    const QUESTION_MEANS = QUESTION_SCORES.map((options) =>
+      DIMENSIONS.map((_, dimensionIndex) =>
+        options.reduce((sum, option) => sum + option[dimensionIndex], 0) / options.length
+      )
+    );
+
+    const DIMENSION_SCALES = DIMENSIONS.map((_, dimensionIndex) => Math.sqrt(
+      QUESTION_SCORES.reduce((total, options, questionIndex) => {
+        const mean = QUESTION_MEANS[questionIndex][dimensionIndex];
+        return total + options.reduce((sum, option) =>
+          sum + Math.pow(option[dimensionIndex] - mean, 2), 0
+        ) / options.length;
+      }, 0)
+    ));
 
     const state = { index: 0, answers: [], lastResult: null };
     const $ = (id) => document.getElementById(id);
@@ -580,30 +624,57 @@
     }
 
     function calculateScores() {
-      return state.answers.reduce((scores, answerIndex) => {
-        const score = ANSWER_SCORES[answerIndex];
-        scores.expressive += score.expressive;
-        scores.close += score.close;
-        scores.steady += score.steady;
+      return state.answers.reduce((scores, answerIndex, questionIndex) => {
+        const score = QUESTION_SCORES[questionIndex][answerIndex];
+        DIMENSIONS.forEach((dimension, dimensionIndex) => {
+          scores[dimension] += score[dimensionIndex] - QUESTION_MEANS[questionIndex][dimensionIndex];
+        });
         return scores;
       }, { expressive: 0, close: 0, steady: 0 });
     }
 
-    function resultKey(scores) {
-      const expression = scores.expressive >= 0 ? "expressive" : "reserved";
-      const distance = scores.close >= 0 ? "close" : "independent";
-      const rhythm = scores.steady >= 0 ? "steady" : "spontaneous";
+    function normalizedProfile(scores) {
+      return Object.fromEntries(DIMENSIONS.map((dimension, dimensionIndex) => [
+        dimension,
+        scores[dimension] / DIMENSION_SCALES[dimensionIndex]
+      ]));
+    }
+
+    function answerFingerprint() {
+      return state.answers.reduce((hash, answerIndex, questionIndex) =>
+        Math.imul(hash ^ (answerIndex + 1 + questionIndex * 7), 16777619) >>> 0, 2166136261
+      );
+    }
+
+    function resultKey(profile) {
+      const fingerprint = answerFingerprint();
+      const direction = (value, dimensionIndex) => {
+        if (Math.abs(value) > 1e-9) return value >= 0;
+        return ((fingerprint >>> dimensionIndex) & 1) === 0;
+      };
+      const expression = direction(profile.expressive, 0) ? "expressive" : "reserved";
+      const distance = direction(profile.close, 1) ? "close" : "independent";
+      const rhythm = direction(profile.steady, 2) ? "steady" : "spontaneous";
       return `${expression}_${distance}_${rhythm}`;
     }
 
-    function scorePercent(score) {
-      return Math.round((score + 60) / 120 * 100);
+    function profilePercent(value) {
+      return Math.max(5, Math.min(95, Math.round(50 + value * 16)));
+    }
+
+    function resultDimensions(profile) {
+      return [
+        ["表达方式", profilePercent(profile.expressive), "含蓄行动", "直接表达"],
+        ["亲密距离", profilePercent(profile.close), "独立空间", "高频靠近"],
+        ["关系节奏", profilePercent(profile.steady), "随性体验", "稳定经营"]
+      ];
     }
 
     function renderResult() {
       const scores = calculateScores();
-      const result = TYPES[resultKey(scores)];
-      state.lastResult = { result, scores };
+      const profile = normalizedProfile(scores);
+      const result = TYPES[resultKey(profile)];
+      state.lastResult = { result, profile };
       $("result-icon").textContent = result.icon;
       $("result-name").textContent = result.name;
       $("result-alias").textContent = result.alias;
@@ -616,11 +687,7 @@
       $("advice-list").innerHTML = result.advices.map((advice) => `<div class="advice-item">${advice}</div>`).join("");
       $("partner-note").textContent = result.partner;
 
-      const dimensions = [
-        ["表达方式", scorePercent(scores.expressive), "含蓄行动", "直接表达"],
-        ["亲密距离", scorePercent(scores.close), "独立空间", "高频靠近"],
-        ["关系节奏", scorePercent(scores.steady), "随性体验", "稳定经营"]
-      ];
+      const dimensions = resultDimensions(profile);
       $("dimension-list").innerHTML = dimensions.map(([name, value, left, right]) => `
         <div>
           <div class="dimension-head"><span>${name}</span><span>${value}% 偏向${value >= 50 ? right : left}</span></div>
@@ -633,7 +700,7 @@
     }
 
     async function createPosterImage() {
-      const { result, scores } = state.lastResult;
+      const { result, profile } = state.lastResult;
       const qrImage = await loadPosterImage("../../assets/product-qrs/love-personality.png");
       const canvas = document.createElement("canvas");
       const scale = 2;
@@ -659,11 +726,7 @@
       drawText(ctx, result.alias, width / 2, 418, 23, "#8f4f5f", "center", "700");
       drawWrappedTextBlock(ctx, `“${result.quote}”`, width / 2, 485, 650, 32, 21, "#796b6e", "center");
 
-      const dimensions = [
-        ["表达方式", scorePercent(scores.expressive), "含蓄行动", "直接表达"],
-        ["亲密距离", scorePercent(scores.close), "独立空间", "高频靠近"],
-        ["关系节奏", scorePercent(scores.steady), "随性体验", "稳定经营"]
-      ];
+      const dimensions = resultDimensions(profile);
       drawRoundRect(ctx, 90, 555, 720, 300, 22, "#fff3ef", "#ead4d4");
       drawText(ctx, "我的三条相处信号", 125, 610, 28, "#352b2d", "left", "700");
       dimensions.forEach(([name, value, left, right], index) => {

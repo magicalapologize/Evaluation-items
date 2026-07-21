@@ -2338,6 +2338,45 @@
       }
     ];
 
+    const TYPE_KEYS = Object.keys(TYPES);
+
+    // Normalize each result by how often it is available in the question bank.
+    const TYPE_EXPECTATIONS = Object.fromEntries(TYPE_KEYS.map((key) => {
+      const optionProbabilities = QUESTIONS.map((question) =>
+        question.answers.filter((answer) => answer[2] === key).length / question.answers.length
+      );
+      const mean = optionProbabilities.reduce((sum, probability) => sum + probability, 0);
+      const scale = Math.sqrt(optionProbabilities.reduce((sum, probability) =>
+        sum + probability * (1 - probability), 0
+      ));
+      return [key, { mean, scale }];
+    }));
+
+    const PERSONA_PREFERENCES = {
+      steady: ["data", "template"],
+      content: ["content", "community"],
+      tech: ["app", "ai", "template"],
+      random: []
+    };
+
+    const PERSONA_PREFERENCE_MARGINS = {
+      steady: .05,
+      content: .15,
+      tech: .15,
+      random: 0
+    };
+
+    const TYPE_BASELINE_ADJUSTMENTS = {
+      data: -.12,
+      content: -.05,
+      ai: -.08,
+      template: 0,
+      app: 0,
+      service: 0,
+      community: 0,
+      local: 0
+    };
+
     const state = {
       persona: null,
       index: 0,
@@ -2407,41 +2446,59 @@
     }
 
     function getScores() {
-      const scores = Object.fromEntries(Object.keys(TYPES).map((key) => [key, 0]));
+      const rawCounts = Object.fromEntries(TYPE_KEYS.map((key) => [key, 0]));
       state.answers.forEach((type) => {
-        if (scores[type] !== undefined) scores[type] += 1;
+        if (rawCounts[type] !== undefined) rawCounts[type] += 1;
       });
 
-      if (state.persona === "steady") {
-        scores.data += 0.4;
-        scores.template += 0.2;
-      }
-      if (state.persona === "content") {
-        scores.content += 0.4;
-      }
-      if (state.persona === "tech") {
-        scores.app += 0.3;
-        scores.ai += 0.3;
-      }
+      const scores = Object.fromEntries(TYPE_KEYS.map((key) => {
+        const { mean, scale } = TYPE_EXPECTATIONS[key];
+        return [key, (rawCounts[key] - mean) / scale + TYPE_BASELINE_ADJUSTMENTS[key]];
+      }));
 
-      return scores;
+      return { scores, rawCounts };
+    }
+
+    function answerFingerprint() {
+      return state.answers.reduce((hash, type, questionIndex) => {
+        const typeIndex = TYPE_KEYS.indexOf(type);
+        return Math.imul(hash ^ (typeIndex + 1 + questionIndex * 7), 16777619) >>> 0;
+      }, 2166136261);
     }
 
     function getResult() {
-      const scores = getScores();
-      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      const { scores, rawCounts } = getScores();
+      const fingerprint = answerFingerprint();
+      const scoreSorter = (a, b) => {
+        if (Math.abs(b[1] - a[1]) > 1e-9) return b[1] - a[1];
+        const aIndex = TYPE_KEYS.indexOf(a[0]);
+        const bIndex = TYPE_KEYS.indexOf(b[0]);
+        return ((fingerprint + aIndex) % TYPE_KEYS.length) - ((fingerprint + bIndex) % TYPE_KEYS.length);
+      };
+      const sorted = Object.entries(scores).sort(scoreSorter);
+      const preferences = PERSONA_PREFERENCES[state.persona] || [];
+      const preferenceMargin = PERSONA_PREFERENCE_MARGINS[state.persona] || 0;
+      const preferredCandidates = sorted.filter(([key, score]) =>
+        preferences.includes(key) && sorted[0][1] - score <= preferenceMargin
+      );
+      if (preferredCandidates.length) {
+        const preferred = preferredCandidates.sort(scoreSorter)[0];
+        const preferredIndex = sorted.findIndex(([key]) => key === preferred[0]);
+        sorted.splice(preferredIndex, 1);
+        sorted.unshift(preferred);
+      }
       const topKey = sorted[0][0];
       const secondKey = sorted[1][0];
-      const total = state.answers.length + 0.6;
-      const match = Math.max(79, Math.min(96, Math.round(76 + (scores[topKey] / total) * 35)));
-      return { key: topKey, secondKey, match, scores, sorted };
+      const lead = sorted[0][1] - sorted[1][1];
+      const match = Math.max(79, Math.min(96, Math.round(82 + sorted[0][1] * 2 + lead * 3)));
+      return { key: topKey, secondKey, match, scores, rawCounts, sorted };
     }
 
     function renderResult() {
-      const { key, secondKey, match, scores } = getResult();
+      const { key, secondKey, match, scores, rawCounts } = getResult();
       const result = TYPES[key];
       const second = TYPES[secondKey];
-      state.lastResult = { key, secondKey, match, scores };
+      state.lastResult = { key, secondKey, match, scores, rawCounts };
       const date = new Date();
       const dateText = `${String(date.getMonth() + 1).padStart(2, "0")}月${String(date.getDate()).padStart(2, "0")}日`;
       $("report-date").textContent = dateText;

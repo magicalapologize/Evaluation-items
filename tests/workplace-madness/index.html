@@ -519,17 +519,33 @@
       }
     };
 
+    const DIMENSIONS = ["visible", "rebel", "energy", "social"];
+
     const TYPE_DIMENSIONS = {
-      jellyfish: { visible: -.3, rebel: .03, energy: .23, social: -.3 },
-      peacock: { visible: 1.3, rebel: .37, energy: .5, social: 1.3 },
-      hedgehog: { visible: .23, rebel: .57, energy: 0, social: .23 },
-      robot: { visible: -.5, rebel: -.5, energy: .7, social: -.5 },
-      otter: { visible: -.4, rebel: .53, energy: -.27, social: -.4 },
-      astronaut: { visible: -.47, rebel: .13, energy: .07, social: -.47 },
-      cheetah: { visible: .6, rebel: 0, energy: .6, social: .6 },
-      ranter: { visible: .87, rebel: .53, energy: .27, social: .87 },
-      seal: { visible: 1.07, rebel: .33, energy: .47, social: 1.07 },
-      blackcat: { visible: -.4, rebel: .73, energy: -.47, social: -.4 }
+      jellyfish: { visible: -.8, rebel: -.4, energy: -.3, social: -.3 },
+      peacock: { visible: .9, rebel: .1, energy: .4, social: .8 },
+      hedgehog: { visible: .35, rebel: .95, energy: .15, social: -.25 },
+      robot: { visible: -.7, rebel: -.8, energy: .9, social: -.35 },
+      otter: { visible: -.4, rebel: .45, energy: -.5, social: -.35 },
+      astronaut: { visible: -.65, rebel: -.1, energy: -.8, social: -.55 },
+      cheetah: { visible: .15, rebel: 0, energy: 1, social: -.1 },
+      ranter: { visible: .85, rebel: .85, energy: .1, social: .45 },
+      seal: { visible: .5, rebel: -.1, energy: .2, social: 1 },
+      blackcat: { visible: -.5, rebel: .7, energy: 0, social: -1 }
+    };
+
+    // Small distance offsets keep equally plausible archetypes from swallowing rare results.
+    const TYPE_DISTANCE_BIAS = {
+      jellyfish: .245,
+      peacock: -.2,
+      hedgehog: -.12,
+      robot: -.42,
+      otter: .12,
+      astronaut: .01,
+      cheetah: .04,
+      ranter: -.235,
+      seal: .02,
+      blackcat: -.47
     };
 
     const QUESTIONS = [
@@ -569,12 +585,54 @@
       ["下班逃生", "终极宣言", "如果给你的打工状态配一句宣言，你选？", ["我可以稳定输出，但请尊重系统容量", "不是我脾气大，是离谱需要被指出", "活干完就行，别让班味占领人生", "世界以痛吻我，我先做成表情包"]]
     ];
 
-    const ANSWER_SCORES = [
-      { visible: -1, rebel: -1, energy: 1, social: -1 },
-      { visible: 1, rebel: 1, energy: 0, social: 1 },
-      { visible: -1, rebel: 1, energy: -1, social: -1 },
-      { visible: 2, rebel: 0, energy: 1, social: 2 }
+    // Each row matches one question; each option stores [visible, rebel, energy, social].
+    const QUESTION_SCORES = [
+      [[-1,-1, 1,-1], [ 1, 2, 0, 0], [-1, 1,-2,-1], [ 2, 0, 0, 2]],
+      [[-1, 0,-1,-2], [-1, 0, 2,-1], [-2,-1,-1,-1], [ 1, 0, 0, 2]],
+      [[-2,-1,-1,-1], [ 1, 2, 1,-1], [-2, 0,-2,-2], [ 2, 1, 0, 2]],
+      [[-1,-1, 2,-1], [ 1, 0, 0, 2], [ 1, 0, 2,-1], [-2, 0,-2,-2]],
+      [[-1,-1, 2,-1], [ 1, 2, 1,-1], [ 2, 1, 2, 1], [-1, 1,-1,-1]],
+      [[-1,-1, 2,-1], [-1, 0, 0,-2], [ 0, 0,-1, 0], [ 1, 0, 0, 2]],
+      [[-1,-1, 1,-1], [-2, 0,-2,-2], [ 2, 1, 0, 2], [ 1, 2, 1,-1]],
+      [[ 0, 0, 2,-1], [ 1, 0, 1, 0], [ 1, 1, 0,-1], [ 2, 0, 1, 2]],
+      [[ 0, 1, 2,-1], [-2,-1,-1,-1], [ 1, 2, 1,-1], [ 2, 1, 2, 2]],
+      [[-1,-1, 2,-1], [-1,-1, 1,-1], [ 1, 2, 1,-1], [ 2, 1, 1, 1]],
+      [[-1, 0, 0,-1], [ 1, 0, 0, 2], [ 1, 2, 1,-1], [-2,-1,-1,-1]],
+      [[-1,-1, 2,-1], [ 0, 0, 1, 2], [-1, 1,-1,-1], [-2, 0,-2,-2]],
+      [[-1,-1, 2,-1], [ 0, 0, 1, 0], [-1, 1, 1,-2], [ 2, 1, 0, 2]],
+      [[ 0, 0, 2,-1], [-1,-1, 1,-1], [ 1, 2, 1,-1], [ 1, 0, 2,-1]],
+      [[ 0, 1, 1,-1], [-1,-1, 0, 1], [ 1, 1, 1, 0], [ 1, 0, 1, 2]],
+      [[ 0, 1, 1,-1], [-2,-1,-1,-1], [ 1, 2, 0,-1], [ 2, 1, 0, 1]],
+      [[-1,-1, 1,-1], [ 1, 0, 0, 2], [-1, 0,-2,-1], [ 1, 0, 2,-1]],
+      [[ 0, 0, 2,-1], [-2,-1,-1,-1], [-1, 0, 1,-1], [ 1, 0, 2, 1]],
+      [[-1, 0, 1,-1], [ 1, 2, 1,-1], [-2,-1,-1,-1], [ 1, 0, 0, 1]],
+      [[-1, 2, 0,-2], [ 1, 2, 1,-1], [-1,-1, 1,-1], [ 2, 0, 0, 2]],
+      [[ 0, 2, 2,-1], [ 1, 2, 1,-1], [-2,-1,-1,-1], [ 1, 1, 1, 2]],
+      [[-2,-1,-1,-2], [ 2, 1, 0, 2], [-1, 0,-1,-2], [ 2, 1, 0, 2]],
+      [[ 0, 0, 1, 1], [ 1, 0, 0, 2], [-1, 0,-1,-2], [ 1, 0, 0, 2]],
+      [[ 0, 2, 1,-1], [ 2, 2, 0, 0], [-1, 0,-2,-2], [ 2, 2, 0, 1]],
+      [[-1, 1, 0,-2], [ 1, 0, 0, 2], [-1,-1, 1,-1], [ 2, 0, 1, 2]],
+      [[-1, 1, 0,-2], [-2,-1,-1,-1], [-1, 0, 1,-1], [ 2, 1, 0, 1]],
+      [[-1, 0,-1,-2], [ 1, 0, 0, 2], [ 0, 0, 1,-1], [-1, 1,-1,-1]],
+      [[-1, 1,-1,-2], [-1, 1, 0,-1], [ 2, 2, 0, 0], [ 0, 0,-1, 1]],
+      [[-1,-1, 1,-1], [ 1, 2, 1, 0], [ 1, 0, 0, 2], [-1, 1,-1,-1]],
+      [[-1,-1, 1,-1], [ 1, 2, 0, 0], [-1, 1, 0,-2], [ 2, 0, 0, 2]]
     ];
+
+    const QUESTION_MEANS = QUESTION_SCORES.map((options) =>
+      DIMENSIONS.map((_, dimensionIndex) =>
+        options.reduce((sum, option) => sum + option[dimensionIndex], 0) / options.length
+      )
+    );
+
+    const DIMENSION_SCALES = DIMENSIONS.map((_, dimensionIndex) => Math.sqrt(
+      QUESTION_SCORES.reduce((total, options, questionIndex) => {
+        const mean = QUESTION_MEANS[questionIndex][dimensionIndex];
+        return total + options.reduce((sum, option) =>
+          sum + Math.pow(option[dimensionIndex] - mean, 2), 0
+        ) / options.length;
+      }, 0)
+    ));
 
     const state = { index: 0, answers: [], lastResult: null };
     const $ = (id) => document.getElementById(id);
@@ -620,35 +678,61 @@
     }
 
     function calculateScores() {
-      return state.answers.reduce((scores, answerIndex) => {
-        const score = ANSWER_SCORES[answerIndex];
-        scores.visible += score.visible;
-        scores.rebel += score.rebel;
-        scores.energy += score.energy;
-        scores.social += score.social;
+      return state.answers.reduce((scores, answerIndex, questionIndex) => {
+        const score = QUESTION_SCORES[questionIndex][answerIndex];
+        DIMENSIONS.forEach((dimension, dimensionIndex) => {
+          scores[dimension] += score[dimensionIndex] - QUESTION_MEANS[questionIndex][dimensionIndex];
+        });
         return scores;
       }, { visible: 0, rebel: 0, energy: 0, social: 0 });
     }
 
-    function resultKey(scores) {
-      return Object.keys(TYPE_DIMENSIONS).reduce((bestKey, key) => {
+    function normalizedProfile(scores) {
+      return Object.fromEntries(DIMENSIONS.map((dimension, dimensionIndex) => [
+        dimension,
+        Math.max(-1.4, Math.min(1.4, scores[dimension] / DIMENSION_SCALES[dimensionIndex] / 2.1))
+      ]));
+    }
+
+    function answerFingerprint() {
+      return state.answers.reduce((hash, answerIndex, questionIndex) =>
+        Math.imul(hash ^ (answerIndex + 1 + questionIndex * 7), 16777619) >>> 0, 2166136261
+      );
+    }
+
+    function resultKey(profile) {
+      const fingerprint = answerFingerprint();
+      return Object.keys(TYPE_DIMENSIONS).reduce((best, key, typeIndex) => {
         const target = TYPE_DIMENSIONS[key];
-        const distance = Object.keys(target).reduce((total, dimension) => {
-          const normalizedScore = scores[dimension] / QUESTIONS.length;
-          return total + Math.pow(normalizedScore - target[dimension], 2);
-        }, 0);
-        return !bestKey || distance < bestKey.distance ? { key, distance } : bestKey;
+        const distance = DIMENSIONS.reduce((total, dimension) =>
+          total + Math.pow(profile[dimension] - target[dimension], 2), TYPE_DISTANCE_BIAS[key]
+        );
+        if (!best || distance < best.distance - 1e-9) return { key, distance, typeIndex };
+        if (Math.abs(distance - best.distance) < 1e-9 && (fingerprint + typeIndex) % 2 === 0) {
+          return { key, distance, typeIndex };
+        }
+        return best;
       }, null).key;
     }
 
-    function scorePercent(score) {
-      return Math.max(0, Math.min(100, Math.round((score + 60) / 120 * 100)));
+    function profilePercent(value) {
+      return Math.max(5, Math.min(95, Math.round(50 + value * 42)));
+    }
+
+    function resultDimensions(profile) {
+      return [
+        ["情绪可见度", profilePercent(profile.visible), "静音内耗", "全场直播"],
+        ["职场反骨值", profilePercent(profile.rebel), "配合运行", "边界开刺"],
+        ["行动电量", profilePercent(profile.energy), "节能蓄力", "高能冲刺"],
+        ["社交回血度", profilePercent(profile.social), "独处回血", "组团续命"]
+      ];
     }
 
     function renderResult() {
       const scores = calculateScores();
-      const result = TYPES[resultKey(scores)];
-      state.lastResult = { result, scores };
+      const profile = normalizedProfile(scores);
+      const result = TYPES[resultKey(profile)];
+      state.lastResult = { result, profile };
       $("result-icon").textContent = result.icon;
       $("result-name").textContent = result.name;
       $("result-alias").textContent = result.alias;
@@ -661,12 +745,7 @@
       $("advice-list").innerHTML = result.advices.map((advice) => `<div class="advice-item">${advice}</div>`).join("");
       $("partner-note").textContent = result.partner;
 
-      const dimensions = [
-        ["情绪可见度", scorePercent(scores.visible), "静音内耗", "全场直播"],
-        ["职场反骨值", scorePercent(scores.rebel), "配合运行", "边界开刺"],
-        ["行动电量", scorePercent(scores.energy), "节能蓄力", "高能冲刺"],
-        ["社交回血度", scorePercent(scores.social), "独处回血", "组团续命"]
-      ];
+      const dimensions = resultDimensions(profile);
       $("dimension-list").innerHTML = dimensions.map(([name, value, left, right]) => `
         <div>
           <div class="dimension-head"><span>${name}</span><span>${value}% 偏向${value >= 50 ? right : left}</span></div>
@@ -679,7 +758,7 @@
     }
 
     async function createPosterImage() {
-      const { result, scores } = state.lastResult;
+      const { result, profile } = state.lastResult;
       const qrImage = await loadPosterImage("../../assets/product-qrs/workplace-madness.png");
       const canvas = document.createElement("canvas");
       const scale = 2;
@@ -705,12 +784,7 @@
       drawText(ctx, result.alias, width / 2, 418, 23, "#496400", "center", "700");
       drawWrappedTextBlock(ctx, `“${result.quote}”`, width / 2, 485, 650, 32, 21, "#68705b", "center");
 
-      const dimensions = [
-        ["情绪可见度", scorePercent(scores.visible), "静音内耗", "全场直播"],
-        ["职场反骨值", scorePercent(scores.rebel), "配合运行", "边界开刺"],
-        ["行动电量", scorePercent(scores.energy), "节能蓄力", "高能冲刺"],
-        ["社交回血度", scorePercent(scores.social), "独处回血", "组团续命"]
-      ];
+      const dimensions = resultDimensions(profile);
       drawRoundRect(ctx, 90, 555, 720, 300, 22, "#f7f8dc", "#dce4b0");
       drawText(ctx, "我的四条发疯信号", 125, 610, 28, "#202416", "left", "700");
       dimensions.forEach(([name, value, left, right], index) => {
