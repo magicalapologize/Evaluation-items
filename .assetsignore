@@ -11,6 +11,8 @@ migrations
 migrations/**
 scripts
 scripts/**
+artifacts
+artifacts/**
 functions
 functions/**
 README.md

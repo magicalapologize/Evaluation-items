@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="通过45道情境题，从9个维度识别天赋组合，并从80个热门职业方向中获得个性化发展建议。" />
+  <meta name="theme-color" content="#10182b" />
+  <title>你的天赋能力与职业发展方向精准评估</title>
+  <link rel="icon" href="../../images/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../../assets/css/test-member.css?v=20260724" />
+  <link rel="stylesheet" href="style.css?v=20260724" />
+</head>
+<body>
+  <main class="app-shell">
+    <section id="home-screen" class="screen home-screen active" aria-labelledby="home-title">
+      <div class="topbar">
+        <a class="brand" href="../../" aria-label="返回云渡测评实验室首页"><span class="brand-mark">T</span><span>天赋职业评估</span></a>
+        <span class="method-label">多维天赋画像</span>
+      </div>
+
+      <div class="home-layout">
+        <div class="hero-copy">
+          <p class="eyebrow">TALENT × CAREER ATLAS</p>
+          <h1 id="home-title">看见你的<br /><em>天赋坐标</em></h1>
+          <p class="lead">通过真实情境选择，识别你更自然的思考、协作与行动方式，从 80 个职业方向中找到值得优先探索的路径。</p>
+          <div class="feature-strip" aria-label="测试特点">
+            <div><strong>45</strong><span>道情境题</span></div>
+            <div><strong>9</strong><span>项天赋维度</span></div>
+            <div><strong>80</strong><span>个职业方向</span></div>
+          </div>
+        </div>
+
+        <div class="gate-card">
+          <div class="orbit-visual" aria-hidden="true">
+            <span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span>
+            <div class="axis-core"><i></i><b>职业坐标</b><small>找到能力与方向的交点</small></div>
+          </div>
+          <div id="member-unlock" class="member-unlock"><strong><i>◆</i>云渡超级会员已解锁</strong><span id="member-plan-label">全部测试不限次数</span></div>
+          <div class="gate-content">
+            <p class="gate-kicker">ACCESS REPORT</p>
+            <h2 class="gate-title">输入测试码，生成你的职业天赋报告</h2>
+            <div class="gate-row">
+              <label class="sr-only" for="access-code">测试码</label>
+              <input id="access-code" class="access-input" type="text" autocomplete="off" maxlength="64" placeholder="例如：YF-AB12-CD34" />
+              <button id="start-btn" class="primary-btn" type="button">验证并开始</button>
+            </div>
+            <p id="gate-error" class="gate-error" role="alert"></p>
+            <div class="notes"><span>测试码以商品当前发货信息为准</span><span>约 8–10 分钟完成</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="home-note">结果用于职业探索与自我观察，不构成心理诊断、录用结论或职业决策保证。</p>
+    </section>
+
+    <section id="quiz-screen" class="screen quiz-screen" aria-labelledby="question-text">
+      <div class="quiz-card">
+        <div class="quiz-head">
+          <a class="brand compact" href="../../"><span class="brand-mark">T</span><span>天赋职业评估</span></a>
+          <div class="progress-meta"><span id="question-group">问题与决策</span><strong><span id="question-number">1</span> / 45</strong></div>
+          <div class="progress-track"><span id="progress-bar"></span></div>
+        </div>
+        <div class="question-block">
+          <p class="question-hint">选择更接近你真实反应的一项</p>
+          <h2 id="question-text"></h2>
+          <div id="answer-list" class="answer-list"></div>
+          <div class="quiz-foot">
+            <button id="prev-btn" class="text-btn" type="button">← 上一题</button>
+            <span>答案没有好坏，只反映你的自然偏好</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="result-screen" class="screen result-screen" aria-labelledby="result-name">
+      <div class="report-shell">
+        <header class="report-hero">
+          <div class="report-nav"><a class="brand compact light" href="../../"><span class="brand-mark">T</span><span>TALENT CAREER ATLAS</span></a><span id="report-date"></span></div>
+          <p class="report-kicker">你的核心天赋原型</p>
+          <div class="result-heading"><span id="result-index" class="result-index">01</span><div><h1 id="result-name"></h1><p id="result-alias"></p></div></div>
+          <div id="result-tags" class="result-tags"></div>
+          <p id="result-summary" class="result-summary"></p>
+          <div class="hero-score"><strong id="top-match">88%</strong><span>职业画像契合度</span></div>
+        </header>
+
+        <div class="report-content">
+          <section class="report-section profile-section">
+            <div class="section-title"><div><span>01</span><h2>你的天赋能力图谱</h2></div><p>本次答卷内部的相对强弱，不是能力考试分数</p></div>
+            <div class="profile-grid">
+              <div class="radar-card"><svg id="radar-chart" viewBox="0 0 440 440" role="img" aria-label="九维天赋雷达图"></svg></div>
+              <div id="dimension-list" class="dimension-list"></div>
+            </div>
+          </section>
+
+          <section class="report-section insight-section">
+            <div class="section-title"><div><span>02</span><h2>你的优势使用说明</h2></div></div>
+            <div class="insight-grid">
+              <article><span>画像</span><h3>你如何创造价值</h3><p id="result-portrait"></p></article>
+              <article><span>优势</span><h3>最值得放大的能力</h3><p id="result-strengths"></p></article>
+              <article class="risk"><span>风险</span><h3>优势过度使用时</h3><p id="result-risk"></p></article>
+            </div>
+          </section>
+
+          <section class="report-section career-section">
+            <div class="section-title"><div><span>03</span><h2>优先探索的职业方向</h2></div><p>从 80 个方向中按你的完整画像排序</p></div>
+            <div id="top-careers" class="top-careers"></div>
+            <div class="work-fit-grid">
+              <article><span>更适合的环境</span><p id="result-environment"></p></article>
+              <article><span>谨慎选择的环境</span><p id="result-avoid"></p></article>
+            </div>
+          </section>
+
+          <section class="report-section map-section">
+            <div class="section-title"><div><span>04</span><h2>80 个职业方向地图</h2></div><p>高匹配不代表唯一选择，资格型职业仍需满足专业要求</p></div>
+            <div id="career-map" class="career-map"></div>
+          </section>
+
+          <section class="report-section action-section">
+            <div class="section-title"><div><span>05</span><h2>未来 90 天行动建议</h2></div></div>
+            <div id="advice-list" class="advice-list"></div>
+            <blockquote id="result-reminder"></blockquote>
+          </section>
+
+          <div class="report-actions">
+            <button id="save-poster-btn" class="action-btn primary" type="button">保存报告海报</button>
+            <button id="copy-result-btn" class="action-btn" type="button">复制结果摘要</button>
+            <button id="restart-btn" class="action-btn" type="button">重新测试</button>
+            <button id="cashback-btn" class="action-btn" type="button">好评返现</button>
+          </div>
+          <p class="disclaimer">本测试基于自我报告与情境偏好，用于职业探索和行动启发，不构成心理诊断、职业资格判断、录用建议或收入保证。职业选择还会受到教育经历、现实机会、健康状况和个人价值观影响。</p>
+        </div>
+      </div>
+    </section>
+
+    <div id="poster-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="poster-title">
+      <div class="modal-panel poster-panel">
+        <div class="modal-head"><h3 id="poster-title">长按保存你的天赋报告</h3><button id="poster-close" class="modal-close" type="button" aria-label="关闭">×</button></div>
+        <p>微信内可长按图片保存。海报已包含九维画像、职业方向和行动建议。</p>
+        <div class="poster-preview"><img id="poster-image" alt="天赋职业评估结果海报" /></div>
+      </div>
+    </div>
+
+    <div id="cashback-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cashback-title">
+      <div class="modal-panel cashback-panel">
+        <div class="modal-head"><h3 id="cashback-title">好评返现</h3><button id="cashback-close" class="modal-close" type="button" aria-label="关闭">×</button></div>
+        <p>五星好评，带 3 张截图，15 字以上即可返 1 元。截图发给店铺客服，活动可能随时结束。</p>
+        <img class="contact-qr" src="../solo-business/assets/wechat-qr.jpg" alt="联系客服二维码" />
+        <strong>发送好评截图，领取返现</strong>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../assets/js/member-auth.js?v=20260721"></script>
+  <script src="data.js?v=20260724"></script>
+  <script src="app.js?v=20260724"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="877" height="877" viewBox="0 0 877 877" role="img" aria-labelledby="title desc">
+  <title id="title">你的天赋能力与职业发展方向精准评估</title>
+  <desc id="desc">曜石蓝与电光青配色的职业坐标图</desc>
+  <rect width="877" height="877" fill="#10182b"/>
+  <g stroke="#2457ff" stroke-opacity=".18" stroke-width="1">
+    <path d="M0 90H877M0 180H877M0 270H877M0 360H877M0 450H877M0 540H877M0 630H877M0 720H877M0 810H877"/>
+    <path d="M90 0V877M180 0V877M270 0V877M360 0V877M450 0V877M540 0V877M630 0V877M720 0V877M810 0V877"/>
+  </g>
+  <rect x="58" y="54" width="54" height="54" rx="9" fill="#2457ff"/>
+  <text x="85" y="91" text-anchor="middle" fill="#fff" font-family="Arial, PingFang SC, sans-serif" font-size="30" font-weight="800">T</text>
+  <text x="132" y="88" fill="#dce6f5" font-family="Arial, PingFang SC, sans-serif" font-size="20" font-weight="700">TALENT CAREER ATLAS</text>
+  <text x="58" y="184" fill="#22d3ee" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700">45 道情境题 · 9 维天赋图谱</text>
+  <text x="58" y="260" fill="#fff" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="58" font-weight="900">你的天赋能力</text>
+  <text x="58" y="332" fill="#fff" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="58" font-weight="900">与职业发展方向</text>
+  <text x="58" y="398" fill="#22d3ee" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="48" font-weight="900">精准评估</text>
+  <g transform="translate(438 608)">
+    <circle r="180" fill="#17233d" stroke="#22d3ee" stroke-opacity=".34" stroke-width="2"/>
+    <circle r="132" fill="none" stroke="#2457ff" stroke-opacity=".54" stroke-width="2"/>
+    <circle r="72" fill="none" stroke="#dce6f5" stroke-opacity=".38" stroke-width="2"/>
+    <g stroke="#dce6f5" stroke-opacity=".24" stroke-width="2">
+      <path d="M0-180V180M-171-56L171 56M-106 146L106-146M106 146L-106-146M171-56L-171 56"/>
+    </g>
+    <path d="M0-142L87-67L124 40L53 112L-57 125L-130 47L-101-70Z" fill="#2457ff" fill-opacity=".28" stroke="#22d3ee" stroke-width="4"/>
+    <circle cy="-142" r="8" fill="#22d3ee"/>
+    <circle cx="87" cy="-67" r="8" fill="#22d3ee"/>
+    <circle cx="124" cy="40" r="8" fill="#22d3ee"/>
+    <circle cx="53" cy="112" r="8" fill="#22d3ee"/>
+    <circle cx="-57" cy="125" r="8" fill="#22d3ee"/>
+    <circle cx="-130" cy="47" r="8" fill="#22d3ee"/>
+    <circle cx="-101" cy="-70" r="8" fill="#22d3ee"/>
+    <circle r="20" fill="#fff"/>
+  </g>
+  <rect x="58" y="808" width="761" height="1" fill="#dce6f5" fill-opacity=".25"/>
+  <text x="58" y="844" fill="#9dacC5" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="19">12 种天赋原型 · 80 个热门职业方向 · 专属发展建议</text>
+</svg>

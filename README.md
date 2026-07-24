@@ -42,8 +42,10 @@ python3 -m http.server 8765
 - 路径：`tests/historical-heroines/`
 - 修仙小说主角测试
 - 路径：`tests/cultivation-protagonist/`
+- 天赋能力与职业发展方向评估
+- 路径：`tests/talent-career/`
 
-七款测试统一通过 Worker 路由 `/api/verify-code` 查询 D1 中当前启用的测试码，前端不保存固定正确码。测试码不会在零点自动失效，只有手动更新 D1 或将 `enabled` 改为 `0` 后才会失效。
+八款测试统一通过 Worker 路由 `/api/verify-code` 查询 D1 中当前启用的测试码，前端不保存固定正确码。测试码不会在零点自动失效，只有手动更新 D1 或将 `enabled` 改为 `0` 后才会失效。
 
 网站同时提供“云渡超级会员”通道：会员首次使用唯一激活码创建用户名和密码，注册或登录成功后通过安全 Cookie 解锁全部测试；未登录用户仍可继续使用对应产品当前启用的单项测试码。
 
@@ -78,6 +80,7 @@ images/workplace-madness-cover.svg  打工人发疯人格测试卡片封面
 images/historical-emperor-cover.svg  历史帝王测试卡片封面
 images/historical-heroines-cover.svg 历史女主测试卡片封面
 images/cultivation-protagonist-cover.svg 修仙小说主角测试卡片封面
+images/talent-career-cover.svg 天赋能力与职业发展方向评估卡片封面
 tests/solo-business/          可独立部署的测试页面副本
 tests/love-personality/       恋爱相处人格测试页面
 tests/workplace-madness/      打工人发疯人格测试页面
@@ -85,6 +88,7 @@ tests/three-kingdoms-advisor/ 三国谋士测试页面
 tests/historical-emperor/     历史帝王测试页面
 tests/historical-heroines/    历史女主测试页面
 tests/cultivation-protagonist/ 修仙小说主角测试页面
+tests/talent-career/          天赋能力与职业发展方向评估页面
 ```
 
 ## 新增测试
