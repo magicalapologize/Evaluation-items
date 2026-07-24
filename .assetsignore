@@ -21,5 +21,7 @@ Cloudflare部署与每日测试码操作手册.md
 LICENSE.txt
 assets/sass
 assets/sass/**
+images/pic*.jpg
+images/*-cover.svg
 generic.html
 elements.html
