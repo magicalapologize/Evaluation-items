@@ -297,7 +297,7 @@
 
   async function createPosterImage() {
     const result = TYPES[state.resultKey];
-    const qrImage = await loadPosterImage("../../assets/product-qrs/talent-career.png");
+    const qrImage = await loadPosterImage("../../assets/product-qrs/talent-career.png?v=20260724-2");
     const canvas = document.createElement("canvas");
     canvas.width = 1800;
     canvas.height = 2520;
