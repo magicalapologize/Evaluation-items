@@ -90,6 +90,15 @@
     .report-card { margin-top: 18px; padding: 28px; }
     .section-label { margin: 0 0 8px; font-size: 12px; letter-spacing: 4px; }
     .section-title { margin: 0 0 20px; font-size: 25px; }
+    .dimension-overview { display: grid; grid-template-columns: minmax(300px, .82fr) minmax(0, 1.18fr); align-items: center; gap: 30px; }
+    .radar-panel { padding: 14px; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(145deg, rgba(255,255,255,.76), rgba(233,224,238,.66)); }
+    .radar-chart { display: block; width: min(100%, 360px); height: auto; margin: 0 auto; overflow: visible; }
+    .radar-grid { fill: none; stroke: rgba(78,59,100,.16); stroke-width: 1; }
+    .radar-axis { stroke: rgba(78,59,100,.2); stroke-width: 1; }
+    .radar-area { fill: rgba(199,155,85,.28); stroke: var(--plum); stroke-width: 2.5; stroke-linejoin: round; }
+    .radar-dot { fill: var(--gold); stroke: #fffdf8; stroke-width: 2; }
+    .radar-label { fill: var(--plum-deep); font-size: 12px; font-weight: 800; }
+    .radar-value { fill: var(--plum); font-size: 11px; font-weight: 800; }
     .dimension-list { display: grid; gap: 20px; }
     .dimension-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 9px; font-size: 15px; font-weight: 800; }
     .dimension-head span:last-child { color: var(--plum); }
@@ -139,6 +148,8 @@
       .question { font-size: 27px; }
       .answer-btn { min-height: 72px; padding: 13px 14px; }
       .answer-text { font-size: 16px; }
+      .dimension-overview { grid-template-columns: 1fr; gap: 22px; }
+      .radar-panel { padding: 8px; }
       .content-grid { grid-template-columns: 1fr; }
       .result-hero { padding: 34px 22px; }
       .result-name { font-size: 49px; }
@@ -182,7 +193,7 @@
 
     <section id="result-screen" class="screen"><div class="report-wrap">
       <div class="card result-hero"><p class="result-kicker">YOUR HISTORICAL HEROINES</p><div id="result-icon" class="result-icon">✦</div><h2 id="result-name" class="result-name"></h2><p id="result-alias" class="result-alias"></p><p id="result-quote" class="result-quote"></p><div id="trait-tags" class="trait-tags"></div></div>
-      <div class="card report-card"><p class="section-label">HEROINES SIGNALS</p><h2 class="section-title">你的六条女主维度</h2><div id="dimension-list" class="dimension-list"></div></div>
+      <div class="card report-card"><p class="section-label">HEROINES SIGNALS</p><h2 class="section-title">你的六条女主维度</h2><div class="dimension-overview"><div class="radar-panel"><svg id="dimension-radar" class="radar-chart" viewBox="0 0 360 340" role="img" aria-labelledby="radar-title radar-desc"></svg></div><div id="dimension-list" class="dimension-list"></div></div></div>
       <div class="card report-card"><p class="section-label">HEROINES PROFILE</p><h2 class="section-title">你的女主画像</h2><div class="content-grid"><div class="content-box"><h3>你的行动风格</h3><p id="portrait"></p></div><div class="content-box"><h3>你的核心优势</h3><p id="strength"></p></div><div class="content-box"><h3>容易卡住的地方</h3><p id="risk"></p></div><div class="content-box"><h3>适合你的舞台</h3><p id="fit"></p></div></div></div>
       <div class="card report-card"><p class="section-label">ACTION ADVICE</p><h2 class="section-title">给你的三条行动建议</h2><div id="advice-list" class="advice-list"></div></div>
       <div class="card report-card"><p class="section-label">HEROINES NOTE</p><h2 class="section-title">给你的提醒</h2><div id="partner-note" class="match-note"></div></div>
@@ -324,10 +335,19 @@
     }
     const PROFILES = { vision: [92,58,72,76,62,78], vision_prime: [86,55,90,72,84,65], reserve: [62,92,58,72,45,82], reserve_prime: [74,88,62,90,58,76], resolve: [76,48,94,58,74,64], resolve_prime: [70,54,96,60,88,58], bond: [68,72,54,93,56,76], bond_prime: [80,70,64,96,62,78], venture: [74,50,76,70,92,48], venture_prime: [78,56,84,68,96,52], craft: [72,80,62,82,54,94], craft_prime: [84,68,78,88,62,96] };
     function buildDimensions(scores, key) { const signals = standardizedAnswerSignals(scores); return DIMENSIONS.map(([scoreKey, name, left, right], index) => { const answerValue = Math.max(36, Math.min(84, Math.round(60 + signals[index] * 12))); const value = Math.round(PROFILES[key][index] * .8 + answerValue * .2); return [name, value, left, right]; }); }
+    function radarPoint(index, value) { const angle = -Math.PI / 2 + index * Math.PI / 3; const radius = 104 * value / 100; return [180 + Math.cos(angle) * radius, 170 + Math.sin(angle) * radius]; }
+    function renderRadarChart(dimensions) {
+      const rings = [20, 40, 60, 80, 100].map((value) => `<polygon class="radar-grid" points="${dimensions.map((_, index) => radarPoint(index, value).join(",")).join(" ")}" />`).join("");
+      const axes = dimensions.map((_, index) => { const [x, y] = radarPoint(index, 100); return `<line class="radar-axis" x1="180" y1="170" x2="${x}" y2="${y}" />`; }).join("");
+      const areaPoints = dimensions.map(([, value], index) => radarPoint(index, value).join(",")).join(" ");
+      const dots = dimensions.map(([, value], index) => { const [x, y] = radarPoint(index, value); return `<circle class="radar-dot" cx="${x}" cy="${y}" r="4" />`; }).join("");
+      const labels = dimensions.map(([name, value], index) => { const angle = -Math.PI / 2 + index * Math.PI / 3; const x = 180 + Math.cos(angle) * 144; const y = 170 + Math.sin(angle) * 144; const anchor = Math.cos(angle) > .2 ? "start" : Math.cos(angle) < -.2 ? "end" : "middle"; return `<text class="radar-label" x="${x}" y="${y - 3}" text-anchor="${anchor}">${name}<tspan class="radar-value" x="${x}" dy="15">${value}%</tspan></text>`; }).join("");
+      $("dimension-radar").innerHTML = `<title id="radar-title">六维女主能力雷达图</title><desc id="radar-desc">${dimensions.map(([name, value]) => `${name}${value}%`).join("，")}</desc>${rings}${axes}<polygon class="radar-area" points="${areaPoints}" />${dots}${labels}`;
+    }
     function renderResult() {
       const scores = calculateScores(); const key = resultKey(scores); const result = TYPES[key]; const dimensions = buildDimensions(scores, key); state.lastResult = { result, scores, key, dimensions };
       $("result-icon").textContent = result.icon; $("result-name").textContent = result.name; $("result-alias").textContent = result.alias; $("result-quote").textContent = `“${result.quote}”`; $("trait-tags").innerHTML = result.tags.map((tag) => `<span class="chip">${tag}</span>`).join(""); $("portrait").textContent = result.portrait; $("strength").textContent = result.strength; $("risk").textContent = result.risk; $("fit").textContent = result.fit; $("advice-list").innerHTML = result.advices.map((advice) => `<div class="advice-item">${advice}</div>`).join(""); $("partner-note").textContent = result.note;
-      $("dimension-list").innerHTML = dimensions.map(([name, value, left, right]) => `<div><div class="dimension-head"><span>${name}</span><span>${value}% 偏向${value >= 50 ? right : left}</span></div><div class="dimension-track"><div class="dimension-fill" style="width:${value}%"></div></div><div class="dimension-caption"><span>${left}</span><span>${right}</span></div></div>`).join(""); $("copy-btn").dataset.summary = `我的历史女主结果是「${result.name}」：${result.alias}。${result.quote}`;
+      renderRadarChart(dimensions); $("dimension-list").innerHTML = dimensions.map(([name, value, left, right]) => `<div><div class="dimension-head"><span>${name}</span><span>${value}% 偏向${value >= 50 ? right : left}</span></div><div class="dimension-track"><div class="dimension-fill" style="width:${value}%"></div></div><div class="dimension-caption"><span>${left}</span><span>${right}</span></div></div>`).join(""); $("copy-btn").dataset.summary = `我的历史女主结果是「${result.name}」：${result.alias}。${result.quote}`;
     }
     function loadPosterImage(src) { return new Promise((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src; }); }
     function drawRoundRect(ctx, x, y, width, height, radius, fill, stroke = null) { ctx.beginPath(); ctx.roundRect(x, y, width, height, radius); ctx.fillStyle = fill; ctx.fill(); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); } }
