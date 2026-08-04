@@ -347,19 +347,19 @@ const linWanQuestions = [
     option("回家后发消息问今天是否有哪个瞬间让她不舒服", 3, "empathy", "expression")
   ]),
   question("第一章 · 初见试探", "作品分享", "林晚给你看一张还没完成的画，先说‘可能有点奇怪’。你会？", [
-    option("立刻给出三个修改建议，证明你认真看了", 1, "growth", "empathy"),
+    option("立刻给出三个修改建议，证明你认真看了", 1, "growth", "expression"),
     option("先说出一个具体打动你的细节，再问她想听感受还是建议", 5, "empathy", "expression"),
-    option("夸‘很好看’，然后马上换话题", 0, "reliability", "empathy"),
-    option("认真听她讲创作想法，等她明确需要时再反馈", 3, "boundary", "empathy")
+    option("夸‘很好看’，然后马上换话题", 0, "reliability", "expression"),
+    option("认真听她讲创作想法，等她明确需要时再反馈", 3, "boundary", "expression")
   ]),
   question("第一章 · 初见试探", "人群疲惫", "热闹聚会进行到一半，林晚明显安静下来。你会？", [
     option("替她宣布累了，马上带她离开", 1, "empathy", "boundary"),
-    option("小声确认她想休息、离开，还是继续待一会儿", 5, "empathy", "boundary"),
+    option("小声确认她想休息、离开，还是继续待一会儿", 5, "boundary", "empathy"),
     option("鼓励她再活跃一点，别扫大家兴", 0, "expression", "empathy"),
     option("陪她去安静处待十分钟，让她自己决定下一步", 3, "boundary", "reliability")
   ]),
   question("第一章 · 初见试探", "细节记忆", "林晚记得你随口提过的口味，却发现你忘了她不吃香菜。你会？", [
-    option("说这种小事没必要上纲上线", 0, "boundary", "empathy"),
+    option("说这种小事没必要上纲上线", 0, "boundary", "expression"),
     option("承认自己没记住，马上帮她换掉，并记进下次点单习惯", 5, "reliability", "empathy"),
     option("解释自己最近太忙，希望她理解", 1, "expression", "repair"),
     option("先处理眼前的问题，再问还有哪些饮食习惯需要知道", 3, "repair", "reliability")
@@ -367,11 +367,11 @@ const linWanQuestions = [
   question("第二章 · 暧昧升温", "情绪回音", "林晚发来一段很长的语音，说今天被同事否定得很难受。你会？", [
     option("回复一套解决职场问题的方法", 1, "growth", "empathy"),
     option("先复述你听到的委屈，问她想被陪伴还是一起想办法", 5, "empathy", "expression"),
-    option("回一个抱抱表情，等她自己消化", 0, "empathy", "reliability"),
+    option("回一个抱抱表情，等她自己消化", 0, "reliability", "boundary"),
     option("告诉她你现在有十分钟能专心听，之后约时间继续聊", 3, "boundary", "reliability")
   ]),
   question("第二章 · 暧昧升温", "纪念小事", "林晚把第一次见面的电影票留了下来，你其实没这种习惯。你会？", [
-    option("说她太容易感动，留这些没什么用", 0, "empathy", "boundary"),
+    option("说她太容易感动，留这些没什么用", 0, "expression", "boundary"),
     option("尊重这份意义，并和她商量一种双方都舒服的纪念方式", 5, "empathy", "growth"),
     option("以后强迫自己保存所有票根，免得她失望", 1, "reliability", "boundary"),
     option("帮她给票根拍照存档，实物由她决定是否保留", 3, "growth", "boundary")
@@ -385,29 +385,29 @@ const linWanQuestions = [
   question("第二章 · 暧昧升温", "前任阴影", "林晚坦白，上一段关系让她很怕突然被冷落。你会？", [
     option("保证自己绝不会像前任，让她完全放心", 1, "expression", "reliability"),
     option("理解她的担心，同时约定有变化直接沟通，不用靠反复确认", 5, "boundary", "reliability"),
-    option("觉得她还没放下前任，暂时拉开距离", 0, "empathy", "repair"),
+    option("觉得她还没放下前任，暂时拉开距离", 0, "boundary", "repair"),
     option("问清哪些行为最容易触发不安，并说明自己的联系边界", 3, "empathy", "boundary")
   ]),
   question("第三章 · 正式相处", "独处沉默", "林晚情绪低落时不想说话，只想有人陪着。你会？", [
     option("陪她待一会儿，提前说好你什么时候需要离开", 5, "empathy", "boundary"),
     option("不停找话题逗她，直到她开心起来", 1, "expression", "empathy"),
     option("觉得既然不说话就没必要陪", 0, "boundary", "reliability"),
-    option("给她水和毯子，安静陪伴十分钟后再确认需要", 3, "reliability", "empathy")
+    option("给她水和毯子，安静陪伴十分钟后再确认需要", 3, "reliability", "boundary")
   ]),
   question("第三章 · 正式相处", "消息语气", "你忙时回了一个‘嗯’，林晚问你是不是生气了。你会？", [
     option("解释自己在忙，并告诉她什么时候能认真回复", 5, "expression", "reliability"),
-    option("说她想太多，一个字也能脑补", 0, "empathy", "repair"),
+    option("说她想太多，一个字也能脑补", 0, "expression", "repair"),
     option("马上发很多甜言蜜语证明没生气", 1, "reliability", "boundary"),
     option("简短澄清没有生气，忙完后再补充当天状态", 3, "expression", "empathy")
   ]),
   question("第三章 · 正式相处", "社交电量", "你很想带林晚参加公司聚餐，她担心陌生人太多。你会？", [
-    option("告诉她大家都很好相处，不去显得不合群", 0, "empathy", "boundary"),
+    option("告诉她大家都很好相处，不去显得不合群", 0, "expression", "boundary"),
     option("说明你希望她出现的原因，并允许她只待一小时或不去", 5, "boundary", "expression"),
-    option("取消聚餐，以后都不让她为难", 1, "empathy", "growth"),
+    option("取消聚餐，以后都不让她为难", 1, "boundary", "growth"),
     option("提前介绍关键人物和离场信号，让她自己选择", 3, "reliability", "boundary")
   ]),
   question("第三章 · 正式相处", "礼物落差", "你送了实用的降噪耳机，林晚却期待一封手写信。你会？", [
-    option("说耳机更贵更有用，她不该挑剔", 0, "empathy", "repair"),
+    option("说耳机更贵更有用，她不该挑剔", 0, "expression", "repair"),
     option("听懂她想要的是被表达，下次把实用和情感两部分都准备", 5, "empathy", "growth"),
     option("马上买更多礼物补偿", 1, "reliability", "expression"),
     option("补写一段真实的话，也请她以后提前表达仪式感期待", 3, "expression", "repair")
@@ -420,7 +420,7 @@ const linWanQuestions = [
   ]),
   question("第四章 · 冲突压力", "眼泪时刻", "争执中林晚哭了，但你认为自己的观点没有错。你会？", [
     option("停止讨论，先接住情绪，再约定冷静后继续谈事实", 5, "empathy", "repair"),
-    option("为了不让她哭，立刻承认所有问题都是你的", 1, "empathy", "boundary"),
+    option("为了不让她哭，立刻承认所有问题都是你的", 1, "repair", "boundary"),
     option("强调哭不能改变事实，继续把道理说完", 0, "expression", "empathy"),
     option("问她需要拥抱还是空间，同时保留稍后继续讨论的边界", 3, "boundary", "empathy")
   ]),
@@ -433,29 +433,29 @@ const linWanQuestions = [
   question("第四章 · 冲突压力", "沉默误解", "你需要半天冷静，林晚却把沉默理解为要分手。你会？", [
     option("先明确关系没有结束，再给出恢复沟通的准确时间", 5, "reliability", "repair"),
     option("觉得解释会助长依赖，继续不回复", 0, "boundary", "empathy"),
-    option("放弃冷静，马上回来陪她直到情绪稳定", 1, "empathy", "boundary"),
+    option("放弃冷静，马上回来陪她直到情绪稳定", 1, "reliability", "boundary"),
     option("发一条简短状态说明，并在约定时间准时出现", 3, "reliability", "expression")
   ]),
   question("第五章 · 长期选择", "创作低收入", "林晚想减少商业项目，用半年完成个人画册。你会？", [
-    option("支持梦想，经济问题以后再想", 1, "empathy", "reliability"),
+    option("支持梦想，经济问题以后再想", 1, "growth", "reliability"),
     option("一起算清最低生活成本、阶段目标和退出条件", 5, "growth", "reliability"),
     option("认为不赚钱的爱好不值得冒险", 0, "growth", "empathy"),
     option("先试三个月，每月固定复盘时间和收入底线", 3, "reliability", "growth")
   ]),
   question("第五章 · 长期选择", "照顾家人", "林晚可能需要长期照顾生病的家人，生活安排会被打乱。你会？", [
-    option("承诺所有压力都由你承担", 1, "empathy", "boundary"),
+    option("承诺所有压力都由你承担", 1, "reliability", "boundary"),
     option("先了解真实需求，再分清她、你和其他家人的责任", 5, "boundary", "reliability"),
-    option("担心拖累自己，劝她交给其他家人", 0, "growth", "empathy"),
+    option("担心拖累自己，劝她交给其他家人", 0, "boundary", "growth"),
     option("提供一项明确可持续的帮助，每两周重新评估", 3, "reliability", "boundary")
   ]),
   question("第五章 · 长期选择", "婚礼期待", "林晚很看重婚礼细节，你更在意简单省钱。你会？", [
-    option("告诉她婚礼只是形式，没必要投入太多", 0, "empathy", "growth"),
+    option("告诉她婚礼只是形式，没必要投入太多", 0, "expression", "growth"),
     option("分别列出最重要的三项，在总预算内优先满足共同意义", 5, "growth", "empathy"),
     option("全部交给她决定，自己只负责付钱", 1, "reliability", "expression"),
     option("各保留一项不可妥协，其余寻找更轻量的替代方案", 3, "boundary", "growth")
   ]),
   question("第五章 · 长期选择", "安全感来源", "林晚问：‘以后很忙的时候，我们靠什么确定彼此还在？’你会？", [
-    option("说真正相爱就不需要这些形式", 0, "empathy", "reliability"),
+    option("说真正相爱就不需要这些形式", 0, "growth", "reliability"),
     option("共同约定低成本但稳定的联系、见面和冲突修复机制", 5, "reliability", "growth"),
     option("保证每天随时回复，绝不让她等待", 1, "boundary", "expression"),
     option("先定每周一次完整交流，忙碌期再按情况调整", 3, "growth", "reliability")
