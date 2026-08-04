@@ -23,7 +23,7 @@ button, input { font: inherit; }
 .member-brand > span:last-child { display: flex; flex-direction: column; gap: 5px; }
 .member-brand strong { font-size: 15px; line-height: 1; letter-spacing: .08em; }
 .member-brand small { color: var(--faint); font-size: 8px; letter-spacing: .24em; }
-.member-mark { width: 36px; height: 36px; flex: 0 0 auto; border-radius: 11px; background: url("../../images/yundu-logo.png?v=20260804") center / contain no-repeat; }
+.member-mark { width: 36px; height: 36px; flex: 0 0 auto; border-radius: 11px; background: url("../../images/yundu-logo.webp?v=20260804") center / contain no-repeat; }
 .member-mark::before, .member-mark::after, .member-mark i { display: none; }
 .back-link { padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; color: #9aa3c1; font-size: 12px; }
 

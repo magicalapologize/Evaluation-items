@@ -11,7 +11,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content="7 项情境测试，覆盖副业、恋爱、职场、历史与修仙角色。完成作答，即时获得人格画像、倾向分析与行动建议。" />
 		<meta name="theme-color" content="#070916" />
-		<link rel="icon" href="images/yundu-logo.png?v=20260804" type="image/png" />
+		<link rel="icon" href="images/yundu-logo.webp?v=20260805" type="image/png" />
 		<link rel="stylesheet" href="assets/css/preview.css?v=20260804-logo" />
 	</head>
 	<body>
@@ -27,6 +27,9 @@
 						</span>
 					</a>
 					<nav class="top-nav" aria-label="主导航">
+						<button class="nav-toggle" aria-label="展开导航菜单" aria-expanded="false">
+							<span></span><span></span><span></span>
+						</button>
 						<a href="#tests">全部测试</a>
 						<a href="#method">测评说明</a>
 						<a id="member-entry" class="nav-cta member-entry" href="member/"><span aria-hidden="true">◆</span><b>超级会员</b></a>
@@ -63,30 +66,30 @@
 							<p class="voyage-coordinate coordinate-right">OCEAN / 114.3</p>
 						</div>
 						<div class="hero-character" aria-hidden="true">
-							<img src="images/characters/wang-lin.png" alt="" class="active" />
-							<img src="images/characters/bai-qian.png" alt="" />
-							<img src="images/characters/xiao-yan.png" alt="" />
-							<img src="images/characters/chu-xuan-ji.png" alt="" />
-							<img src="images/characters/meng-hao.png" alt="" />
-							<img src="images/characters/hua-qian-gu.png" alt="" />
-							<img src="images/characters/han-li.png" alt="" />
-							<img src="images/characters/chen-ping-an.png" alt="" />
-							<img src="images/characters/ye-fan.png" alt="" />
-							<img src="images/characters/ning-que.png" alt="" />
-							<img src="images/characters/jin-mi.png" alt="" />
-							<img src="images/characters/shen-li.png" alt="" />
-							<img src="images/characters/a-yin-feng-yin.png" alt="" />
-							<img src="images/characters/bai-feng-jiu.png" alt="" />
-							<img src="images/characters/bai-xiao-chun.png" alt="" />
-							<img src="images/characters/ji-yun-he.png" alt="" />
-							<img src="images/characters/lin-dong.png" alt="" />
-							<img src="images/characters/lu-zhao-yao.png" alt="" />
-							<img src="images/characters/mu-chen.png" alt="" />
-							<img src="images/characters/qin-yu.png" alt="" />
-							<img src="images/characters/shi-hao.png" alt="" />
-							<img src="images/characters/xiao-lan-hua.png" alt="" />
-							<img src="images/characters/yan-dan.png" alt="" />
-							<img src="images/characters/yan-hui.png" alt="" />
+							<img src="images/characters/wang-lin.webp" alt="" class="active" />
+							<img data-src="images/characters/bai-qian.webp" alt="" />
+							<img data-src="images/characters/xiao-yan.webp" alt="" />
+							<img data-src="images/characters/chu-xuan-ji.webp" alt="" />
+							<img data-src="images/characters/meng-hao.webp" alt="" />
+							<img data-src="images/characters/hua-qian-gu.webp" alt="" />
+							<img data-src="images/characters/han-li.webp" alt="" />
+							<img data-src="images/characters/chen-ping-an.webp" alt="" />
+							<img data-src="images/characters/ye-fan.webp" alt="" />
+							<img data-src="images/characters/ning-que.webp" alt="" />
+							<img data-src="images/characters/jin-mi.webp" alt="" />
+							<img data-src="images/characters/shen-li.webp" alt="" />
+							<img data-src="images/characters/a-yin-feng-yin.webp" alt="" />
+							<img data-src="images/characters/bai-feng-jiu.webp" alt="" />
+							<img data-src="images/characters/bai-xiao-chun.webp" alt="" />
+							<img data-src="images/characters/ji-yun-he.webp" alt="" />
+							<img data-src="images/characters/lin-dong.webp" alt="" />
+							<img data-src="images/characters/lu-zhao-yao.webp" alt="" />
+							<img data-src="images/characters/mu-chen.webp" alt="" />
+							<img data-src="images/characters/qin-yu.webp" alt="" />
+							<img data-src="images/characters/shi-hao.webp" alt="" />
+							<img data-src="images/characters/xiao-lan-hua.webp" alt="" />
+							<img data-src="images/characters/yan-dan.webp" alt="" />
+							<img data-src="images/characters/yan-hui.webp" alt="" />
 						</div>
 					</div>
 					<div class="inner metric-strip" aria-label="测试特点">
@@ -108,264 +111,95 @@
 					</div>
 					<div class="carousel-stage">
 						<!-- Cards scroll behind the character -->
-						<div class="carousel-scroll-area">
+						<div class="carousel-scroll-area" role="region" aria-roledescription="carousel" aria-label="热门测评轮播">
 							<div class="carousel-track">
 								<!-- First set -->
-								<a class="carousel-card" href="tests/love-simulation/">
-									<img src="images/cards/love-simulation.png" alt="心动副本恋爱模拟闯关测试" />
+								<a class="carousel-card" tabindex="0" aria-label="心动副本恋爱模拟闯关测试" href="tests/love-simulation/">
+									<img src="images/cards/love-simulation.webp" loading="lazy" decoding="async" alt="心动副本恋爱模拟闯关测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">恋爱模拟 · 剧情闯关</span>
 										<h3>心动副本</h3>
 										<p>20题 · 4条角色线</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/talent-career/">
-									<img src="images/cards/talent-career.png" alt="天赋能力与职业发展方向评估" />
+								<a class="carousel-card" tabindex="0" aria-label="天赋能力与职业发展方向评估" href="tests/talent-career/">
+									<img src="images/cards/talent-career.webp" loading="lazy" decoding="async" alt="天赋能力与职业发展方向评估" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">天赋能力 · 职业发展</span>
 										<h3>你的天赋能力与职业方向评估</h3>
 										<p>45题 · 12种结果 · 80个方向</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/cultivation-protagonist/">
-									<img src="images/cards/cultivation-protagonist.png" alt="修仙小说主角测试" />
+								<a class="carousel-card" tabindex="0" aria-label="修仙小说主角测试" href="tests/cultivation-protagonist/">
+									<img src="images/cards/cultivation-protagonist.webp" loading="lazy" decoding="async" alt="修仙小说主角测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">修真性格 · 主角原型</span>
 										<h3>测试你是哪位修仙小说主角</h3>
 										<p>36题 · 24种结果</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/solo-business/">
-									<img src="images/cards/solo-business.png" alt="副业一人公司赛道测试" />
+								<a class="carousel-card" tabindex="0" aria-label="副业一人公司赛道测试" href="tests/solo-business/">
+									<img src="images/cards/solo-business.webp" loading="lazy" decoding="async" alt="副业一人公司赛道测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">职业方向 · 副业规划</span>
 										<h3>副业/一人公司赛道测试</h3>
 										<p>25题 · 8种结果</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/love-personality/">
-									<img src="images/cards/love-personality.png" alt="恋爱相处人格测试" />
+								<a class="carousel-card" tabindex="0" aria-label="恋爱相处人格测试" href="tests/love-personality/">
+									<img src="images/cards/love-personality.webp" loading="lazy" decoding="async" alt="恋爱相处人格测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">亲密关系 · 相处方式</span>
 										<h3>测试你是哪种恋爱相处人格</h3>
 										<p>30题 · 8种结果</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/historical-emperor/">
-									<img src="images/cards/historical-emperor.png" alt="历史帝王测试" />
+								<a class="carousel-card" tabindex="0" aria-label="历史帝王测试" href="tests/historical-emperor/">
+									<img src="images/cards/historical-emperor.webp" loading="lazy" decoding="async" alt="历史帝王测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">历史性格 · 治理偏好</span>
 										<h3>测试你是哪位历史帝王</h3>
 										<p>30题 · 12种结果</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/workplace-madness/">
-									<img src="images/cards/workplace-madness.png" alt="打工人发疯人格测试" />
+								<a class="carousel-card" tabindex="0" aria-label="打工人发疯人格测试" href="tests/workplace-madness/">
+									<img src="images/cards/workplace-madness.webp" loading="lazy" decoding="async" alt="打工人发疯人格测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">职场状态 · 娱乐人格</span>
 										<h3>测试你是哪种打工人发疯人格</h3>
 										<p>30题 · 10种结果</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/historical-heroines/">
-									<img src="images/cards/historical-heroines.png" alt="历史女主测试" />
+								<a class="carousel-card" tabindex="0" aria-label="历史女主测试" href="tests/historical-heroines/">
+									<img src="images/cards/historical-heroines.webp" loading="lazy" decoding="async" alt="历史女主测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">历史性格 · 女性力量</span>
 										<h3>测试你是哪位历史女主</h3>
 										<p>30题 · 12种结果</p>
 									</div>
 								</a>
-								<a class="carousel-card" href="tests/three-kingdoms-advisor/">
-									<img src="images/cards/three-kingdoms-advisor.png" alt="三国谋士测试" />
+								<a class="carousel-card" tabindex="0" aria-label="三国谋士测试" href="tests/three-kingdoms-advisor/">
+									<img src="images/cards/three-kingdoms-advisor.webp" loading="lazy" decoding="async" alt="三国谋士测试" />
 									<div class="carousel-card-info">
 										<span class="carousel-tag">历史性格 · 谋略偏好</span>
 										<h3>测试你是哪位三国谋士</h3>
 										<p>25题 · 12种结果</p>
 									</div>
 								</a>
-								<!-- Duplicate set for seamless loop -->
-								<a class="carousel-card" href="tests/love-simulation/">
-									<img src="images/cards/love-simulation.png" alt="心动副本恋爱模拟闯关测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">恋爱模拟 · 剧情闯关</span>
-										<h3>心动副本</h3>
-										<p>20题 · 4条角色线</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/talent-career/">
-									<img src="images/cards/talent-career.png" alt="天赋能力与职业发展方向评估" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">天赋能力 · 职业发展</span>
-										<h3>你的天赋能力与职业方向评估</h3>
-										<p>45题 · 12种结果 · 80个方向</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/cultivation-protagonist/">
-									<img src="images/cards/cultivation-protagonist.png" alt="修仙小说主角测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">修真性格 · 主角原型</span>
-										<h3>测试你是哪位修仙小说主角</h3>
-										<p>36题 · 24种结果</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/solo-business/">
-									<img src="images/cards/solo-business.png" alt="副业一人公司赛道测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">职业方向 · 副业规划</span>
-										<h3>副业/一人公司赛道测试</h3>
-										<p>25题 · 8种结果</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/love-personality/">
-									<img src="images/cards/love-personality.png" alt="恋爱相处人格测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">亲密关系 · 相处方式</span>
-										<h3>测试你是哪种恋爱相处人格</h3>
-										<p>30题 · 8种结果</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/historical-emperor/">
-									<img src="images/cards/historical-emperor.png" alt="历史帝王测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">历史性格 · 治理偏好</span>
-										<h3>测试你是哪位历史帝王</h3>
-										<p>30题 · 12种结果</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/workplace-madness/">
-									<img src="images/cards/workplace-madness.png" alt="打工人发疯人格测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">职场状态 · 娱乐人格</span>
-										<h3>测试你是哪种打工人发疯人格</h3>
-										<p>30题 · 10种结果</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/historical-heroines/">
-									<img src="images/cards/historical-heroines.png" alt="历史女主测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">历史性格 · 女性力量</span>
-										<h3>测试你是哪位历史女主</h3>
-										<p>30题 · 12种结果</p>
-									</div>
-								</a>
-								<a class="carousel-card" href="tests/three-kingdoms-advisor/">
-									<img src="images/cards/three-kingdoms-advisor.png" alt="三国谋士测试" />
-									<div class="carousel-card-info">
-										<span class="carousel-tag">历史性格 · 谋略偏好</span>
-										<h3>测试你是哪位三国谋士</h3>
-										<p>25题 · 12种结果</p>
-									</div>
-								</a>
+								<!-- JS will clone cards for seamless loop -->
 							</div>
 						</div>
 						<!-- Character overlays on top of cards -->
 						<div class="carousel-character">
-							<img src="images/wang-lin.png" alt="角色形象" />
+							<img src="images/wang-lin.webp" alt="角色形象" />
 						</div>
-						<!-- Water reflection -->
+						<!-- Water reflection (populated by JS) -->
 						<div class="carousel-reflection" aria-hidden="true">
 							<div class="carousel-scroll-area">
-								<div class="carousel-track">
-									<a class="carousel-card" href="tests/love-simulation/">
-										<img src="images/cards/love-simulation.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">恋爱模拟 · 剧情闯关</span>
-											<h3>心动副本</h3>
-											<p>20题 · 4条角色线</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/talent-career/">
-										<img src="images/cards/talent-career.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">天赋能力 · 职业发展</span>
-											<h3>你的天赋能力与职业方向评估</h3>
-											<p>45题 · 12种结果 · 80个方向</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/cultivation-protagonist/">
-										<img src="images/cards/cultivation-protagonist.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">修真性格 · 主角原型</span>
-											<h3>测试你是哪位修仙小说主角</h3>
-											<p>36题 · 24种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/solo-business/">
-										<img src="images/cards/solo-business.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">职业方向 · 副业规划</span>
-											<h3>副业/一人公司赛道测试</h3>
-											<p>25题 · 8种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/love-personality/">
-										<img src="images/cards/love-personality.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">亲密关系 · 相处方式</span>
-											<h3>测试你是哪种恋爱相处人格</h3>
-											<p>30题 · 8种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/historical-emperor/">
-										<img src="images/cards/historical-emperor.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">历史性格 · 治理偏好</span>
-											<h3>测试你是哪位历史帝王</h3>
-											<p>30题 · 12种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/workplace-madness/">
-										<img src="images/cards/workplace-madness.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">职场状态 · 娱乐人格</span>
-											<h3>测试你是哪种打工人发疯人格</h3>
-											<p>30题 · 10种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/historical-heroines/">
-										<img src="images/cards/historical-heroines.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">历史性格 · 女性力量</span>
-											<h3>测试你是哪位历史女主</h3>
-											<p>30题 · 12种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/three-kingdoms-advisor/">
-										<img src="images/cards/three-kingdoms-advisor.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">历史性格 · 谋略偏好</span>
-											<h3>测试你是哪位三国谋士</h3>
-											<p>25题 · 12种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/cultivation-protagonist/">
-										<img src="images/cards/cultivation-protagonist.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">修真性格 · 主角原型</span>
-											<h3>测试你是哪位修仙小说主角</h3>
-											<p>36题 · 24种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/solo-business/">
-										<img src="images/cards/solo-business.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">职业方向 · 副业规划</span>
-											<h3>副业/一人公司赛道测试</h3>
-											<p>25题 · 8种结果</p>
-										</div>
-									</a>
-									<a class="carousel-card" href="tests/three-kingdoms-advisor/">
-										<img src="images/cards/three-kingdoms-advisor.png" alt="" />
-										<div class="carousel-card-info">
-											<span class="carousel-tag">历史性格 · 谋略偏好</span>
-											<h3>测试你是哪位三国谋士</h3>
-											<p>25题 · 12种结果</p>
-										</div>
-									</a>
-								</div>
+								<div class="carousel-track"></div>
 							</div>
 							<div class="reflection-character">
-								<img src="images/wang-lin.png" alt="" />
+								<img src="images/wang-lin.webp" alt="" />
 							</div>
 						</div>
 						<!-- Slogan over reflection area -->
@@ -390,7 +224,7 @@
 						<div class="mini-grid">
 							<article class="mini-card">
 								<a href="tests/love-simulation/">
-									<div class="mini-card-cover"><img src="images/cards/love-simulation.png" alt="心动副本恋爱模拟闯关测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/love-simulation.webp" loading="lazy" decoding="async" alt="心动副本恋爱模拟闯关测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/009 · 恋爱模拟 · 剧情闯关</span>
 										<h3>心动副本｜恋爱模拟闯关测试</h3>
@@ -401,7 +235,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/talent-career/">
-									<div class="mini-card-cover"><img src="images/cards/talent-career.png" alt="天赋能力与职业发展方向评估" /></div>
+									<div class="mini-card-cover"><img src="images/cards/talent-career.webp" loading="lazy" decoding="async" alt="天赋能力与职业发展方向评估" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/008 · 天赋能力 · 职业发展</span>
 										<h3>你的天赋能力与职业发展方向精准评估</h3>
@@ -412,7 +246,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/solo-business/">
-									<div class="mini-card-cover"><img src="images/cards/solo-business.png" alt="副业一人公司赛道测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/solo-business.webp" loading="lazy" decoding="async" alt="副业一人公司赛道测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/001 · 职业方向 · 副业规划</span>
 										<h3>副业/一人公司赛道测试</h3>
@@ -423,7 +257,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/love-personality/">
-									<div class="mini-card-cover"><img src="images/cards/love-personality.png" alt="恋爱相处人格测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/love-personality.webp" loading="lazy" decoding="async" alt="恋爱相处人格测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/002 · 亲密关系 · 相处方式</span>
 										<h3>测试你是哪种恋爱相处人格</h3>
@@ -434,7 +268,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/workplace-madness/">
-									<div class="mini-card-cover"><img src="images/cards/workplace-madness.png" alt="打工人发疯人格测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/workplace-madness.webp" loading="lazy" decoding="async" alt="打工人发疯人格测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/003 · 职场状态 · 娱乐人格</span>
 										<h3>测试你是哪种打工人发疯人格</h3>
@@ -445,7 +279,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/three-kingdoms-advisor/">
-									<div class="mini-card-cover"><img src="images/cards/three-kingdoms-advisor.png" alt="三国谋士测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/three-kingdoms-advisor.webp" loading="lazy" decoding="async" alt="三国谋士测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/004 · 历史性格 · 谋略偏好</span>
 										<h3>测试你是哪位三国谋士</h3>
@@ -456,7 +290,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/historical-emperor/">
-									<div class="mini-card-cover"><img src="images/cards/historical-emperor.png" alt="历史帝王测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/historical-emperor.webp" loading="lazy" decoding="async" alt="历史帝王测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/005 · 历史性格 · 治理偏好</span>
 										<h3>测试你是哪位历史帝王</h3>
@@ -467,7 +301,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/historical-heroines/">
-									<div class="mini-card-cover"><img src="images/cards/historical-heroines.png" alt="历史女主测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/historical-heroines.webp" loading="lazy" decoding="async" alt="历史女主测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/006 · 历史性格 · 女性力量</span>
 										<h3>测试你是哪位历史女主</h3>
@@ -478,7 +312,7 @@
 							</article>
 							<article class="mini-card">
 								<a href="tests/cultivation-protagonist/">
-									<div class="mini-card-cover"><img src="images/cards/cultivation-protagonist.png" alt="修仙小说主角测试" /></div>
+									<div class="mini-card-cover"><img src="images/cards/cultivation-protagonist.webp" loading="lazy" decoding="async" alt="修仙小说主角测试" /></div>
 									<div class="mini-card-body">
 										<span class="mini-tag">EVA/007 · 修真性格 · 主角原型</span>
 										<h3>测试你是哪位修仙小说主角</h3>
@@ -525,7 +359,7 @@
 				</div>
 			</footer>
 		</div>
-		<!-- Carousel: auto-scroll + free drag/swipe with momentum -->
+				<!-- Carousel: auto-scroll + free drag/swipe with momentum + keyboard nav -->
 		<script>
 		(function() {
 			const allTests = document.getElementById('all-tests');
@@ -544,11 +378,28 @@
 			const reflectionTrack = document.querySelector('.carousel-reflection .carousel-track');
 			if (!mainTrack || !reflectionTrack) return;
 
+			// Clone cards for seamless loop + reflection (reduces HTML duplication)
+			const originalCards = Array.from(mainTrack.querySelectorAll('.carousel-card'));
+			originalCards.forEach(function(card) {
+				var clone = card.cloneNode(true);
+				clone.setAttribute('tabindex', '-1');
+				clone.setAttribute('aria-hidden', 'true');
+				mainTrack.appendChild(clone);
+			});
+			originalCards.forEach(function(card) {
+				var rClone = card.cloneNode(true);
+				rClone.removeAttribute('aria-label');
+				rClone.setAttribute('tabindex', '-1');
+				rClone.querySelector('img').alt = '';
+				reflectionTrack.appendChild(rClone);
+			});
+
 			mainTrack.style.animation = 'none';
 			scrollArea.querySelectorAll('a, img').forEach(function(element) {
 				element.draggable = false;
 			});
 			const SET_WIDTH = mainTrack.scrollWidth / 2;
+			const CARD_STEP = 284;
 			let position = 0;
 			const SPEED = 0.8;
 
@@ -558,6 +409,15 @@
 			let gliding = false, glideId = 0;
 			let pressedCard = null;
 			const DRAG_THRESHOLD = 6;
+			let pausedForFocus = false;
+			const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+			let prefersReducedMotion = motionQuery.matches;
+			motionQuery.addEventListener('change', function(e) {
+				prefersReducedMotion = e.matches;
+				if (!e.matches && !rafId) rafId = requestAnimationFrame(tick);
+			});
+
+			let rafId = 0;
 
 			function apply() {
 				if (position <= -SET_WIDTH) position += SET_WIDTH;
@@ -568,13 +428,53 @@
 			}
 
 			function tick() {
-				if (!pointerActive && !gliding) position -= SPEED;
+				if (!pointerActive && !gliding && !pausedForFocus && !prefersReducedMotion) position -= SPEED;
 				apply();
-				requestAnimationFrame(tick);
+				// Stop rAF loop when idle (reduced-motion, or off-screen with no interaction)
+				if ((prefersReducedMotion || offScreen) && !pointerActive && !gliding) {
+					rafId = 0;
+					return;
+				}
+				rafId = requestAnimationFrame(tick);
 			}
+
+			// Keyboard navigation
+			scrollArea.addEventListener('keydown', function(e) {
+				if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+					e.preventDefault();
+					ensureRaf();
+					glideId += 1;
+					gliding = false;
+					position += e.key === 'ArrowLeft' ? CARD_STEP : -CARD_STEP;
+					apply();
+				} else if (e.key === 'Enter' || e.key === ' ') {
+					var focused = document.activeElement;
+					if (focused && focused.closest('.carousel-card')) {
+						e.preventDefault();
+						focused.click();
+					}
+				}
+			});
+
+			scrollArea.addEventListener('focusin', function(e) {
+				if (e.target.closest('.carousel-card')) {
+					pausedForFocus = true;
+					glideId += 1;
+					gliding = false;
+				}
+			});
+			scrollArea.addEventListener('focusout', function(e) {
+				setTimeout(function() {
+					var active = document.activeElement;
+					if (active && !active.closest('.carousel-stage')) {
+						pausedForFocus = false;
+					}
+				}, 100);
+			});
 
 			scrollArea.addEventListener('pointerdown', function(e) {
 				if (e.button !== 0) return;
+				ensureRaf();
 				glideId += 1;
 				gliding = false;
 				pointerActive = true;
@@ -613,6 +513,7 @@
 			scrollArea.addEventListener('wheel', function(e) {
 				if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 1) return;
 				e.preventDefault();
+				ensureRaf();
 				glideId += 1;
 				gliding = false;
 				const delta = Math.max(-60, Math.min(60, e.deltaX));
@@ -664,34 +565,67 @@
 			scrollArea.addEventListener('pointerleave', endDrag);
 			scrollArea.addEventListener('pointercancel', endDrag);
 
-			requestAnimationFrame(tick);
+			// Pause rAF when carousel is off-screen
+			let offScreen = false;
+			const observer = new IntersectionObserver(function(entries) {
+				offScreen = !entries[0].isIntersecting;
+				if (!offScreen) ensureRaf();
+			}, { threshold: 0 });
+			observer.observe(stage);
+
+			function ensureRaf() { if (!rafId) rafId = requestAnimationFrame(tick); }
+			rafId = requestAnimationFrame(tick);
 		})();
 		</script>
-		<!-- Hero character slideshow -->
+		<!-- Hero character slideshow with lazy loading -->
 		<script>
 		(function() {
 			const container = document.querySelector('.hero-character');
-			const imgs = container ? container.querySelectorAll('img') : [];
+			const imgs = container ? Array.from(container.querySelectorAll('img')) : [];
 			if (imgs.length < 2) return;
-			let current = 0;
-			let timer;
+			var current = 0;
+			var timer;
+			var loaded = new Set();
+			loaded.add(0);
+
+			const heroMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+			function loadImg(idx) {
+				if (loaded.has(idx)) return;
+				var el = imgs[idx];
+				var src = el.getAttribute('data-src');
+				if (!src) return;
+				el.src = src;
+				el.removeAttribute('data-src');
+				loaded.add(idx);
+			}
 
 			function next() {
 				imgs[current].classList.remove('active');
 				current = (current + 1) % imgs.length;
+				loadImg(current);
+				var nextIdx = (current + 1) % imgs.length;
+				loadImg(nextIdx);
 				imgs[current].classList.add('active');
 			}
 
 			function startAuto() {
 				clearInterval(timer);
+				if (heroMotionQuery.matches) return; // respect reduced-motion
 				timer = setInterval(next, 4000);
 			}
 
-			// Click to switch to next character immediately
+			heroMotionQuery.addEventListener('change', function(e) {
+				if (e.matches) clearInterval(timer);
+				else startAuto();
+			});
+
+			loadImg(1);
+
 			container.style.cursor = 'pointer';
 			container.addEventListener('click', function() {
 				next();
-				startAuto(); // reset timer so it doesn't jump again too soon
+				startAuto();
 			});
 
 			startAuto();
@@ -708,6 +642,25 @@
 					? `${member.planLabel} · ${YunduMember.formatExpiry(member)}`
 					: "会员已过期，点击续费";
 			}).catch(() => {});
+		</script>
+		<script>
+			// Hamburger nav toggle
+			const navToggle = document.querySelector('.nav-toggle');
+			const topNav = document.querySelector('.top-nav');
+			if (navToggle && topNav) {
+				navToggle.addEventListener('click', function() {
+					const expanded = this.getAttribute('aria-expanded') === 'true';
+					this.setAttribute('aria-expanded', String(!expanded));
+					topNav.classList.toggle('is-open', !expanded);
+				});
+				// Close menu when a nav link is clicked
+				topNav.querySelectorAll('a').forEach(function(link) {
+					link.addEventListener('click', function() {
+						navToggle.setAttribute('aria-expanded', 'false');
+						topNav.classList.remove('is-open');
+					});
+				});
+			}
 		</script>
 	</body>
 </html>

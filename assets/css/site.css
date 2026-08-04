@@ -96,7 +96,7 @@ p { color: var(--muted); }
 	height: 36px;
 	flex: 0 0 auto;
 	border-radius: 11px;
-	background: url("../../images/yundu-logo.png?v=20260804") center / contain no-repeat;
+	background: url("../../images/yundu-logo.webp?v=20260805") center / contain no-repeat;
 }
 
 .brand-mark::before,
@@ -474,7 +474,13 @@ p { color: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) {
 	html { scroll-behavior: auto; }
-	*,
-	*::before,
-	*::after { transition-duration: 0.01ms !important; }
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+	}
+	.test-card, .test-card:hover {
+		transform: none !important;
+		transition-property: color, opacity, border-color, box-shadow, background !important;
+		transition-duration: 0.2s !important;
+	}
 }

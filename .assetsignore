@@ -25,3 +25,11 @@ images/pic*.jpg
 images/*-cover.svg
 generic.html
 elements.html
+assets/css/fontawesome-all.min.css
+assets/css/main.css
+assets/js/jquery.min.js
+assets/js/main.js
+assets/js/breakpoints.min.js
+assets/js/browser.min.js
+assets/js/util.js
+assets/css/site.css
