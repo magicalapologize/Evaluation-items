@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="选择一位原创恋爱角色，完成20个犀利情境关卡，获得通关称号、六维关系雷达图和具体相处建议。" />
+  <meta name="theme-color" content="#171a21" />
+  <title>心动副本｜恋爱模拟闯关测试</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23171a21'/%3E%3Cpath d='M32 49S13 39 13 25c0-10 13-14 19-5 6-9 19-5 19 5 0 14-19 24-19 24Z' fill='%23ff5a6f'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="../../assets/css/test-member.css?v=20260716" />
+</head>
+<body>
+  <a class="site-return" href="../../" aria-label="返回云渡测评实验室首页">← 返回全部测试</a>
+
+  <main>
+    <section id="home-screen" class="screen active">
+      <div class="home-shell">
+        <div class="home-copy">
+          <p class="eyebrow">EVA / 009 · LOVE QUEST</p>
+          <h1>心动副本</h1>
+          <p class="home-subtitle">选一个你想恋爱的角色，看看你们能走到第几关。</p>
+          <div class="stat-row" aria-label="测试信息"><span>4 个角色</span><span>20 个关卡</span><span>6 维关系图谱</span></div>
+        </div>
+        <div class="home-art" aria-hidden="true">
+          <img src="../../images/love-simulation-cover.svg" alt="" />
+        </div>
+        <div class="access-panel">
+          <div id="member-unlock" class="member-unlock"><strong><i>◆</i>云渡超级会员已解锁</strong><span id="member-plan-label">全部测试不限次数</span></div>
+          <div class="access-head"><strong>进入心动副本</strong><span>ACCESS / 009</span></div>
+          <div class="gate-row">
+            <input id="access-code" class="access-input" autocomplete="off" placeholder="例如：YF-AB12-CD34" aria-label="测试码" />
+            <button id="start-btn" class="primary-btn" type="button">开始闯关</button>
+          </div>
+          <p id="gate-error" class="error" aria-live="polite"></p>
+          <p class="demo">测试码以商品当前发货信息为准</p>
+        </div>
+        <p class="byline">作者：云云 ｜ 公众号：云渡沧海</p>
+      </div>
+    </section>
+
+    <section id="role-screen" class="screen">
+      <div class="role-shell">
+        <div class="screen-heading">
+          <p class="eyebrow">CHOOSE YOUR DATE</p>
+          <h2>今晚，你想和谁谈恋爱？</h2>
+        </div>
+        <div id="role-grid" class="role-grid"></div>
+        <button id="role-back-btn" class="text-button" type="button">← 返回测试入口</button>
+      </div>
+    </section>
+
+    <section id="quiz-screen" class="screen">
+      <div class="quiz-shell">
+        <div class="quiz-status">
+          <div class="role-mini"><img id="quiz-role-image" alt="" /><div><strong id="quiz-role-name"></strong><span id="quiz-role-label"></span></div></div>
+          <div class="progress-copy"><span id="stage-name"></span><strong id="progress-text"></strong></div>
+          <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+        </div>
+        <div class="question-panel">
+          <div class="question-meta"><span id="scene-name"></span><span id="question-count"></span></div>
+          <h2 id="question-text" class="question"></h2>
+          <div id="answer-list" class="answer-list"></div>
+          <div class="quiz-actions"><button id="prev-btn" class="text-button" type="button">← 上一题</button><span>选择后自动进入下一关</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="result-screen" class="screen">
+      <div class="result-shell">
+        <header class="result-hero">
+          <div class="result-identity">
+            <p id="result-tag" class="eyebrow"></p>
+            <p id="result-role-line" class="result-role-line"></p>
+            <h2 id="result-title"></h2>
+            <p id="result-comment" class="result-comment"></p>
+            <div id="result-tags" class="result-tags"></div>
+          </div>
+          <div class="result-portrait"><img id="result-role-image" alt="" /></div>
+          <div class="score-board">
+            <div><strong id="clear-count"></strong><span>通关数</span></div>
+            <div><strong id="result-score"></strong><span>关系得分</span></div>
+          </div>
+        </header>
+
+        <section class="result-band signal-band">
+          <div class="band-heading"><p>RELATION SIGNALS</p><h3>你的六维关系图谱</h3></div>
+          <div class="dimension-layout">
+            <figure class="radar-figure"><svg id="dimension-radar" viewBox="0 0 420 390" role="img" aria-labelledby="radar-title radar-desc"></svg><figcaption>展示本次选择中的相对倾向，不代表能力高低</figcaption></figure>
+            <div id="dimension-list" class="dimension-list"></div>
+          </div>
+        </section>
+
+        <section class="result-band profile-band">
+          <div class="band-heading"><p>RELATION READOUT</p><h3>这段关系里，你会怎么爱</h3></div>
+          <div class="profile-grid">
+            <div><span>你的相处画像</span><p id="result-profile"></p></div>
+            <div><span>最容易赢得 TA 的地方</span><p id="result-strength"></p></div>
+            <div><span>最容易翻车的地方</span><p id="result-risk"></p></div>
+            <div><span>适合你们的关系结构</span><p id="result-fit"></p></div>
+          </div>
+        </section>
+
+        <section class="result-band advice-band">
+          <div class="band-heading"><p>NEXT MOVES</p><h3>接下来，别再靠猜</h3></div>
+          <div id="advice-list" class="advice-list"></div>
+        </section>
+
+        <section class="result-band reminder-band">
+          <p class="reminder-label">给你的专属提醒</p><p id="result-reminder"></p>
+        </section>
+
+        <div class="result-actions">
+          <button id="save-poster-btn" class="action-button primary-action" type="button">↓ 保存报告</button>
+          <button id="copy-btn" class="action-button" type="button">⧉ 复制摘要</button>
+          <button id="restart-btn" class="action-button" type="button">↻ 重选角色</button>
+          <button id="cashback-btn" class="action-button cashback-action" type="button">￥ 好评返现</button>
+        </div>
+        <p class="result-disclaimer">本测试用于娱乐和关系观察，不构成心理诊断或现实决策建议。角色反应是情境模型，不是唯一正确答案。</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="poster-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="poster-title">
+    <div class="modal-panel"><div class="modal-head"><h3 id="poster-title">长按保存心动报告</h3><button id="poster-close" class="modal-close" type="button" aria-label="关闭">×</button></div><p>也可以截图分享，看看朋友会选择哪位角色。</p><div class="poster-preview"><img id="poster-image" alt="恋爱模拟闯关结果海报" /></div></div>
+  </div>
+  <div id="cashback-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cashback-title">
+    <div class="modal-panel cashback-panel"><div class="modal-head"><h3 id="cashback-title">好评返现</h3><button id="cashback-close" class="modal-close" type="button" aria-label="关闭">×</button></div><p>五星好评，带 3 张截图，15 字以上可返 1 元。活动可能随时结束，以店铺说明为准。</p><img class="service-qr" src="../solo-business/assets/wechat-qr.jpg" alt="客服联系二维码" /><p>发送好评截图给店铺客服领取返现。</p></div>
+  </div>
+
+  <script src="../../assets/js/member-auth.js?v=20260721"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

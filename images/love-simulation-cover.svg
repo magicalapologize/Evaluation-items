@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title desc">
+  <title id="title">心动副本恋爱模拟闯关测试封面</title><desc id="desc">四位原创恋爱角色与心动路线构成的游戏封面</desc>
+  <rect width="720" height="900" fill="#171a21"/>
+  <path d="M0 0h360v410H0z" fill="#2864ff"/><path d="M360 0h360v410H360z" fill="#ff5a6f"/>
+  <path d="M0 410h360v300H0z" fill="#55d6be"/><path d="M360 410h360v300H360z" fill="#f3c849"/>
+  <g fill="#f4f7fb" stroke="#171a21" stroke-width="7">
+    <circle cx="185" cy="151" r="67"/><circle cx="536" cy="151" r="67"/><circle cx="185" cy="510" r="67"/><circle cx="536" cy="510" r="67"/>
+  </g>
+  <g fill="#171a21">
+    <path d="M104 334q8-123 81-123 76 0 82 123Z"/><path d="M455 334q8-123 81-123 76 0 82 123Z"/>
+    <path d="M104 693q8-123 81-123 76 0 82 123Z"/><path d="M455 693q8-123 81-123 76 0 82 123Z"/>
+  </g>
+  <path d="M360 116 392 76l40 32-29 38 39 31-32 40-50-37-50 37-32-40 39-31-29-38 40-32Z" fill="#f4f7fb" stroke="#171a21" stroke-width="7"/>
+  <path d="M360 613c-76-46-132-88-132-153 0-70 87-88 132-28 45-60 132-42 132 28 0 65-56 107-132 153Z" fill="#f4f7fb" stroke="#171a21" stroke-width="9"/>
+  <rect y="710" width="720" height="190" fill="#f4f7fb"/>
+  <text x="52" y="773" fill="#171a21" font-family="Arial, sans-serif" font-size="23" font-weight="700" letter-spacing="7">EVA / 009 · LOVE QUEST</text>
+  <text x="52" y="837" fill="#171a21" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="51" font-weight="800">心动副本</text>
+  <text x="52" y="874" fill="#555b69" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="20">选一个角色，看你们能走到第几关</text>
+</svg>
