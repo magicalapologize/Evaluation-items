@@ -16,7 +16,68 @@ export const TIERS = [
   { min: 19, max: 20, title: "隐藏结局·双向奔赴", tag: "TRUE ENDING" }
 ];
 
-const option = (text, points, primary, secondary) => ({ text, points, primary, secondary });
+function punchUpOption(text) {
+  const openers = [
+    [/^故意/, "胜负欲上线：故意"],
+    [/^假装/, "表面稳如老狗：假装"],
+    [/^直接/, "不绕弯子：直接"],
+    [/^马上/, "一秒上头：马上"],
+    [/^立刻/, "当场开大：立刻"],
+    [/^要求/, "直接上强度：要求"],
+    [/^坚持/, "态度焊死：坚持"],
+    [/^默认/, "脑补结局：默认"],
+    [/^认为/, "当场下判断：认为"],
+    [/^觉得/, "心里警铃大作：觉得"],
+    [/^嘴上/, "嘴上一套：嘴上"],
+    [/^表面/, "表面风平浪静：表面"],
+    [/^先/, "先别上头：先"],
+    [/^接受/, "接住这球：接受"],
+    [/^尊重/, "边界感上线：尊重"],
+    [/^同意/, "认真派上线：同意"],
+    [/^明确/, "把底牌亮出来：明确"],
+    [/^告诉/, "把话挑明：告诉"],
+    [/^说明/, "有话直说：说明"],
+    [/^问/, "当场问清：问"],
+    [/^回/, "消息框里打下：回"],
+    [/^说/, "嘴比脑子快：说"],
+    [/^承诺/, "承诺先拉满：承诺"],
+    [/^给/, "行动派出手：给"],
+    [/^陪/, "陪伴模式开启：陪"],
+    [/^不说/, "沉默流打法：不说"],
+    [/^不预设/, "先收起剧本：不预设"],
+    [/^如果/, "看情况出牌：如果"],
+    [/^这次/, "这一局这样打：这次"],
+    [/^各自/, "成年人模式：各自"],
+    [/^把/, "直接动手处理：把"],
+    [/^为了/, "保护欲过载：为了"],
+    [/^担心/, "风险雷达启动：担心"],
+    [/^允许/, "留条活路：允许"],
+    [/^确认/, "先把底线框住：确认"],
+    [/^选择/, "折中派出场：选择"],
+    [/^提供/, "只递工具不抢方向盘：提供"],
+    [/^支持/, "热血派拍板：支持"],
+    [/^帮/, "行动比嘴快：帮"],
+    [/^取消/, "直接撤退：取消"],
+    [/^全部/, "干脆全押：全部"],
+    [/^不/, "本能拒绝：不"]
+  ];
+  const matched = openers.find(([pattern]) => pattern.test(text));
+  if (matched) return text.replace(matched[0], matched[1]);
+  const fallbackLabels = [
+    "看似体面，实则很会：",
+    "恋爱脑警报：",
+    "不演了，直接：",
+    "这一步很容易翻车：",
+    "先把心里的算盘亮出来：",
+    "表面云淡风轻：",
+    "修罗场选择：",
+    "你可能会脱口而出："
+  ];
+  const hash = [...text].reduce((sum, char) => (sum * 33 + char.charCodeAt(0)) >>> 0, 5381);
+  return `${fallbackLabels[hash % fallbackLabels.length]}${text}`;
+}
+
+const option = (text, points, primary, secondary) => ({ text: punchUpOption(text), points, primary, secondary });
 const question = (stage, scene, prompt, options) => ({ stage, scene, prompt, options });
 
 function scatterQuestions(questions, salt) {

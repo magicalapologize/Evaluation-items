@@ -73,7 +73,7 @@ function renderQuestion() {
   $("progress-text").textContent = `${number} / ${role.questions.length}`;
   $("progress-bar").style.width = `${number / role.questions.length * 100}%`;
   $("scene-name").textContent = current.scene;
-  $("question-count").textContent = `LEVEL ${String(number).padStart(2, "0")}`;
+  $("question-count").textContent = `LEVEL ${String(number).padStart(2, "0")} · 别选标准答案`;
   $("question-text").textContent = current.prompt;
   $("answer-list").innerHTML = current.options.map((answer, index) => `
     <button class="answer-button${state.answers[state.index] === index ? " selected" : ""}" type="button" data-answer="${index}">
@@ -98,18 +98,24 @@ function radarPoint(index, value) {
 }
 
 function renderRadar(dimensions) {
+  const rawValues = dimensions.map(({ raw }) => raw);
+  const rawSpread = Math.max(...rawValues) - Math.min(...rawValues);
+  const contrast = Math.min(99, Math.round(30 + rawSpread / 48 * 69));
   const rings = [20, 40, 60, 80, 100].map((value) => `<polygon class="radar-grid" points="${dimensions.map((_, index) => radarPoint(index, value).join(",")).join(" ")}" />`).join("");
   const axes = dimensions.map((_, index) => { const [x, y] = radarPoint(index, 100); return `<line class="radar-axis" x1="210" y1="184" x2="${x}" y2="${y}" />`; }).join("");
   const area = dimensions.map((dimension, index) => radarPoint(index, dimension.value).join(",")).join(" ");
-  const dots = dimensions.map((dimension, index) => { const [x, y] = radarPoint(index, dimension.value); return `<circle class="radar-dot" cx="${x}" cy="${y}" r="5" />`; }).join("");
+  const dots = dimensions.map((dimension, index) => { const [x, y] = radarPoint(index, dimension.value); return `<circle class="radar-dot${dimension.value === 100 ? " is-max" : ""}" cx="${x}" cy="${y}" r="5" />`; }).join("");
   const labels = dimensions.map((dimension, index) => {
     const angle = -Math.PI / 2 + index * Math.PI / 3;
-    const x = 210 + Math.cos(angle) * 172;
-    const y = 184 + Math.sin(angle) * 172;
+    const x = 210 + Math.cos(angle) * 160;
+    const y = 184 + Math.sin(angle) * 160;
     const anchor = Math.cos(angle) > .2 ? "start" : Math.cos(angle) < -.2 ? "end" : "middle";
-    return `<text class="radar-label" x="${x}" y="${y - 3}" text-anchor="${anchor}">${dimension.name}<tspan class="radar-value" x="${x}" dy="16">${dimension.value}%</tspan></text>`;
+    const badgeWidth = dimension.value === 100 ? 52 : 44;
+    const badgeX = anchor === "start" ? x : anchor === "end" ? x - badgeWidth : x - badgeWidth / 2;
+    return `<g class="radar-label-group${dimension.value === 100 ? " is-max" : dimension.value <= 20 ? " is-min" : ""}"><text class="radar-label" x="${x}" y="${y - 7}" text-anchor="${anchor}">${dimension.name}</text><rect class="radar-value-bg" x="${badgeX}" y="${y + 1}" width="${badgeWidth}" height="23" rx="3"/><text class="radar-value" x="${anchor === "start" ? x + badgeWidth / 2 : anchor === "end" ? x - badgeWidth / 2 : x}" y="${y + 17}" text-anchor="middle">${dimension.value}%</text></g>`;
   }).join("");
-  $("dimension-radar").innerHTML = `<title id="radar-title">六维关系雷达图</title><desc id="radar-desc">${dimensions.map((item) => `${item.name}${item.value}%`).join("，")}</desc>${rings}${axes}<polygon class="radar-area" points="${area}" />${dots}${labels}`;
+  const center = `<g class="radar-center"><text x="210" y="177" text-anchor="middle">反差指数</text><text class="radar-contrast" x="210" y="207" text-anchor="middle">${contrast}%</text></g>`;
+  $("dimension-radar").innerHTML = `<title id="radar-title">六维关系雷达图</title><desc id="radar-desc">${dimensions.map((item) => `${item.name}${item.value}%`).join("，")}，反差指数${contrast}%</desc>${rings}${axes}<polygon class="radar-area" points="${area}" />${dots}${center}${labels}`;
 }
 
 function renderResult() {
@@ -132,8 +138,11 @@ function renderResult() {
   $("result-reminder").textContent = result.ending.reminder;
   $("advice-list").innerHTML = result.advice.map((item) => `<div class="advice-item">${item}</div>`).join("");
   renderRadar(result.dimensions);
+  const dimensionValues = result.dimensions.map(({ value }) => value);
+  const highestDimension = Math.max(...dimensionValues);
+  const lowestDimension = Math.min(...dimensionValues);
   $("dimension-list").innerHTML = result.dimensions.map((dimension) => `
-    <div class="dimension-item"><div class="dimension-head"><span>${dimension.name}</span><strong>${dimension.value}%</strong></div><div class="dimension-track"><div class="dimension-fill" style="width:${dimension.value}%"></div></div><div class="dimension-caption"><span>${dimension.low}</span><span>${dimension.high}</span></div></div>
+    <div class="dimension-item${dimension.value === highestDimension ? " is-max" : dimension.value === lowestDimension ? " is-min" : ""}"><div class="dimension-head"><span>${dimension.name}</span><strong>${dimension.value}%</strong></div><div class="dimension-track"><div class="dimension-fill" style="width:${dimension.value}%"></div></div><div class="dimension-caption"><span>${dimension.low}</span><span>${dimension.high}</span></div></div>
   `).join("");
   $("copy-btn").dataset.summary = `我在《心动副本》选择了${role.name}，通关 ${result.clearCount}/20，关系得分 ${result.score}/100，获得称号「${result.tier.title}」。最高关系维度是${result.topDimensions.map((item) => item.name).join("、")}。`;
 }

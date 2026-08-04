@@ -4,6 +4,15 @@ export function tierIndexFor(clearCount) {
   return TIERS.findIndex((tier) => clearCount >= tier.min && clearCount <= tier.max);
 }
 
+function buildContrastScale(raw) {
+  const ordered = [...new Set(Object.values(raw))].sort((a, b) => a - b);
+  if (ordered.length === 1) return new Map([[ordered[0], 68]]);
+  return new Map(ordered.map((value, index) => {
+    const position = index / (ordered.length - 1);
+    return [value, Math.round(10 + Math.pow(position, 1.18) * 90)];
+  }));
+}
+
 export function calculateResult(role, answers) {
   if (!role || answers.length !== role.questions.length) throw new Error("答题数据不完整");
   const raw = Object.fromEntries(DIMENSIONS.map(({ key }) => [key, 0]));
@@ -21,14 +30,11 @@ export function calculateResult(role, answers) {
     raw[selected.secondary] += 1;
   });
 
-  const values = DIMENSIONS.map(({ key }) => raw[key]);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const spread = max - min || 1;
+  const contrastScale = buildContrastScale(raw);
   const dimensions = DIMENSIONS.map((dimension) => ({
     ...dimension,
     raw: raw[dimension.key],
-    value: Math.round(38 + (raw[dimension.key] - min) / spread * 57)
+    value: contrastScale.get(raw[dimension.key])
   }));
   const sorted = [...dimensions].sort((a, b) => b.raw - a.raw || a.key.localeCompare(b.key));
   const tierIndex = tierIndexFor(clearCount);
