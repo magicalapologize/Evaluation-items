@@ -155,7 +155,7 @@ p { color: var(--muted); margin: 0; }
 .catalog-intro strong { font-size: 14px; font-weight: 600; color: var(--ink); display: block; margin-bottom: 8px; }
 .catalog-intro p { font-size: 14px; line-height: 1.7; }
 
-/* ===== Test Cards — Glass Morphism ===== */
+/* ===== Test Cards — Glass Morphism (unused in current HTML, kept for future) ===== */
 .test-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
 .test-card {
 	border-radius: 20px; overflow: hidden;
@@ -493,7 +493,7 @@ p { color: var(--muted); margin: 0; }
 	font-style: italic;
 }
 
-/* ===== Mini Cards Grid (3-column) ===== */
+/* ===== Mini Cards Grid (4-column) ===== */
 .mini-grid {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
