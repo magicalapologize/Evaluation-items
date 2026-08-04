@@ -83,7 +83,7 @@ images/historical-emperor-cover.svg  历史帝王测试卡片封面
 images/historical-heroines-cover.svg 历史女主测试卡片封面
 images/cultivation-protagonist-cover.svg 修仙小说主角测试卡片封面
 images/talent-career-cover.svg 天赋能力与职业发展方向评估卡片封面
-images/love-simulation-cover.svg 心动副本测试卡片封面
+images/cards/love-simulation.png 心动副本首页与测试入口共用卡片图
 tests/solo-business/          可独立部署的测试页面副本
 tests/love-personality/       恋爱相处人格测试页面
 tests/workplace-madness/      打工人发疯人格测试页面

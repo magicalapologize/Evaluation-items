@@ -45,8 +45,8 @@ p { color: var(--muted); margin: 0; }
 }
 .nav-shell { display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 20px; }
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand-mark { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--purple), var(--cyan)); display: grid; place-items: center; }
-.brand-mark i { width: 10px; height: 10px; border-radius: 50%; background: white; }
+.brand-mark { width: 32px; height: 32px; flex: 0 0 auto; border-radius: 8px; background: url("../../images/yundu-logo.png?v=20260804") center / contain no-repeat; display: block; }
+.brand-mark i { display: none; }
 .brand strong { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
 .brand small { display: block; font-size: 9px; color: var(--faint); letter-spacing: 0.1em; }
 .top-nav { display: flex; align-items: center; gap: 28px; }
