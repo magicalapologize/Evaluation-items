@@ -22,7 +22,7 @@
         <div class="home-hero">
           <div class="home-copy">
             <p class="eyebrow">INNER SEVEN SIGNALS</p>
-            <h1 id="home-title">探索你的<br /><em>七重倾向</em></h1>
+            <h1 id="home-title">七宗罪<br /><em>主导倾向测试</em></h1>
             <p class="home-lead">把你放进具体生活情境，记录那些不太愿意承认、却会反复出现的反应。完成 35 道题后，获得一份关于主导机制、触发场景和行动建议的完整报告。</p>
             <div class="home-meta" aria-label="测试信息">
               <span class="meta-pill">35 道情境题</span>
@@ -121,13 +121,17 @@
         <header class="result-head">
           <p class="eyebrow">SEVEN SINS REPORT</p>
           <h1 id="result-title" class="result-title">你的七宗罪报告</h1>
-          <p class="result-subtitle">不是给你贴标签，而是看见哪一种惯性最近更常替你做决定。</p>
+          <p class="result-subtitle">看看最近遇到事情时，你最容易先用哪一种反应。</p>
           <div id="result-tags" class="result-tags"></div>
         </header>
 
         <div class="result-summary">
           <div class="summary-score"><div><span>倾向指数</span><strong id="result-score">0</strong><small>/ 100</small></div></div>
-          <div class="summary-copy"><p class="section-kicker">你的主导印记</p><h3 id="result-chief"></h3><p id="result-summary-copy"></p></div>
+          <div class="summary-copy">
+            <p class="section-kicker">你的第一反应</p>
+            <div class="result-identity"><h3 id="result-chief"></h3><span id="result-alias" class="result-alias"></span></div>
+            <p id="result-summary-copy"></p>
+          </div>
         </div>
 
         <section class="report-section">
@@ -180,7 +184,10 @@
       <div class="modal-panel">
         <div class="modal-head"><h2 id="poster-title">请长按保存报告</h2><button class="modal-close" type="button" data-close-modal="poster-modal" aria-label="关闭保存报告弹窗">×</button></div>
         <p class="modal-tip">保存这张长图，分享你的七宗罪主导倾向和三条平衡建议。</p>
-        <div class="poster-preview"><img id="poster-image" alt="七宗罪测试结果报告" /></div>
+        <div class="poster-preview">
+          <div id="poster-status" class="poster-status" role="status" aria-live="polite">正在生成高清报告，请稍候...</div>
+          <img id="poster-image" src="../../assets/product-qrs/seven-sins.png" alt="七宗罪测试结果报告" hidden />
+        </div>
       </div>
     </div>
 
@@ -200,17 +207,25 @@
 
     const PRODUCT_ID = "seven-sins";
     const $ = (id) => document.getElementById(id);
-    const state = { index: 0, answers: [], profile: null, timers: [] };
+    const state = { index: 0, answers: [], profile: null, timers: [], posterUrl: "" };
     let activeMember = null;
-    const memberReady = globalThis.YunduMember?.getMember?.().then((member) => {
+    const gateRow = document.querySelector("#home-screen .gate-row");
+    const gateNote = document.querySelector("#home-screen .gate-note");
+
+    function applyMemberAccess(member) {
       activeMember = member && member.active ? member : null;
+      gateRow.classList.toggle("member-access-active", Boolean(activeMember));
+      gateNote.classList.toggle("member-access-hidden", Boolean(activeMember));
+      $("member-unlock").classList.toggle("is-visible", Boolean(activeMember));
       if (activeMember) {
         $("member-unlock").textContent = `${activeMember.planLabel}已开启，可直接开始测试`;
-        $("member-unlock").classList.add("is-visible");
+        document.querySelector("#home-screen .gate-title h2").textContent = "会员通道已开启，可直接开始测试";
         $("start-btn").textContent = "会员直接开始测试";
       }
       return activeMember;
-    }).catch(() => null) || Promise.resolve(null);
+    }
+
+    const memberReady = globalThis.YunduMember?.getMember?.().then(applyMemberAccess).catch(() => null) || Promise.resolve(null);
 
     function showScreen(id) {
       document.querySelectorAll(".screen").forEach((screen) => {
@@ -325,8 +340,9 @@
       const result = profile.result;
       const second = DIMENSIONS.find((dimension) => dimension.key === profile.secondKey);
       $("result-score").textContent = profile.total;
-      $("result-chief").textContent = `${result.name} · ${result.alias}`;
-      $("result-summary-copy").textContent = `${result.portrait} 你的第二倾向是「${second.name}」，它会在压力或选择变复杂时和主导印记一起出现。`;
+      $("result-chief").textContent = result.name;
+      $("result-alias").textContent = result.alias;
+      $("result-summary-copy").textContent = `${result.summary} 压力上来时，「${second.name}」也常会跟着出现。`;
       $("result-tags").innerHTML = result.keywords.map((keyword) => `<span class="result-tag">${keyword}</span>`).join("");
       renderRadar(profile.displayScores);
       const ranked = [...DIMENSIONS].sort((a, b) => profile.displayScores[b.key] - profile.displayScores[a.key]);
@@ -339,7 +355,7 @@
       $("fit").textContent = result.fit;
       $("advice-list").innerHTML = result.advices.map((advice, index) => `<div class="advice-row"><span class="advice-index">${index + 1}</span><p>${advice}</p></div>`).join("");
       $("reminder").textContent = result.reminder;
-      $("copy-btn").dataset.summary = `我的七宗罪主导倾向是「${result.name}」：${result.alias}。${result.portrait}`;
+      $("copy-btn").dataset.summary = `这次我的七宗罪结果是「${result.name}」（${result.alias}）。${result.summary}`;
     }
 
     function loadPosterImage(src) {
@@ -353,10 +369,37 @@
 
     function roundedRect(ctx, x, y, width, height, radius, fill, stroke = null) {
       ctx.beginPath();
-      ctx.roundRect(x, y, width, height, radius);
+      if (typeof ctx.roundRect === "function") {
+        ctx.roundRect(x, y, width, height, radius);
+      } else {
+        const safeRadius = Math.min(radius, width / 2, height / 2);
+        ctx.moveTo(x + safeRadius, y);
+        ctx.lineTo(x + width - safeRadius, y);
+        ctx.arcTo(x + width, y, x + width, y + safeRadius, safeRadius);
+        ctx.lineTo(x + width, y + height - safeRadius);
+        ctx.arcTo(x + width, y + height, x + width - safeRadius, y + height, safeRadius);
+        ctx.lineTo(x + safeRadius, y + height);
+        ctx.arcTo(x, y + height, x, y + height - safeRadius, safeRadius);
+        ctx.lineTo(x, y + safeRadius);
+        ctx.arcTo(x, y, x + safeRadius, y, safeRadius);
+        ctx.closePath();
+      }
       ctx.fillStyle = fill;
       ctx.fill();
       if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+
+    function canvasToImageUrl(canvas) {
+      if (typeof canvas.toBlob !== "function") return Promise.resolve(canvas.toDataURL("image/png"));
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("浏览器未能生成报告图片"));
+            return;
+          }
+          resolve(URL.createObjectURL(blob));
+        }, "image/png");
+      });
     }
 
     function wrappedLines(ctx, text, maxWidth) {
@@ -466,7 +509,7 @@
       ctx.fillStyle = "#d7ad67";
       ctx.font = "600 15px sans-serif";
       ctx.fillText("云渡测评实验室", 230, 1580);
-      return canvas.toDataURL("image/png");
+      return canvasToImageUrl(canvas);
     }
 
     $("start-btn").addEventListener("click", async () => {
@@ -500,8 +543,36 @@
     });
     $("save-poster-btn").addEventListener("click", async () => {
       const button = $("save-poster-btn");
+      const modal = $("poster-modal");
+      const image = $("poster-image");
+      const status = $("poster-status");
       button.disabled = true;
-      try { $("poster-image").src = await createPosterImage(); $("poster-modal").classList.add("active"); } finally { button.disabled = false; }
+      button.textContent = "正在生成...";
+      image.hidden = true;
+      status.hidden = false;
+      status.classList.remove("is-error");
+      status.textContent = "正在生成高清报告，请稍候...";
+      modal.classList.add("active");
+      try {
+        const posterUrl = await createPosterImage();
+        if (!posterUrl) throw new Error("报告内容尚未准备完成");
+        if (state.posterUrl.startsWith("blob:")) URL.revokeObjectURL(state.posterUrl);
+        state.posterUrl = posterUrl;
+        await new Promise((resolve, reject) => {
+          image.onload = resolve;
+          image.onerror = () => reject(new Error("报告图片加载失败"));
+          image.src = posterUrl;
+        });
+        image.hidden = false;
+        status.hidden = true;
+      } catch (error) {
+        console.error("海报生成失败", error);
+        status.textContent = "报告生成失败，请关闭后重试；也可以直接截图保存当前结果。";
+        status.classList.add("is-error");
+      } finally {
+        button.disabled = false;
+        button.textContent = "保存报告";
+      }
     });
     document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("active")));
     document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("active"); }));
