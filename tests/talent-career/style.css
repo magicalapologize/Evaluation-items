@@ -288,3 +288,30 @@ blockquote { margin: 22px 0 0; padding: 22px 24px; border: 1px solid rgba(34,211
   .career-grid { grid-template-columns: 1fr; }
   .career-cell, .career-cell:nth-child(4n) { border-right: 0; }
 }
+
+/* Focus-visible */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+button:focus-visible {
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 4px;
+  color: #fff;
+  background: var(--blue);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 12px;
+}
