@@ -21,6 +21,8 @@ button { cursor: pointer; }
 img { max-width: 100%; }
 .screen { display: none; }
 .screen.active { display: block; }
+.skip-link { position: absolute; top: -100px; left: 16px; z-index: 100; padding: 10px 16px; border-radius: 4px; color: #fff; background: var(--blue); font-size: 14px; font-weight: 800; text-decoration: none; }
+.skip-link:focus { top: 12px; }
 .site-return { position: fixed; z-index: 30; top: 18px; left: 18px; min-height: 42px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; color: #fff; background: rgba(23,26,33,.84); backdrop-filter: blur(10px); text-decoration: none; font-size: 13px; font-weight: 800; }
 .eyebrow { margin: 0; color: var(--blue); font-size: 12px; font-weight: 900; letter-spacing: 3px; }
 .text-button { min-height: 44px; padding: 0; border: 0; color: var(--ink); background: transparent; font-weight: 850; }
@@ -149,4 +151,37 @@ img { max-width: 100%; }
   .home-copy h1 { font-size: 49px; }.role-card { grid-template-columns: 78px minmax(0, 1fr); min-height: 84px; }.role-card img { width: 78px; }.role-card-body { padding: 8px 10px; }.role-card p { line-height: 1.35; }.question { font-size: 20px; }.answer-text { font-size: 12.5px; }.answer-button { min-height: 54px; }.result-actions { gap: 7px; }
 }
 
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .role-card, .role-card:hover,
+  .answer-button, .answer-button:hover, .answer-button.selected {
+    transform: none !important;
+    transition: background .01ms, border-color .01ms, box-shadow .01ms !important;
+  }
+}
+
+/* Focus-visible */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.primary-btn:focus-visible,
+.action-button:focus-visible {
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+.role-card:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.answer-button:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 3px;
+  border-radius: 6px;
+}

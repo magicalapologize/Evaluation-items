@@ -44,7 +44,7 @@ async function verifyAccessCode(code) {
 function renderRoles() {
   $("role-grid").innerHTML = Object.entries(ROLES).map(([key, role], index) => `
     <button class="role-card" style="--role-accent:${role.accent}" type="button" data-role="${key}">
-      <img src="${role.portrait}" alt="${role.name}原创角色立绘" />
+      <img src="${role.portrait}" alt="${role.name}原创角色立绘" loading="lazy" />
       <span class="role-card-body"><span class="role-number">DATE 0${index + 1}</span><h3>${role.name}</h3><p>${role.role}</p><span class="role-card-tags">${role.tags.map((tag) => `<span>${tag}</span>`).join("")}</span></span>
     </button>
   `).join("");

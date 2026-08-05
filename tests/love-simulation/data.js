@@ -589,7 +589,7 @@ const makeEndings = (items) => items.map(([comment, risk, reminder]) => ({ comme
 
 export const ROLES = {
   guyan: {
-    name: "顾言", role: "冷静克制的建筑师", pronoun: "他", accent: "#2864ff", portrait: "assets/guyan.png",
+    name: "顾言", role: "冷静克制的建筑师", pronoun: "他", accent: "#2864ff", portrait: "assets/guyan.webp",
     quote: "他不靠热闹证明喜欢，更在意你能否把话说清、把承诺做实。",
     tags: ["慢热", "边界清晰", "长期主义"],
     profile: "你面对克制型伴侣时，既要识别安静里的在意，也要避免把所有沉默都替对方解释。真正的适配来自清楚表达、尊重空间和持续兑现。",
@@ -607,7 +607,7 @@ export const ROLES = {
     ])
   },
   zhouye: {
-    name: "周野", role: "直球热烈的摄影师", pronoun: "他", accent: "#ff5a6f", portrait: "assets/zhouye.png",
+    name: "周野", role: "直球热烈的摄影师", pronoun: "他", accent: "#ff5a6f", portrait: "assets/zhouye.webp",
     quote: "他喜欢把心动变成行动，也需要有人在热烈之外帮关系守住方向。",
     tags: ["直球", "行动派", "需要自由"],
     profile: "面对热烈型伴侣，你需要能接住真诚，也能在临时起意和情绪冲动中守住自己的边界。适配不是陪他一直冒险，而是敢一起出发，也敢及时说停。",
@@ -625,7 +625,7 @@ export const ROLES = {
     ])
   },
   linwan: {
-    name: "林晚", role: "细腻高敏的插画师", pronoun: "她", accent: "#55d6be", portrait: "assets/linwan.png",
+    name: "林晚", role: "细腻高敏的插画师", pronoun: "她", accent: "#55d6be", portrait: "assets/linwan.webp",
     quote: "她听得见话语里的停顿，也希望自己的细腻被认真回应，而不是被简单安抚。",
     tags: ["高敏感", "重细节", "情绪诚实"],
     profile: "面对高敏型伴侣，你需要区分共情和兜底：看见她的情绪，不代表替她承担全部情绪。稳定回应、具体表达和清晰边界缺一不可。",
@@ -643,7 +643,7 @@ export const ROLES = {
     ])
   },
   shenzhixia: {
-    name: "沈知夏", role: "独立清醒的创业者", pronoun: "她", accent: "#f3c849", portrait: "assets/shenzhixia.png",
+    name: "沈知夏", role: "独立清醒的创业者", pronoun: "她", accent: "#f3c849", portrait: "assets/shenzhixia.webp",
     quote: "她不需要被拯救，更在意你能否并肩前进，同时尊重彼此完整的人生。",
     tags: ["独立", "高执行", "平等共建"],
     profile: "面对事业型伴侣，你需要既不把独立误读成不需要爱，也不把支持变成介入和控制。真正的适配是平等协商、责任清楚、各自成长。",
