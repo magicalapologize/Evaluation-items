@@ -175,7 +175,7 @@
       .modal-tip, .cashback-copy { font-size: 16px; }
       .qr-card { width: 170px; }
     }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before { transition: none !important; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
   </style>
   <link rel="stylesheet" href="../../assets/css/test-member.css?v=20260716" />
 </head>
