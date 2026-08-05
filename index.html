@@ -762,14 +762,17 @@
 		<script defer src="assets/js/member-auth.js?v=20260721"></script>
 		<script>
 			const memberEntry = document.getElementById("member-entry");
-			YunduMember.getMember().then((member) => {
-				if (!member.authenticated) return;
-				memberEntry.classList.toggle("is-active", member.active);
-				memberEntry.querySelector("b").textContent = member.active ? "超级会员" : "会员已过期";
-				memberEntry.title = member.active
-					? `${member.planLabel} · ${YunduMember.formatExpiry(member)}`
-					: "会员已过期，点击续费";
-			}).catch(() => {});
+			const memberApi = globalThis.YunduMember;
+			if (memberApi) {
+				memberApi.getMember().then((member) => {
+					if (!member.authenticated) return;
+					memberEntry.classList.toggle("is-active", member.active);
+					memberEntry.querySelector("b").textContent = member.active ? "超级会员" : "会员已过期";
+					memberEntry.title = member.active
+						? `${member.planLabel} · ${memberApi.formatExpiry(member)}`
+						: "会员已过期，点击续费";
+				}).catch(() => {});
+			}
 		</script>
 		<script>
 			// Hamburger nav toggle
