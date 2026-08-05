@@ -7,7 +7,8 @@ const PRODUCT_IDS = new Set([
   "historical-heroines",
   "cultivation-protagonist",
   "talent-career",
-  "love-simulation"
+  "love-simulation",
+  "seven-sins"
 ]);
 
 const PLAN_LABELS = {

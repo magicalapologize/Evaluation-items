@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">七宗罪主导倾向测试</title>
+  <desc id="desc">暗色七边形与七宗罪维度轮盘封面</desc>
+  <rect width="600" height="600" fill="#090709"/>
+  <g fill="none" stroke="#d7ad67" opacity=".22">
+    <circle cx="300" cy="282" r="214" stroke-width="2"/>
+    <circle cx="300" cy="282" r="160" stroke-width="1"/>
+    <circle cx="300" cy="282" r="105" stroke-width="1"/>
+  </g>
+  <g fill="none" stroke="#d7ad67" opacity=".16" stroke-width="1">
+    <path d="M300 70v424M88 282h424M150 132l300 300M450 132 150 432"/>
+  </g>
+  <polygon points="300,150 415,200 450,326 372,430 228,430 150,326 185,200" fill="#701b27" fill-opacity=".62" stroke="#d7ad67" stroke-width="3"/>
+  <polygon points="300,200 370,230 392,306 345,365 255,365 208,306 230,230" fill="#b52f3d" fill-opacity=".42" stroke="#e9834e" stroke-opacity=".65" stroke-width="2"/>
+  <text x="300" y="290" text-anchor="middle" fill="#f5ead8" font-family="Georgia, serif" font-size="68" font-weight="700">VII</text>
+  <text x="300" y="330" text-anchor="middle" fill="#d7ad67" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="5">INNER SIGNALS</text>
+  <g fill="#f1dcc0" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle">
+    <text x="300" y="48">傲慢</text><text x="486" y="156">贪婪</text><text x="530" y="350">色欲</text>
+    <text x="406" y="540">嫉妒</text><text x="194" y="540">暴怒</text><text x="70" y="350">暴食</text><text x="114" y="156">懒惰</text>
+  </g>
+  <text x="300" y="578" text-anchor="middle" fill="#bcae9a" font-family="Arial, sans-serif" font-size="17" letter-spacing="3">七宗罪主导倾向测试 · 35题</text>
+</svg>

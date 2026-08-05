@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Love Result Capture</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 1170px; height: 2532px; margin: 0; overflow: hidden; background: #fff; }
+    iframe { width: 390px; height: 844px; display: block; border: 0; transform: scale(3); transform-origin: top left; }
+  </style>
+</head>
+<body>
+  <iframe src="/tests/love-simulation/" title="心动副本高清截图画布"></iframe>
+  <script>
+    const frame = document.querySelector("iframe");
+    frame.addEventListener("load", () => {
+      const role = new URLSearchParams(location.search).get("role");
+      if (!role) return;
+      setTimeout(() => {
+        const doc = frame.contentDocument;
+        const code = doc.querySelector("#access-code");
+        code.value = "LOCAL-DEMO";
+        code.dispatchEvent(new Event("input", { bubbles: true }));
+        doc.querySelector("#start-btn").click();
+        setTimeout(() => doc.querySelector(`[data-role="${role}"]`)?.click(), 180);
+      }, 220);
+    });
+  </script>
+</body>
+</html>
