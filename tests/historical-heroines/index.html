@@ -411,5 +411,31 @@
     $("save-poster-btn").addEventListener("click", async () => { if (!state.lastResult) return; $("poster-image").src = await createPosterImage(); $("poster-modal").classList.add("active"); });
     $("poster-close").addEventListener("click", () => $("poster-modal").classList.remove("active")); $("poster-modal").addEventListener("click", (event) => { if (event.target === $("poster-modal")) $("poster-modal").classList.remove("active"); }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("active")); $("cashback-close").addEventListener("click", () => $("cashback-modal").classList.remove("active")); $("cashback-modal").addEventListener("click", (event) => { if (event.target === $("cashback-modal")) $("cashback-modal").classList.remove("active"); }); document.addEventListener("keydown", (event) => { if (event.key === "Escape") { $("poster-modal").classList.remove("active"); $("cashback-modal").classList.remove("active"); } });
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Quiz",
+    "name": "测试你是哪位历史女主",
+    "description": "通过30道历史情境题，测试你是哪位历史女主，并获得属于你的行动建议。",
+    "url": "https://eval.yundu.app/tests/historical-heroines/",
+    "educationalAlignment": {
+        "@type": "AlignmentObject",
+        "alignmentType": "assesses",
+        "targetName": "行动与决策风格"
+    },
+    "author": {
+        "@type": "Person",
+        "name": "云云",
+        "url": "https://eval.yundu.app/"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "云渡测评实验室",
+        "url": "https://eval.yundu.app/"
+    },
+    "numberOfQuestions": 30,
+    "inLanguage": "zh-CN"
+}
+  </script>
 </body>
 </html>

@@ -267,5 +267,31 @@
     $("start-btn").addEventListener("click", async () => { const button = $("start-btn"); const code = $("access-code").value.trim().toUpperCase(); button.disabled = true; button.textContent = "正在验证..."; $("gate-error").textContent = ""; try { await memberReady; if (!activeMember) await verifyDailyAccessCode("cultivation-protagonist", code); state.index = 0; state.answers = []; state.lastResult = null; showScreen("mode-screen"); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始测试" : "开始测试"; } });
     $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("back-home-btn").addEventListener("click", () => showScreen("home-screen")); document.querySelectorAll("[data-gender]").forEach((button) => button.addEventListener("click", () => { state.gender = button.dataset.gender === "random" ? (Math.random() < .5 ? "male" : "female") : button.dataset.gender; state.index = 0; state.answers = []; renderQuestion(); showScreen("quiz-screen"); })); $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } }); $("restart-btn").addEventListener("click", () => { state.index = 0; state.answers = []; showScreen("mode-screen"); }); $("copy-btn").addEventListener("click", async () => { const button = $("copy-btn"); try { await navigator.clipboard.writeText(button.dataset.summary); button.textContent = "已复制结果"; } catch { button.textContent = "复制失败，请手动截图"; } setTimeout(() => { button.textContent = "复制结果摘要"; }, 1800); }); $("save-poster-btn").addEventListener("click", async () => { if (!state.lastResult) return; $("poster-image").src = await createPosterImage(); $("poster-modal").classList.add("active"); }); $("poster-close").addEventListener("click", () => $("poster-modal").classList.remove("active")); $("poster-modal").addEventListener("click", (event) => { if (event.target === $("poster-modal")) $("poster-modal").classList.remove("active"); }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("active")); $("cashback-close").addEventListener("click", () => $("cashback-modal").classList.remove("active")); $("cashback-modal").addEventListener("click", (event) => { if (event.target === $("cashback-modal")) $("cashback-modal").classList.remove("active"); }); document.addEventListener("keydown", (event) => { if (event.key === "Escape") { $("poster-modal").classList.remove("active"); $("cashback-modal").classList.remove("active"); } });
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Quiz",
+    "name": "测试你是哪位修仙小说主角",
+    "description": "通过36道修真情境题，测试你是哪位修仙小说主角，并获得来自小说角色的现实人生建议。",
+    "url": "https://eval.yundu.app/tests/cultivation-protagonist/",
+    "educationalAlignment": {
+        "@type": "AlignmentObject",
+        "alignmentType": "assesses",
+        "targetName": "修仙人格类型"
+    },
+    "author": {
+        "@type": "Person",
+        "name": "云云",
+        "url": "https://eval.yundu.app/"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "云渡测评实验室",
+        "url": "https://eval.yundu.app/"
+    },
+    "numberOfQuestions": 36,
+    "inLanguage": "zh-CN"
+}
+  </script>
 </body>
 </html>
