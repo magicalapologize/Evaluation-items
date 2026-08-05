@@ -32,4 +32,7 @@ assets/js/main.js
 assets/js/breakpoints.min.js
 assets/js/browser.min.js
 assets/js/util.js
+assets/webfonts
+assets/webfonts/**
 assets/css/site.css
+images/yundu-logo.png
