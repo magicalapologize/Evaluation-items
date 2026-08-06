@@ -182,6 +182,5 @@ const resultCopy = {
 
 export const RESULTS = DIMENSIONS.map((dimension) => ({
   key: dimension.key,
-  ...resultCopy[dimension.key],
-  prototype: Object.fromEntries(DIMENSIONS.map(({ key }) => [key, key === dimension.key ? 0.88 : 0.38]))
+  ...resultCopy[dimension.key]
 }));

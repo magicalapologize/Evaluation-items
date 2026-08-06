@@ -136,13 +136,13 @@
 
         <section class="report-section">
           <p class="section-kicker">SEVEN SIGNALS</p>
-          <h2 class="section-title">七宗罪分布图</h2>
-          <div class="radar-wrap"><svg id="radar-svg" class="radar-svg" viewBox="0 0 360 360" role="img" aria-label="七宗罪七维分布图"></svg></div>
+          <h2 class="section-title">七宗罪倾向指数分布</h2>
+          <div class="radar-wrap"><svg id="radar-svg" class="radar-svg" viewBox="0 0 360 360" role="img" aria-label="七宗罪七维倾向指数分布图"></svg></div>
         </section>
 
         <section class="report-section">
           <p class="section-kicker">DIMENSION RANKING</p>
-          <h2 class="section-title">七宗罪维度排行</h2>
+          <h2 class="section-title">七宗罪倾向指数排行</h2>
           <div id="ranking-list" class="ranking-list"></div>
         </section>
 
@@ -296,8 +296,8 @@
       const duration = reduced ? 320 : 1800;
       const stages = [
         [0, "正在整理你的答题线索", "把 35 道情境题的选择重新排列。"],
-        [duration * .28, "正在校准七重倾向", "比较每个维度在你答卷里的相对强度。"],
-        [duration * .56, "正在匹配主导机制", "寻找最接近你当前状态的结果原型。"],
+        [duration * .28, "正在校准七重倾向", "计算每个维度在本次答卷里的倾向指数。"],
+        [duration * .56, "正在确认主导维度", "从七个倾向里确认本次最突出的一个。"],
         [duration * .78, "正在生成完整报告", "把触发场景和建议整理成可执行的提醒。"]
       ];
       stages.forEach(([delay, title, subtitle], index) => {
@@ -462,7 +462,7 @@
       ctx.fillStyle = "#d7ad67";
       ctx.font = "700 20px sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText("七宗罪维度", 108, 565);
+      ctx.fillText("七宗罪倾向指数", 108, 565);
       const dims = [...DIMENSIONS];
       dims.forEach((dimension, index) => {
         const col = index % 2;

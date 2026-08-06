@@ -1,15 +1,17 @@
 import { DIMENSIONS, QUESTIONS, RESULTS } from "./data.mjs";
 
 const KEYS = DIMENSIONS.map(({ key }) => key);
-const RESULT_BIAS = {
-  pride: -0.002,
-  greed: 0.003,
-  lust: 0.001,
-  envy: 0.01,
-  wrath: 0.003,
-  gluttony: 0.003,
-  sloth: 0.006
-};
+
+const SIGNAL_STATS = Object.fromEntries(KEYS.map((key) => [key, QUESTIONS.reduce((stats, question) => {
+  const values = question.options.map((option) => option.scores[key]);
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const variance = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+  return {
+    min: stats.min + Math.min(...values),
+    max: stats.max + Math.max(...values),
+    variance: stats.variance + variance
+  };
+}, { min: 0, max: 0, variance: 0 })]));
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -25,34 +27,21 @@ function hashAnswers(answers) {
 }
 
 function normalizeSignals(raw) {
-  const bounds = Object.fromEntries(KEYS.map((key) => [key, 0]));
-  QUESTIONS.forEach((question) => {
-    KEYS.forEach((key) => {
-      bounds[key] = Math.max(
-        bounds[key],
-        ...question.options.map((option) => Math.abs(option.scores[key]))
-      );
-    });
-  });
   return Object.fromEntries(KEYS.map((key) => [
     key,
-    clamp(0.5 + raw[key] / (bounds[key] * QUESTIONS.length), 0, 1)
+    clamp(0.5 + raw[key] / (4 * Math.sqrt(SIGNAL_STATS[key].variance)), 0, 1)
   ]));
-}
-
-function distance(left, right) {
-  return KEYS.reduce((sum, key) => sum + (left[key] - right[key]) ** 2, 0);
 }
 
 function displayScale(signals) {
-  const values = Object.values(signals);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  if (max === min) return Object.fromEntries(KEYS.map((key) => [key, 50]));
-  return Object.fromEntries(KEYS.map((key) => [
-    key,
-    Math.round(35 + ((signals[key] - min) / (max - min)) * 60)
-  ]));
+  return Object.fromEntries(KEYS.map((key) => [key, Math.round(signals[key] * 100)]));
+}
+
+export function getSignalBounds() {
+  return Object.fromEntries(KEYS.map((key) => [key, {
+    min: SIGNAL_STATS[key].min,
+    max: SIGNAL_STATS[key].max
+  }]));
 }
 
 export function calculateProfile(answerIndexes) {
@@ -68,15 +57,11 @@ export function calculateProfile(answerIndexes) {
   });
 
   const signals = normalizeSignals(raw);
-  const ranked = RESULTS.map((result) => ({
-    result,
-    score: distance(signals, result.prototype) + RESULT_BIAS[result.key]
-  }))
-    .sort((left, right) => left.score - right.score);
-  const bestScore = ranked[0].score;
-  const tied = ranked.filter((item) => item.score - bestScore <= 0.015);
-  const result = tied[hashAnswers(answerIndexes) % tied.length].result;
   const ranking = [...KEYS].sort((left, right) => signals[right] - signals[left]);
+  const maxSignal = Math.max(...Object.values(signals));
+  const topKeys = KEYS.filter((key) => Math.abs(signals[key] - maxSignal) <= Number.EPSILON * 8);
+  const resultKey = topKeys[hashAnswers(answerIndexes) % topKeys.length];
+  const result = RESULTS.find((item) => item.key === resultKey);
   const displayScores = displayScale(signals);
   const total = Math.round(Object.values(displayScores).reduce((sum, value) => sum + value, 0) / KEYS.length);
 
@@ -86,6 +71,7 @@ export function calculateProfile(answerIndexes) {
     signals,
     displayScores,
     ranking,
+    topKeys,
     secondKey: ranking[1],
     total,
     fingerprint: hashAnswers(answerIndexes).toString(16)
