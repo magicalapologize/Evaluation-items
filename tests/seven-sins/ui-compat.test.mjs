@@ -27,3 +27,11 @@ test("海报圆角绘制兼容不支持 ctx.roundRect 的旧版浏览器", () =>
   assert.ok(calls.includes("arcTo"), "旧版浏览器应走 arcTo 圆角路径");
   assert.ok(calls.includes("fill"), "圆角区域应正常填充");
 });
+
+test("好评返现文案明确写出返 1 元", () => {
+  assert.match(html, /五星好评，带 3 张截图，15 字以上就能返 1 元。截图发给店铺客服即可，活动可能随时结束。/);
+});
+
+test("海报把七宗罪结果名称作为红色大字单独突出", () => {
+  assert.match(html, /ctx\.fillStyle = "#f05a66";\s*ctx\.font = "700 96px serif";\s*ctx\.fillText\(result\.name, width \/ 2, 230\);/);
+});
