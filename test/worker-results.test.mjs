@@ -30,7 +30,7 @@ function validSnapshot(attemptId = "attempt-a") {
 }
 
 class MemoryD1 {
-  constructor({ memberId = null, expired = false, records = [], raceOnInsert = false } = {}) {
+  constructor({ memberId = null, expired = false, records = [], raceOnInsert = false, failResults = false } = {}) {
     this.memberId = memberId;
     this.member = memberId ? {
       id: memberId,
@@ -44,6 +44,7 @@ class MemoryD1 {
     this.sessions = memberId ? [{ id: "session-1", member_id: memberId, token_hash: null, revoked_at: null, expires_at: "2099-01-01T00:00:00.000Z" }] : [];
     this.records = records.map((record) => ({ ...record }));
     this.raceOnInsert = raceOnInsert;
+    this.failResults = failResults;
     this.authAttempts = [];
   }
 
@@ -72,6 +73,7 @@ class MemoryD1 {
           },
           async all() {
             if (sql.includes("FROM test_results")) {
+              if (db.failResults) throw new Error("D1_ERROR: no such table: test_results");
               const [memberId] = values;
               return { results: db.records.filter((item) => item.member_id === memberId).sort((a, b) => b.created_at.localeCompare(a.created_at)) };
             }
@@ -116,7 +118,8 @@ async function envFor(memberId = null, options = {}) {
     memberId,
     expired: options.expired,
     records: options.records || [],
-    raceOnInsert: options.raceOnInsert || false
+    raceOnInsert: options.raceOnInsert || false,
+    failResults: options.failResults || false
   });
   if (memberId) db.sessions[0].token_hash = await sha256(TOKEN);
   return { DB: db, ASSETS: { fetch: () => new Response("asset") } };
@@ -169,4 +172,20 @@ test("过期但会话有效的账号可以读取历史", async () => {
   const env = await envFor("member-a", { expired: true, records: [{ id: "record-a", member_id: "member-a", attempt_id: "attempt-a", product_id: "love-personality", snapshot_json: JSON.stringify(validSnapshot()), created_at: "2026-08-07T00:00:00.000Z" }] });
   const response = await worker.fetch(request("/api/member/results"), env);
   assert.equal(response.status, 200);
+});
+
+test("历史表异常时 API 仍返回 JSON", async () => {
+  const env = await envFor("member-a", { failResults: true });
+  const originalConsoleError = console.error;
+  console.error = () => {};
+  let response;
+  try {
+    response = await worker.fetch(request("/api/member/results"), env);
+  } finally {
+    console.error = originalConsoleError;
+  }
+  assert.equal(response.status, 503);
+  assert.match(response.headers.get("content-type") || "", /application\/json/);
+  const payload = await response.json();
+  assert.equal(payload.success, false);
 });

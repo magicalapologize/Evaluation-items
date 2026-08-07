@@ -291,7 +291,7 @@
     }
 
     function historyHref(member) {
-      return member && member.authenticated ? "/member/#test-history" : "/history/";
+      return member && member.authenticated ? "/history/?member=1" : "/history/";
     }
 
     async function loadHistoryResult(expectedProductId, search) {
@@ -322,7 +322,7 @@
       return {
         source,
         snapshot: normalized,
-        returnHref: source === "member" ? "/member/#test-history" : "/history/"
+        returnHref: source === "member" ? "/history/?member=1" : "/history/"
       };
     }
 

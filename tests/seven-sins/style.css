@@ -219,6 +219,9 @@ p, h1, h2, h3, ul { margin: 0; }
 .report-action { min-height: 54px; padding: 0 13px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--gold-soft); background: rgba(23, 18, 20, .9); font-size: 14px; font-weight: 800; }
 .report-action.primary { color: #fff7ed; }
 .report-action:hover { border-color: var(--gold); }
+.history-link-row { margin: 14px 0 0; text-align: center; }
+.history-link { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--gold-soft); background: rgba(23, 18, 20, .72); font-size: 12px; font-weight: 800; text-decoration: none; }
+.history-link:hover { border-color: var(--gold); }
 .footer-note { margin-top: 22px; color: var(--dim); font-size: 12px; line-height: 1.7; text-align: center; }
 
 .modal { position: fixed; inset: 0; z-index: 50; display: none; align-items: flex-end; justify-content: center; padding: 18px; background: rgba(0, 0, 0, .72); }

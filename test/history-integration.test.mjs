@@ -30,6 +30,11 @@ test("快照内容不通过 innerHTML 渲染", () => {
   assert.match(script, /textContent/);
 });
 
+test("历史页不会把 HTML 错误页当作 JSON 解析", () => {
+  assert.match(read("assets/js/history-page.js"), /content-type/);
+  assert.match(read("assets/js/member-history.js"), /content-type/);
+});
+
 test("会员中心包含历史记录区域", () => {
   const html = read("member/index.html");
   assert.match(html, /id="test-history"/);
@@ -49,11 +54,24 @@ test("历史列表和会员中心直接跳转原结果页", () => {
   assert.doesNotMatch(read("assets/js/history-page.js"), /renderSnapshot/);
 });
 
+test("会员独立历史页先同步待上传记录", () => {
+  const script = read("assets/js/history-page.js");
+  assert.match(script, /await YunduHistory\.syncPending\(\);[\s\S]*requestJson\("\/api\/member\/results"\)/);
+});
+
 test("首页提供我的测试结果入口", () => {
   const html = read("index.html");
   assert.match(html, /id="history-entry"/);
   assert.match(html, />我的测试结果</);
-  assert.match(html, /historyEntry\.href/);
+  assert.match(html, /historyEntry\.href\s*=\s*"history\/\?member=1"/);
+});
+
+test("七宗罪历史入口使用居中的小按钮样式", () => {
+  const html = read("tests/seven-sins/index.html");
+  const css = read("tests/seven-sins/style.css");
+  assert.match(html, /test-member\.css/);
+  assert.match(css, /\.history-link-row\s*\{[^}]*text-align:\s*center/s);
+  assert.match(css, /\.history-link\s*\{[^}]*border:/s);
 });
 
 const products = [

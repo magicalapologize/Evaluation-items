@@ -120,6 +120,12 @@ test("历史记录链接只使用固定产品路径", () => {
   assert.throws(() => client.historyResultHref({ id: "r1", productId: "love-personality" }, "other"), /来源/);
 });
 
+test("会员从结果页进入独立测试记录页", () => {
+  const client = createHistoryClient({ storage: memoryStorage() });
+  assert.equal(client.historyHref({ authenticated: true }), "/history/?member=1");
+  assert.equal(client.historyHref({ authenticated: false }), "/history/");
+});
+
 test("本机历史只能在对应产品页读取", async () => {
   const client = createHistoryClient({
     storage: memoryStorage(),
@@ -144,7 +150,7 @@ test("会员历史通过详情接口加载", async () => {
     "love-personality", "?history=remote-2&source=member"
   );
   assert.equal(loaded.snapshot.attemptId, "attempt-2");
-  assert.equal(loaded.returnHref, "/member/#test-history");
+  assert.equal(loaded.returnHref, "/history/?member=1");
 });
 
 test("无历史参数不进入回放模式", async () => {

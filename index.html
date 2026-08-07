@@ -767,7 +767,7 @@
 			const memberApi = globalThis.YunduMember;
 			if (memberApi) {
 				memberApi.getMember().then((member) => {
-					if (member.authenticated) historyEntry.href = "member/#test-history";
+					if (member.authenticated) historyEntry.href = "history/?member=1";
 					if (!member.authenticated) return;
 					memberEntry.classList.toggle("is-active", member.active);
 					memberEntry.querySelector("b").textContent = member.active ? "超级会员" : "会员已过期";

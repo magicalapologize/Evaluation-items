@@ -702,6 +702,22 @@ async function memberRedeem(request, env) {
   }
 }
 
+async function handleMemberResults(request, env, resultId = null) {
+  try {
+    if (resultId) {
+      if (request.method === "GET") return await getMemberResult(request, env, resultId);
+      if (request.method === "DELETE") return await deleteMemberResult(request, env, resultId);
+    } else {
+      if (request.method === "POST") return await createMemberResult(request, env);
+      if (request.method === "GET") return await listMemberResults(request, env);
+    }
+    return json({ success: false, message: "请求方法不支持" }, 405);
+  } catch (error) {
+    console.error("Member results failed", error);
+    return json({ success: false, message: "测试记录服务暂不可用，请稍后再试" }, 503);
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -712,17 +728,9 @@ export default {
     if (url.pathname === "/api/member/me") return memberMe(request, env);
     if (url.pathname === "/api/member/logout") return memberLogout(request, env);
     if (url.pathname === "/api/member/redeem") return memberRedeem(request, env);
-    if (url.pathname === "/api/member/results") {
-      if (request.method === "POST") return createMemberResult(request, env);
-      if (request.method === "GET") return listMemberResults(request, env);
-      return json({ success: false, message: "请求方法不支持" }, 405);
-    }
+    if (url.pathname === "/api/member/results") return handleMemberResults(request, env);
     const resultMatch = url.pathname.match(/^\/api\/member\/results\/([0-9a-z-]+)$/i);
-    if (resultMatch) {
-      if (request.method === "GET") return getMemberResult(request, env, resultMatch[1]);
-      if (request.method === "DELETE") return deleteMemberResult(request, env, resultMatch[1]);
-      return json({ success: false, message: "请求方法不支持" }, 405);
-    }
+    if (resultMatch) return handleMemberResults(request, env, resultMatch[1]);
 
     return env.ASSETS.fetch(request);
   }

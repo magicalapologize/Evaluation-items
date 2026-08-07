@@ -22,7 +22,15 @@
 
   async function request(path, options) {
     const response = await fetch(path, { credentials: "same-origin", ...options });
-    const payload = await response.json();
+    if (!(response.headers.get("content-type") || "").includes("application/json")) {
+      throw new Error("测试记录服务响应异常，请确认网站后端已完成更新");
+    }
+    let payload;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new Error("测试记录服务响应异常，请稍后再试");
+    }
     if (!response.ok || !payload.success) throw new Error(payload.message || "测试记录暂时无法读取");
     return payload;
   }

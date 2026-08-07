@@ -57,7 +57,15 @@
 
   async function requestJson(path, options) {
     const response = await fetch(path, { credentials: "same-origin", ...options });
-    const payload = await response.json();
+    if (!(response.headers.get("content-type") || "").includes("application/json")) {
+      throw new Error("测试记录服务响应异常，请确认网站后端已完成更新");
+    }
+    let payload;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new Error("测试记录服务响应异常，请稍后再试");
+    }
     if (!response.ok || !payload.success) throw new Error(payload.message || "会员记录暂时无法读取");
     return payload;
   }
@@ -80,6 +88,7 @@
     message.textContent = "";
     if (memberMode) {
       note.textContent = "会员记录保存在云端，登录同一会员账号即可查看。";
+      await YunduHistory.syncPending();
       const payload = await requestJson("/api/member/results");
       renderList(payload.records || []);
       return;
