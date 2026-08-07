@@ -340,6 +340,21 @@
       $("radar-svg").innerHTML = `<polygon class="radar-grid" points="${polygon(100)}" /><polygon class="radar-grid" points="${polygon(75)}" /><polygon class="radar-grid" points="${polygon(50)}" /><polygon class="radar-grid" points="${polygon(25)}" />${axes}<polygon class="radar-shape" points="${shape}" />${dots}`;
     }
 
+    function renderNumberedRows(container, items, rowClass, indexClass) {
+      while (container.firstChild) container.removeChild(container.firstChild);
+      items.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = rowClass;
+        const number = document.createElement("span");
+        number.className = indexClass;
+        number.textContent = String(index + 1);
+        const copy = document.createElement("p");
+        copy.textContent = item;
+        row.append(number, copy);
+        container.append(row);
+      });
+    }
+
     function renderReport(profile) {
       const result = profile.result;
       const second = DIMENSIONS.find((dimension) => dimension.key === profile.secondKey);
@@ -609,12 +624,12 @@
       $("result-summary-copy").textContent = snapshot.result.quote;
       YunduHistoryReplay.renderTags($("result-tags"), snapshot.tags);
       YunduHistoryReplay.renderDimensions($("ranking-list"), snapshot.dimensions);
-      YunduHistoryReplay.renderItems($("trigger-list"), sections.get("你的常见触发场景")?.items || [], "trigger-row");
+      renderNumberedRows($("trigger-list"), sections.get("你的常见触发场景")?.items || [], "trigger-row", "trigger-index");
       $("portrait").textContent = sections.get("你为什么会得到这个结果")?.body || "";
       $("strength").textContent = sections.get("这份倾向的核心优势")?.body || "";
       $("risk").textContent = sections.get("优势过度使用后")?.body || "";
       $("fit").textContent = sections.get("更适合你的场景")?.body || "";
-      YunduHistoryReplay.renderItems($("advice-list"), sections.get("把倾向变成可控动作")?.items || [], "advice-row");
+      renderNumberedRows($("advice-list"), sections.get("把倾向变成可控动作")?.items || [], "advice-row", "advice-index");
       $("reminder").textContent = sections.get("给你的提醒")?.body || "";
       renderRadar(displayScores);
       $("copy-btn").dataset.summary = `这次我的七宗罪结果是「${result.name}」（${snapshot.result.subtitle}）。${snapshot.result.quote}`;

@@ -479,6 +479,7 @@
       $("fit").textContent = result.fit;
       YunduHistoryReplay.renderItems($("advice-list"), result.advices);
       $("partner-note").textContent = result.note;
+      renderRadarChart(dimensions);
       YunduHistoryReplay.renderDimensions($("dimension-list"), snapshot.dimensions);
       $("copy-btn").dataset.summary = `我的历史女主结果是「${result.name}」：${result.alias}。${result.quote}`;
     }, () => showScreen("result-screen"));

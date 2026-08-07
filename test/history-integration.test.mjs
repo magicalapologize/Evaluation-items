@@ -87,6 +87,28 @@ test("七宗罪历史回放与测试模块共享结果数据", () => {
   assert.match(moduleScript, /YunduHistoryReplay\.init\("seven-sins"/);
 });
 
+test("历史回放使用各产品完整雷达图数据结构", () => {
+  const cultivation = read("tests/cultivation-protagonist/index.html");
+  const solo = read("tests/solo-business/index.html");
+  const heroines = read("tests/historical-heroines/index.html");
+  const cultivationReplay = cultivation.slice(cultivation.lastIndexOf('YunduHistoryReplay.init("cultivation-protagonist"'));
+  const soloReplay = solo.slice(solo.lastIndexOf('YunduHistoryReplay.init("solo-business"'));
+  const heroinesReplay = heroines.slice(heroines.lastIndexOf('YunduHistoryReplay.init("historical-heroines"'));
+
+  assert.match(cultivationReplay, /renderRadarChart\(dimensions\.map\(\(\[name, value\]\)\s*=>\s*\[name, value\]\)\)/);
+  assert.match(soloReplay, /renderRadar\(result\.metrics\)/);
+  assert.match(heroinesReplay, /renderRadarChart\(dimensions\)/);
+});
+
+test("七宗罪历史文案保留序号和正文两列结构", () => {
+  const html = read("tests/seven-sins/index.html");
+  const replay = html.slice(html.lastIndexOf('YunduHistoryReplay.init("seven-sins"'));
+  assert.match(html, /function renderNumberedRows\(/);
+  assert.match(replay, /renderNumberedRows\(\$\("trigger-list"\)/);
+  assert.match(replay, /renderNumberedRows\(\$\("advice-list"\)/);
+  assert.doesNotMatch(replay, /YunduHistoryReplay\.renderItems\([^\n]*"(?:trigger|advice)-row"/);
+});
+
 const products = [
   "solo-business", "cultivation-protagonist", "love-personality",
   "workplace-madness", "three-kingdoms-advisor", "historical-emperor",
