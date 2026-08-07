@@ -79,6 +79,14 @@ test("七宗罪历史入口使用居中的小按钮样式", () => {
   assert.match(css, /\.history-link\s*\{[^}]*border:/s);
 });
 
+test("七宗罪历史回放与测试模块共享结果数据", () => {
+  const html = read("tests/seven-sins/index.html");
+  const moduleScript = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+    .find(([, attrs]) => attrs.includes('type="module"'))?.[2] || "";
+  assert.match(moduleScript, /import\s*\{[^}]*RESULTS[^}]*\}\s*from\s*"\.\/data\.mjs"/s);
+  assert.match(moduleScript, /YunduHistoryReplay\.init\("seven-sins"/);
+});
+
 const products = [
   "solo-business", "cultivation-protagonist", "love-personality",
   "workplace-madness", "three-kingdoms-advisor", "historical-emperor",

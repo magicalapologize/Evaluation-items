@@ -206,7 +206,7 @@
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
   <script type="module">
-    import { DIMENSIONS, QUESTIONS } from "./data.mjs";
+    import { DIMENSIONS, QUESTIONS, RESULTS } from "./data.mjs";
     import { calculateProfile } from "./model.mjs";
 
     const PRODUCT_ID = "seven-sins";
@@ -594,8 +594,7 @@
     document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("active")));
     document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("active"); }));
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") document.querySelectorAll(".modal.active").forEach((modal) => modal.classList.remove("active")); });
-  </script>
-  <script>
+
     YunduHistoryReplay.init("seven-sins", (snapshot) => {
       const result = RESULTS.find((item) => item.name === snapshot.result.name);
       if (!result) throw new Error("测试结果不存在");
