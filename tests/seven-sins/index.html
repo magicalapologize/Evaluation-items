@@ -176,6 +176,7 @@
           <button id="restart-btn" class="report-action" type="button">重新测试</button>
           <button id="cashback-btn" class="report-action" type="button">好评返现</button>
         </div>
+        <p class="history-link-row"><a class="history-link" data-history-link href="/history/">查看我的测试记录</a></p>
         <p class="footer-note">本测试仅用于娱乐和自我观察，不作为心理诊断、医学判断或行为预测依据。真实状态会受到经历、情境和互动影响。</p>
       </div>
     </section>
@@ -201,13 +202,15 @@
   </main>
 
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
+  <script src="../../assets/js/test-history.js?v=20260807"></script>
+  <script src="../../assets/js/history-replay.js?v=20260807"></script>
   <script type="module">
     import { DIMENSIONS, QUESTIONS } from "./data.mjs";
     import { calculateProfile } from "./model.mjs";
 
     const PRODUCT_ID = "seven-sins";
     const $ = (id) => document.getElementById(id);
-    const state = { index: 0, answers: [], profile: null, timers: [], posterUrl: "" };
+    const state = { index: 0, answers: [], profile: null, timers: [], posterUrl: "", historyAttemptId: null };
     let activeMember = null;
     const gateRow = document.querySelector("#home-screen .gate-row");
     const gateNote = document.querySelector("#home-screen .gate-note");
@@ -356,6 +359,14 @@
       $("advice-list").innerHTML = result.advices.map((advice, index) => `<div class="advice-row"><span class="advice-index">${index + 1}</span><p>${advice}</p></div>`).join("");
       $("reminder").textContent = result.reminder;
       $("copy-btn").dataset.summary = `这次我的七宗罪结果是「${result.name}」（${result.alias}）。${result.summary}`;
+      YunduHistory.saveResult(buildHistorySnapshot(profile)).catch(() => {});
+      YunduMember.getMember().then((member) => { $("result-screen").querySelector("[data-history-link]").href = YunduHistory.historyHref(member); }).catch(() => {});
+    }
+
+    function buildHistorySnapshot(profile) {
+      state.historyAttemptId ||= (crypto.randomUUID ? crypto.randomUUID() : `seven-sins-${Date.now()}`);
+      const result = profile.result;
+      return { schemaVersion: 1, attemptId: state.historyAttemptId, productId: PRODUCT_ID, productTitle: "七宗罪主导倾向测试", result: { name: result.name, subtitle: result.alias, quote: result.summary, icon: "", image: "" }, tags: result.keywords, overview: [{ label: "倾向指数", title: `${profile.total} / 100`, body: "本次答卷综合指数" }], dimensions: DIMENSIONS.map((item) => ({ name: item.name, value: profile.displayScores[item.key], left: "较低", right: "较高" })), sections: [{ title: "你的常见触发场景", body: "", items: result.triggers }, { title: "你为什么会得到这个结果", body: result.portrait, items: [] }, { title: "这份倾向的核心优势", body: result.strength, items: [] }, { title: "优势过度使用后", body: result.risk, items: [] }, { title: "更适合你的场景", body: result.fit, items: [] }, { title: "把倾向变成可控动作", body: "", items: result.advices }, { title: "给你的提醒", body: result.reminder, items: [] }], disclaimer: "本测试仅用于娱乐和自我观察，不作为心理诊断、医学判断或行为预测依据。", createdAt: new Date().toISOString() };
     }
 
     function loadPosterImage(src) {
@@ -527,6 +538,7 @@
         state.index = 0;
         state.answers = [];
         state.profile = null;
+        state.historyAttemptId = null;
         renderQuestion();
         showScreen("quiz-screen");
       } catch (error) {
@@ -538,7 +550,7 @@
     });
     $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); });
     $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } });
-    $("restart-btn").addEventListener("click", () => { clearAnalysisTimers(); state.index = 0; state.answers = []; state.profile = null; renderQuestion(); showScreen("quiz-screen"); });
+    $("restart-btn").addEventListener("click", () => { clearAnalysisTimers(); state.index = 0; state.answers = []; state.profile = null; state.historyAttemptId = null; renderQuestion(); showScreen("quiz-screen"); });
     $("copy-btn").addEventListener("click", async () => {
       const button = $("copy-btn");
       try { await navigator.clipboard.writeText(button.dataset.summary || ""); button.textContent = "已复制结果"; } catch { button.textContent = "复制失败，请手动截图"; }
@@ -581,6 +593,32 @@
     document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("active")));
     document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("active"); }));
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") document.querySelectorAll(".modal.active").forEach((modal) => modal.classList.remove("active")); });
+  </script>
+  <script>
+    YunduHistoryReplay.init("seven-sins", (snapshot) => {
+      const result = RESULTS.find((item) => item.name === snapshot.result.name);
+      if (!result) throw new Error("测试结果不存在");
+      const sections = YunduHistoryReplay.sectionMap(snapshot);
+      const displayScores = Object.fromEntries(DIMENSIONS.map((item) => [item.key, snapshot.dimensions.find((dimension) => dimension.name === item.name)?.value || 0]));
+      const total = Number((snapshot.overview?.[0]?.title || "").match(/\d+/)?.[0] || 0);
+      state.profile = { result, displayScores, total };
+      state.historyAttemptId = snapshot.attemptId;
+      $("result-score").textContent = total;
+      $("result-chief").textContent = result.name;
+      $("result-alias").textContent = snapshot.result.subtitle;
+      $("result-summary-copy").textContent = snapshot.result.quote;
+      YunduHistoryReplay.renderTags($("result-tags"), snapshot.tags);
+      YunduHistoryReplay.renderDimensions($("ranking-list"), snapshot.dimensions);
+      YunduHistoryReplay.renderItems($("trigger-list"), sections.get("你的常见触发场景")?.items || [], "trigger-row");
+      $("portrait").textContent = sections.get("你为什么会得到这个结果")?.body || "";
+      $("strength").textContent = sections.get("这份倾向的核心优势")?.body || "";
+      $("risk").textContent = sections.get("优势过度使用后")?.body || "";
+      $("fit").textContent = sections.get("更适合你的场景")?.body || "";
+      YunduHistoryReplay.renderItems($("advice-list"), sections.get("把倾向变成可控动作")?.items || [], "advice-row");
+      $("reminder").textContent = sections.get("给你的提醒")?.body || "";
+      renderRadar(displayScores);
+      $("copy-btn").dataset.summary = `这次我的七宗罪结果是「${result.name}」（${snapshot.result.subtitle}）。${snapshot.result.quote}`;
+    }, () => showScreen("result-screen"));
   </script>
   <script type="application/ld+json">
   {

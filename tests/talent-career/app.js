@@ -21,7 +21,7 @@
     explorer: 0.067186
   };
   const $ = (id) => document.getElementById(id);
-  const state = { index: 0, answers: [], resultKey: null, rawProfile: null, displayProfile: null, rankedCareers: [] };
+  const state = { index: 0, answers: [], resultKey: null, rawProfile: null, displayProfile: null, rankedCareers: [], historyAttemptId: null };
   let activeMember = null;
 
   function validateData() {
@@ -83,6 +83,7 @@
   function startQuiz() {
     state.index = 0;
     state.answers = [];
+    state.historyAttemptId = null;
     state.resultKey = null;
     showScreen("quiz-screen");
     renderQuestion();
@@ -227,6 +228,40 @@
       </article>
     `).join("");
     renderCareerMap();
+    YunduHistory.saveResult(buildHistorySnapshot(result, dimensions)).catch(() => {});
+    YunduMember.getMember().then((member) => { $("result-screen").querySelector("[data-history-link]").href = YunduHistory.historyHref(member); }).catch(() => {});
+  }
+
+  function buildHistorySnapshot(result, dimensions) {
+    state.historyAttemptId ||= (crypto.randomUUID ? crypto.randomUUID() : `talent-career-${Date.now()}`);
+    return {
+      schemaVersion: 1,
+      attemptId: state.historyAttemptId,
+      productId: "talent-career",
+      productTitle: "天赋能力与职业发展方向评估",
+      result: {
+        name: result.name,
+        subtitle: result.alias,
+        quote: result.summary,
+        icon: "",
+        image: "",
+        match: Math.max(72, Math.min(96, Math.round(76 + Math.max(0, state.typeSimilarity || 0) * 23)))
+      },
+      tags: result.tags,
+      overview: state.rankedCareers.slice(0, 3).map((item, index) => ({ label: `TOP ${index + 1}`, title: item.name, body: `${item.group} · ${item.score}%` })),
+      dimensions: dimensions.map((item) => ({ name: item.name, value: item.value, left: item.short, right: item.name })),
+      sections: [
+        { title: "你如何创造价值", body: result.portrait, items: [] },
+        { title: "最值得放大的能力", body: result.strengths, items: [] },
+        { title: "优势过度使用时", body: result.risk, items: [] },
+        { title: "更适合的环境", body: result.environment, items: [] },
+        { title: "谨慎选择的环境", body: result.avoid, items: [] },
+        { title: "未来 90 天行动建议", body: "", items: result.advices },
+        { title: "给你的提醒", body: result.reminder, items: [] }
+      ],
+      disclaimer: "本测试基于自我报告与情境偏好，用于职业探索和行动启发，不构成心理诊断、职业资格判断、录用建议或收入保证。",
+      createdAt: new Date().toISOString()
+    };
   }
 
   function radarPoint(index, value, count, center, radius) {
@@ -430,6 +465,36 @@
   $("cashback-close").addEventListener("click", () => $("cashback-modal").classList.remove("active"));
   [$("poster-modal"), $("cashback-modal")].forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("active"); }));
   document.addEventListener("keydown", (event) => { if (event.key === "Escape") document.querySelectorAll(".modal.active").forEach((modal) => modal.classList.remove("active")); });
+
+  YunduHistoryReplay.init("talent-career", (snapshot) => {
+    const resultKey = Object.keys(TYPES).find((key) => TYPES[key].name === snapshot.result.name);
+    if (!resultKey) throw new Error("测试结果不存在");
+    const result = TYPES[resultKey];
+    state.resultKey = resultKey;
+    state.historyAttemptId = snapshot.attemptId;
+    state.displayProfile = Object.fromEntries(Object.entries(DIMENSIONS).map(([key, dimension]) => [key, snapshot.dimensions.find((item) => item.name === dimension.name)?.value || 0]));
+    const sections = YunduHistoryReplay.sectionMap(snapshot);
+    $("report-date").textContent = new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(snapshot.createdAt));
+    $("result-index").textContent = String(TYPE_KEYS.indexOf(resultKey) + 1).padStart(2, "0");
+    $("result-name").textContent = result.name;
+    $("result-alias").textContent = snapshot.result.subtitle;
+    YunduHistoryReplay.renderTags($("result-tags"), snapshot.tags);
+    $("result-summary").textContent = snapshot.result.quote;
+    $("top-match").textContent = snapshot.result.match === undefined ? "历史记录" : `${snapshot.result.match}%`;
+    $("result-portrait").textContent = sections.get("你如何创造价值")?.body || "";
+    $("result-strengths").textContent = sections.get("最值得放大的能力")?.body || "";
+    $("result-risk").textContent = sections.get("优势过度使用时")?.body || "";
+    $("result-environment").textContent = sections.get("更适合的环境")?.body || "";
+    $("result-avoid").textContent = sections.get("谨慎选择的环境")?.body || "";
+    $("result-reminder").textContent = `给你的提醒：${sections.get("给你的提醒")?.body || ""}`;
+    YunduHistoryReplay.renderItems($("advice-list"), sections.get("未来 90 天行动建议")?.items || []);
+    $("dimension-list").innerHTML = snapshot.dimensions.map((item) => `<div class="dimension-item"><span class="dimension-name">${item.name}</span><span class="dimension-track"><i style="width:${item.value}%"></i></span><strong class="dimension-value">${item.value}</strong></div>`).join("");
+    renderRadar();
+    $("top-careers").innerHTML = (snapshot.overview || []).map((item, index) => `<article class="career-card${index === 0 ? " rank-one" : ""}"><div class="career-rank"><span>${item.label}</span><strong class="career-score">${item.body}</strong></div><h3>${item.title}</h3><p>历史记录中的优先探索方向</p></article>`).join("");
+    state.rankedCareers = rankCareers(state.displayProfile);
+    renderCareerMap();
+    $("copy-result-btn").dataset.summary = `我的天赋原型：${result.name}。${snapshot.result.quote}`;
+  }, () => showScreen("result-screen"));
 
   validateData();
   window.__talentCareerTest = { rawProfileForAnswers, matchType, displayProfile, rankCareers, calculateResult, data: { DIMENSIONS, TYPES, QUESTIONS, CAREERS } };

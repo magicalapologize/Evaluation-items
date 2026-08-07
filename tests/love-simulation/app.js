@@ -2,7 +2,7 @@ import { ROLES } from "./data.js";
 import { calculateResult } from "./model.js";
 
 const $ = (id) => document.getElementById(id);
-const state = { roleKey: null, index: 0, answers: [], lastResult: null };
+const state = { roleKey: null, index: 0, answers: [], lastResult: null, historyAttemptId: null };
 let activeMember = null;
 
 function showScreen(id) {
@@ -56,6 +56,7 @@ function selectRole(roleKey) {
   state.index = 0;
   state.answers = [];
   state.lastResult = null;
+  state.historyAttemptId = null;
   const role = ROLES[roleKey];
   $("quiz-role-image").src = role.portrait;
   $("quiz-role-image").alt = `${role.name}原创角色立绘`;
@@ -145,6 +146,32 @@ function renderResult() {
     <div class="dimension-item${dimension.value === highestDimension ? " is-max" : dimension.value === lowestDimension ? " is-min" : ""}"><div class="dimension-head"><span>${dimension.name}</span><strong>${dimension.value}%</strong></div><div class="dimension-track"><div class="dimension-fill" style="width:${dimension.value}%"></div></div><div class="dimension-caption"><span>${dimension.low}</span><span>${dimension.high}</span></div></div>
   `).join("");
   $("copy-btn").dataset.summary = `我在《心动副本》选择了${role.name}，通关 ${result.clearCount}/20，关系得分 ${result.score}/100，获得称号「${result.tier.title}」。最高关系维度是${result.topDimensions.map((item) => item.name).join("、")}。`;
+  YunduHistory.saveResult(buildHistorySnapshot(role, result)).catch(() => {});
+  YunduMember.getMember().then((member) => { $("result-screen").querySelector("[data-history-link]").href = YunduHistory.historyHref(member); }).catch(() => {});
+}
+
+function buildHistorySnapshot(role, result) {
+  state.historyAttemptId ||= (crypto.randomUUID ? crypto.randomUUID() : `love-simulation-${Date.now()}`);
+  return {
+    schemaVersion: 1,
+    attemptId: state.historyAttemptId,
+    productId: "love-simulation",
+    productTitle: "心动副本恋爱模拟闯关测试",
+    result: { name: result.tier.title, subtitle: role.name, quote: result.ending.comment, icon: "", image: "" },
+    tags: [...role.tags, `最高维度：${result.topDimensions[0].name}`],
+    overview: [{ label: "关系得分", title: `${result.score} / 100`, body: `通关 ${result.clearCount} / 20` }, { label: "选择角色", title: role.name, body: role.role }],
+    dimensions: result.dimensions.map((item) => ({ name: item.name, value: item.value, left: item.low, right: item.high })),
+    sections: [
+      { title: "你的相处画像", body: role.profile, items: [] },
+      { title: "最容易赢得 TA 的地方", body: role.strength, items: [] },
+      { title: "最容易翻车的地方", body: result.ending.risk, items: [] },
+      { title: "适合你们的关系结构", body: role.fit, items: [] },
+      { title: "别再靠猜的三条建议", body: "", items: result.advice },
+      { title: "给你的专属提醒", body: result.ending.reminder, items: [] }
+    ],
+    disclaimer: "本测试用于娱乐和关系观察，不构成心理诊断或现实决策建议。",
+    createdAt: new Date().toISOString()
+  };
 }
 
 function loadPosterImage(src) {
@@ -216,5 +243,32 @@ $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.
 $("cashback-close").addEventListener("click", () => $("cashback-modal").classList.remove("active"));
 document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("active"); }));
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") document.querySelectorAll(".modal").forEach((modal) => modal.classList.remove("active")); });
+
+YunduHistoryReplay.init("love-simulation", (snapshot) => {
+  const sections = YunduHistoryReplay.sectionMap(snapshot);
+  const role = Object.values(ROLES).find((item) => item.name === snapshot.result.subtitle) || Object.values(ROLES)[0];
+  const overview = snapshot.overview || [];
+  const dimensions = YunduHistoryReplay.dimensionTuples(snapshot).map(([name, value, left, right]) => ({ name, value, low: left, high: right, raw: value }));
+  const result = { tier: { title: snapshot.result.name, tag: "历史结果" }, ending: { comment: snapshot.result.quote, risk: sections.get("最容易翻车的地方")?.body || "", reminder: sections.get("给你的专属提醒")?.body || "" }, dimensions, advice: sections.get("别再靠猜的三条建议")?.items || [], clearCount: Number((overview[0]?.body || "").match(/(\d+)\s*\/\s*20/)?.[1] || 0), score: Number((overview[0]?.title || "").match(/\d+/)?.[0] || 0), topDimensions: dimensions.slice(0, 1) };
+  state.roleKey = Object.keys(ROLES).find((key) => ROLES[key] === role) || state.roleKey;
+  state.lastResult = { role, ...result };
+  $("result-tag").textContent = result.tier.tag;
+  $("result-role-line").textContent = `你选择攻略 · ${role.name} / ${role.role}`;
+  $("result-title").textContent = result.tier.title;
+  $("result-comment").textContent = result.ending.comment;
+  YunduHistoryReplay.renderTags($("result-tags"), snapshot.tags);
+  $("result-role-image").src = role.portrait;
+  $("clear-count").textContent = `${result.clearCount} / 20`;
+  $("result-score").textContent = `${result.score} / 100`;
+  $("result-profile").textContent = sections.get("你的相处画像")?.body || "";
+  $("result-strength").textContent = sections.get("最容易赢得 TA 的地方")?.body || "";
+  $("result-risk").textContent = sections.get("最容易翻车的地方")?.body || "";
+  $("result-fit").textContent = sections.get("适合你们的关系结构")?.body || "";
+  $("result-reminder").textContent = result.ending.reminder;
+  YunduHistoryReplay.renderItems($("advice-list"), result.advice);
+  renderRadar(dimensions);
+  YunduHistoryReplay.renderDimensions($("dimension-list"), snapshot.dimensions);
+  $("copy-btn").dataset.summary = `我的心动副本结果是「${result.tier.title}」：${result.ending.comment}`;
+}, () => showScreen("result-screen"));
 
 renderRoles();
