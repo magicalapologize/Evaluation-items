@@ -372,6 +372,7 @@
           <button id="cashback-btn" class="report-action-btn cashback-btn" type="button">好评返现</button>
         </div>
         <p class="footer-note">本测试用于娱乐与自我观察，不构成心理诊断或关系决策建议。真实关系会受到经历、情境和双方互动影响，人格结果不是固定标签。</p>
+        <p class="history-link-row"><a class="history-link" data-history-link href="/history/">查看我的测试记录</a></p>
       </div>
     </section>
 
@@ -400,6 +401,8 @@
   </main>
 
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
+  <script src="../../assets/js/test-history.js?v=20260807"></script>
+  <script src="../../assets/js/history-replay.js?v=20260807"></script>
   <script>
 	let activeMember = null;
 	const gateRow = document.querySelector("#home-screen .gate-row");
@@ -712,6 +715,31 @@
       ];
     }
 
+    function buildHistorySnapshot(result, profile) {
+      const dimensions = resultDimensions(profile);
+      state.historyAttemptId ||= (crypto.randomUUID ? crypto.randomUUID() : `love-${Date.now()}`);
+      return {
+        schemaVersion: 1,
+        attemptId: state.historyAttemptId,
+        productId: "love-personality",
+        productTitle: "恋爱相处人格测试",
+        result: { name: result.name, subtitle: result.alias, quote: result.quote, icon: result.icon, image: "" },
+        tags: result.tags,
+        overview: [],
+        dimensions: dimensions.map(([name, value, left, right]) => ({ name, value, left, right })),
+        sections: [
+          { title: "你如何去爱", body: result.portrait, items: [] },
+          { title: "核心优势", body: result.strength, items: [] },
+          { title: "风险提醒", body: result.risk, items: [] },
+          { title: "适合的相处方式", body: result.fit, items: [] },
+          { title: "行动建议", body: "", items: result.advices },
+          { title: "给伴侣的说明", body: result.partner, items: [] }
+        ],
+        disclaimer: "本测试用于娱乐与自我观察，不构成心理诊断或关系决策建议。",
+        createdAt: new Date().toISOString()
+      };
+    }
+
     function renderResult() {
       const scores = calculateScores();
       const profile = normalizedProfile(scores);
@@ -739,6 +767,10 @@
       `).join("");
 
       $("copy-btn").dataset.summary = `我的恋爱相处人格是「${result.name}」：${result.alias}。${result.quote}`;
+      YunduHistory.saveResult(buildHistorySnapshot(result, profile)).catch(() => {});
+      YunduMember.getMember().then((member) => {
+        document.querySelector("[data-history-link]").href = YunduHistory.historyHref(member);
+      }).catch(() => {});
     }
 
     async function createPosterImage() {
@@ -881,6 +913,7 @@
         state.index = 0;
         state.answers = [];
         state.lastResult = null;
+        state.historyAttemptId = null;
         renderQuestion();
         showScreen("quiz-screen");
       } catch (error) {
@@ -905,6 +938,7 @@
     $("restart-btn").addEventListener("click", () => {
       state.index = 0;
       state.answers = [];
+      state.historyAttemptId = null;
       renderQuestion();
       showScreen("quiz-screen");
     });
@@ -967,6 +1001,43 @@
     "numberOfQuestions": 30,
     "inLanguage": "zh-CN"
 }
+  </script>
+  <script>
+    YunduHistoryReplay.init("love-personality", (snapshot) => {
+      const key = Object.keys(TYPES).find((item) => TYPES[item].name === snapshot.result.name);
+      if (!key) throw new Error("测试结果不存在");
+      const sections = YunduHistoryReplay.sectionMap(snapshot);
+      const base = TYPES[key];
+      const result = Object.assign({}, base, {
+        name: snapshot.result.name,
+        alias: snapshot.result.subtitle,
+        quote: snapshot.result.quote,
+        icon: snapshot.result.icon,
+        tags: snapshot.tags,
+        portrait: sections.get("你如何去爱")?.body || "",
+        strength: sections.get("核心优势")?.body || "",
+        risk: sections.get("风险提醒")?.body || "",
+        fit: sections.get("适合的相处方式")?.body || "",
+        advices: sections.get("行动建议")?.items || [],
+        partner: sections.get("给伴侣的说明")?.body || ""
+      });
+      const dimensions = YunduHistoryReplay.dimensionTuples(snapshot);
+      const profile = Object.fromEntries(dimensions.map((item, index) => [DIMENSIONS[index], (item[1] - 50) / 16]));
+      state.lastResult = { result, profile };
+      $("result-icon").textContent = result.icon;
+      $("result-name").textContent = result.name;
+      $("result-alias").textContent = result.alias;
+      $("result-quote").textContent = `“${result.quote}”`;
+      YunduHistoryReplay.renderTags($("trait-tags"), result.tags);
+      $("portrait").textContent = result.portrait;
+      $("strength").textContent = result.strength;
+      $("risk").textContent = result.risk;
+      $("fit").textContent = result.fit;
+      YunduHistoryReplay.renderItems($("advice-list"), result.advices);
+      $("partner-note").textContent = result.partner;
+      YunduHistoryReplay.renderDimensions($("dimension-list"), snapshot.dimensions);
+      $("copy-btn").dataset.summary = `我的恋爱相处人格是「${result.name}」：${result.alias}。${result.quote}`;
+    }, () => showScreen("result-screen"));
   </script>
 </body>
 </html>

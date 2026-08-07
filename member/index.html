@@ -101,6 +101,15 @@
       </div>
     </section>
 
+    <section id="test-history" class="member-history" hidden aria-labelledby="member-history-title">
+      <div class="member-history-heading">
+        <div><p>TEST ARCHIVE</p><h2 id="member-history-title">我的测试记录</h2></div>
+        <a href="../#tests">去做测试</a>
+      </div>
+      <div id="member-history-list" class="member-history-list" aria-live="polite"></div>
+      <p id="member-history-message" class="auth-message" aria-live="polite"></p>
+    </section>
+
     <section class="plans-section" aria-labelledby="plans-title">
       <div class="plans-heading">
         <p>MEMBERSHIP PLANS</p>
@@ -118,6 +127,8 @@
   </main>
 
   <script src="../assets/js/member-auth.js?v=20260721"></script>
+  <script src="../assets/js/test-history.js?v=20260807"></script>
+  <script src="../assets/js/member-history.js?v=20260807"></script>
   <script>
     const byId = (id) => document.getElementById(id);
 

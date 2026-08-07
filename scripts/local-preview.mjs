@@ -72,6 +72,11 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (pathname === "/api/member/results" || pathname.startsWith("/api/member/results/")) {
+    sendJson(response, { success: false, message: "请在正式环境登录会员账号后查看云端记录" }, 401);
+    return;
+  }
+
   if (pathname.startsWith("/api/")) {
     sendJson(response, { success: false, message: "本地预览不提供此接口" }, 404);
     return;

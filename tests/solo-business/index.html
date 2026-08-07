@@ -1913,6 +1913,7 @@
             <button id="copy-btn" class="ghost-btn" type="button">复制摘要</button>
             <button id="cashback-btn" class="ghost-btn cashback-btn" type="button">好评返现</button>
           </div>
+          <p class="history-link-row"><a class="history-link" data-history-link href="/history/">查看我的测试记录</a></p>
 
           <p class="footer">©2026 云渡沧海。本测试为娱乐型赛道偏好测评，结果只用于自我观察和副业方向筛选，不构成投资、就业、心理或财务建议。</p>
         </div>
@@ -1948,6 +1949,8 @@
   </main>
 
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
+  <script src="../../assets/js/test-history.js?v=20260807"></script>
+  <script src="../../assets/js/history-replay.js?v=20260807"></script>
   <script>
 	let activeMember = null;
 	const gateRow = document.querySelector("#home-screen .gate-row");
@@ -2425,7 +2428,8 @@
       persona: null,
       index: 0,
       answers: [],
-      lastResult: null
+      lastResult: null,
+      historyAttemptId: null
     };
 
     const $ = (id) => document.getElementById(id);
@@ -2447,6 +2451,7 @@
       document.querySelectorAll("[data-persona]").forEach((btn) => {
         btn.addEventListener("click", () => {
           state.persona = btn.dataset.persona;
+          state.historyAttemptId = null;
           renderQuestion();
           showScreen("quiz-screen");
         });
@@ -2538,6 +2543,34 @@
       return { key: topKey, secondKey, match, scores, rawCounts, sorted };
     }
 
+    function buildHistorySnapshot(result, key, second, match) {
+      state.historyAttemptId ||= (crypto.randomUUID ? crypto.randomUUID() : `solo-${Date.now()}`);
+      return {
+        schemaVersion: 1,
+        attemptId: state.historyAttemptId,
+        productId: "solo-business",
+        productTitle: "副业 / 一人公司赛道测试",
+        result: { name: result.archetype, subtitle: result.subtitle, quote: result.quote, icon: "", image: "", match },
+        tags: result.tags,
+        overview: [
+          { label: "主导类型", title: result.name, body: result.summary },
+          { label: "相似倾向", title: second.name, body: `你也有明显的${second.name}特征，可以作为副线。` },
+          { label: "建议产品", title: result.product, body: "第一版先做最小可卖版本，不要一开始做大而全。" },
+          { label: "当前优先提升", title: result.upgrade, body: "把这一块补上，你的启动阻力会明显下降。" }
+        ],
+        dimensions: Object.entries(result.metrics).map(([name, value]) => ({ name, value, left: "待加强", right: "突出优势" })),
+        sections: [
+          { title: "人物画像", body: result.portrait, items: [] },
+          { title: "现实表现", body: result.behavior, items: [] },
+          { title: "当前状态", body: result.current, items: [] },
+          { title: "风险提醒", body: result.risk, items: [] },
+          { title: "人生建议", body: "", items: result.advices.map((advice, index) => `${advice}：${adviceText(index, key)}`) }
+        ],
+        disclaimer: "本测试用于娱乐与自我观察，不构成投资、就业、心理或财务建议。",
+        createdAt: new Date().toISOString()
+      };
+    }
+
     function renderResult() {
       const { key, secondKey, match, scores, rawCounts } = getResult();
       const result = TYPES[key];
@@ -2587,6 +2620,10 @@
         </div>
       `).join("");
       renderRadar(result.metrics);
+      YunduHistory.saveResult(buildHistorySnapshot(result, key, second, match)).catch(() => {});
+      YunduMember.getMember().then((member) => {
+        document.querySelector("[data-history-link]").href = YunduHistory.historyHref(member);
+      }).catch(() => {});
 
       $("copy-btn").onclick = async () => {
         const text = `我的副业/一人公司原型是：${result.archetype}（${result.name}），匹配度 ${match}%。${result.quote}`;
@@ -2885,6 +2922,7 @@
       state.answers = [];
       state.persona = null;
       state.lastResult = null;
+      state.historyAttemptId = null;
       showScreen("persona-screen");
     });
 
@@ -2948,6 +2986,107 @@
     "numberOfQuestions": 25,
     "inLanguage": "zh-CN"
 }
+  </script>
+  <script>
+    YunduHistoryReplay.init("solo-business", (snapshot) => {
+      const key = Object.keys(TYPES).find((item) => TYPES[item].archetype === snapshot.result.name);
+      if (!key) throw new Error("测试结果不存在");
+      const sections = YunduHistoryReplay.sectionMap(snapshot);
+      const overview = snapshot.overview || [];
+      const base = TYPES[key];
+      const metrics = Object.fromEntries(snapshot.dimensions.map((item) => [item.name, item.value]));
+      const result = Object.assign({}, base, {
+        archetype: snapshot.result.name,
+        subtitle: snapshot.result.subtitle,
+        quote: snapshot.result.quote,
+        tags: snapshot.tags,
+        name: overview[0]?.title || base.name,
+        summary: overview[0]?.body || base.summary,
+        product: overview[2]?.title || base.product,
+        upgrade: overview[3]?.title || base.upgrade,
+        metrics,
+        portrait: sections.get("人物画像")?.body || "",
+        behavior: sections.get("现实表现")?.body || "",
+        current: sections.get("当前状态")?.body || "",
+        risk: sections.get("风险提醒")?.body || ""
+      });
+      const secondKey = Object.keys(TYPES).find((item) => TYPES[item].name === overview[1]?.title) || key;
+      const match = Number.isFinite(snapshot.result.match) ? snapshot.result.match : 82;
+      TYPES[key] = result;
+      state.lastResult = { key, secondKey, match, scores: {}, rawCounts: {} };
+      $("report-date").textContent = new Date(snapshot.createdAt).toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }).replace("/", "月").replace("/", "日");
+      YunduHistoryReplay.renderTags($("top-chips"), [result.name, result.upgrade, `匹配 ${match}%`]);
+      $("result-name").textContent = result.archetype;
+      $("result-subtitle").textContent = result.subtitle;
+      $("match-score").textContent = `${match}%`;
+      $("result-quote").textContent = `“${result.quote}”`;
+      YunduHistoryReplay.renderTags($("result-tags"), result.tags);
+      YunduHistoryReplay.renderOverview($("overview-grid"), overview);
+      $("portrait").textContent = result.portrait;
+      $("behavior").textContent = result.behavior;
+      $("current-state").textContent = result.current;
+      $("risk").textContent = result.risk;
+      const abilityGrid = $("ability-grid");
+      while (abilityGrid.firstChild) abilityGrid.removeChild(abilityGrid.firstChild);
+      Object.entries(result.metrics).forEach(([name, value]) => {
+        const card = document.createElement("div");
+        card.className = "metric-card";
+        const head = document.createElement("div");
+        head.className = "metric-title";
+        const label = document.createElement("span");
+        label.textContent = name;
+        const score = document.createElement("span");
+        score.textContent = `${value}%`;
+        head.append(label, score);
+        card.append(head);
+        const body = document.createElement("p");
+        body.textContent = metricDescription(name, value);
+        card.append(body);
+        abilityGrid.append(card);
+      });
+      const radar = $("radar");
+      while (radar.firstChild) radar.removeChild(radar.firstChild);
+      const svgNs = "http://www.w3.org/2000/svg";
+      const entries = Object.entries(result.metrics);
+      const center = 180;
+      const radius = 112;
+      const point = (distance, index) => {
+        const angle = -Math.PI / 2 + index * 2 * Math.PI / entries.length;
+        return [center + Math.cos(angle) * distance, center + Math.sin(angle) * distance];
+      };
+      const polygon = (points, fill, stroke, width) => {
+        const element = document.createElementNS(svgNs, "polygon");
+        element.setAttribute("points", points.map((item) => item.join(",")).join(" "));
+        element.setAttribute("fill", fill);
+        element.setAttribute("stroke", stroke);
+        element.setAttribute("stroke-width", width);
+        radar.append(element);
+      };
+      [0.25, 0.5, 0.75, 1].forEach((ratio) => polygon(entries.map((_, index) => point(radius * ratio, index)), "none", "#e6ded1", "1"));
+      entries.forEach((_, index) => {
+        const line = document.createElementNS(svgNs, "line");
+        const [x, y] = point(radius, index);
+        line.setAttribute("x1", center); line.setAttribute("y1", center);
+        line.setAttribute("x2", x); line.setAttribute("y2", y);
+        line.setAttribute("stroke", "#e6ded1"); line.setAttribute("stroke-width", "1");
+        radar.append(line);
+      });
+      polygon(entries.map(([, value], index) => point(radius * value / 100, index)), "rgba(169, 83, 68, .18)", "#a95344", "3");
+      const adviceGrid = $("advice-grid");
+      while (adviceGrid.firstChild) adviceGrid.removeChild(adviceGrid.firstChild);
+      const adviceSection = sections.get("人生建议");
+      result.advices.forEach((advice, index) => {
+        const card = document.createElement("div");
+        card.className = "advice-card";
+        const title = document.createElement("strong");
+        title.textContent = advice;
+        const body = document.createElement("p");
+        body.textContent = adviceSection?.items?.[index] || "";
+        card.append(title, body);
+        adviceGrid.append(card);
+      });
+      $("copy-btn").dataset.summary = `我的副业/一人公司原型是：${result.archetype}（${result.name}），匹配度 ${match}%。${result.quote}`;
+    }, () => showScreen("result-screen"));
   </script>
 </body>
 </html>

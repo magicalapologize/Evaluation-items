@@ -141,6 +141,7 @@
 						</button>
 						<a href="#tests">全部测试</a>
 						<a href="#method">测评说明</a>
+						<a id="history-entry" href="history/">我的测试结果</a>
 						<a id="member-entry" class="nav-cta member-entry" href="member/"><span aria-hidden="true">◆</span><b>超级会员</b></a>
 					</nav>
 				</div>
@@ -762,9 +763,11 @@
 		<script defer src="assets/js/member-auth.js?v=20260721"></script>
 		<script>
 			const memberEntry = document.getElementById("member-entry");
+			const historyEntry = document.getElementById("history-entry");
 			const memberApi = globalThis.YunduMember;
 			if (memberApi) {
 				memberApi.getMember().then((member) => {
+					if (member.authenticated) historyEntry.href = "member/#test-history";
 					if (!member.authenticated) return;
 					memberEntry.classList.toggle("is-active", member.active);
 					memberEntry.querySelector("b").textContent = member.active ? "超级会员" : "会员已过期";

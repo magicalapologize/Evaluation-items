@@ -241,12 +241,15 @@
       <div class="card report-card"><p class="section-label">HEROINES NOTE</p><h2 class="section-title">给你的提醒</h2><div id="partner-note" class="match-note"></div></div>
       <div class="report-actions"><button id="save-poster-btn" class="report-action-btn save-btn" type="button">保存报告</button><button id="copy-btn" class="report-action-btn copy-result-btn" type="button">复制结果摘要</button><button id="restart-btn" class="report-action-btn" type="button">重新测试</button><button id="cashback-btn" class="report-action-btn cashback-btn" type="button">好评返现</button></div>
       <p class="footer-note">本测试用于娱乐与自我观察，不构成历史评价、现实决策或心理诊断建议。历史女主结果是观察视角，不是固定标签。</p>
+      <p class="history-link-row"><a class="history-link" data-history-link href="/history/">查看我的测试记录</a></p>
     </div></section>
 
     <div id="poster-modal" class="poster-modal" role="dialog" aria-modal="true" aria-labelledby="poster-title"><div class="poster-panel"><div class="modal-head"><h3 id="poster-title">请长按保存报告</h3><button id="poster-close" class="modal-close" type="button" aria-label="关闭保存报告弹窗">×</button></div><p class="modal-tip">长按下方图片保存到相册，也可以截图分享你的历史女主结果。</p><div class="poster-preview"><img id="poster-image" alt="历史女主测试结果报告" /></div></div></div>
     <div id="cashback-modal" class="cashback-modal" role="dialog" aria-modal="true" aria-labelledby="cashback-title"><div class="cashback-panel"><div class="modal-head"><h3 id="cashback-title">好评返现</h3><button id="cashback-close" class="modal-close" type="button" aria-label="关闭好评返现弹窗">×</button></div><p class="cashback-copy">五星好评，带 3 张截图，15 字以上就能返 1 元。截图发给店铺客服即可，活动可能随时结束。</p><div class="qr-card"><img src="../../assets/images/wechat-qr.webp" alt="微信二维码" /></div><p class="cashback-note">学习搞钱扫码联系，发送好评截图领取返现。</p></div></div>
   </main>
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
+  <script src="../../assets/js/test-history.js?v=20260807"></script>
+  <script src="../../assets/js/history-replay.js?v=20260807"></script>
   <script>
     let activeMember = null;
     const gateRow = document.querySelector("#home-screen .gate-row");
@@ -341,7 +344,7 @@
       return counts;
     }, Object.fromEntries(SCORE_KEYS.map((key) => [key, 0])));
 
-    const state = { index: 0, answers: [], lastResult: null };
+    const state = { index: 0, answers: [], lastResult: null, historyAttemptId: null };
     const $ = (id) => document.getElementById(id);
     function showScreen(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active")); $(id).classList.add("active"); window.scrollTo({ top: 0, behavior: "smooth" }); }
     function renderQuestion() {
@@ -385,11 +388,17 @@
       const dots = dimensions.map(([, value], index) => { const [x, y] = radarPoint(index, value); return `<circle class="radar-dot" cx="${x}" cy="${y}" r="4" />`; }).join("");
       const labels = dimensions.map(([name, value], index) => { const angle = -Math.PI / 2 + index * Math.PI / 3; const x = 180 + Math.cos(angle) * 144; const y = 170 + Math.sin(angle) * 144; const anchor = Math.cos(angle) > .2 ? "start" : Math.cos(angle) < -.2 ? "end" : "middle"; return `<text class="radar-label" x="${x}" y="${y - 3}" text-anchor="${anchor}">${name}<tspan class="radar-value" x="${x}" dy="15">${value}%</tspan></text>`; }).join("");
       $("dimension-radar").innerHTML = `<title id="radar-title">六维女主能力雷达图</title><desc id="radar-desc">${dimensions.map(([name, value]) => `${name}${value}%`).join("，")}</desc>${rings}${axes}<polygon class="radar-area" points="${areaPoints}" />${dots}${labels}`;
+    function buildHistorySnapshot(result, dimensions) {
+      state.historyAttemptId ||= (crypto.randomUUID ? crypto.randomUUID() : "heroines-" + Date.now());
+      return { schemaVersion: 1, attemptId: state.historyAttemptId, productId: "historical-heroines", productTitle: "历史女主人格测试", result: { name: result.name, subtitle: result.alias, quote: result.quote, icon: result.icon, image: "" }, tags: result.tags, overview: [], dimensions: dimensions.map(([name, value, left, right]) => ({ name, value, left, right })), sections: [{ title: "你的女主画像", body: result.portrait, items: [] }, { title: "核心优势", body: result.strength, items: [] }, { title: "风险提醒", body: result.risk, items: [] }, { title: "适合的舞台", body: result.fit, items: [] }, { title: "行动建议", body: "", items: result.advices }, { title: "给你的提醒", body: result.note, items: [] }], disclaimer: "本测试用于娱乐与自我观察，不构成历史评价、现实决策或心理诊断建议。", createdAt: new Date().toISOString() };
     }
     function renderResult() {
       const scores = calculateScores(); const key = resultKey(scores); const result = TYPES[key]; const dimensions = buildDimensions(scores, key); state.lastResult = { result, scores, key, dimensions };
       $("result-icon").textContent = result.icon; $("result-name").textContent = result.name; $("result-alias").textContent = result.alias; $("result-quote").textContent = `“${result.quote}”`; $("trait-tags").innerHTML = result.tags.map((tag) => `<span class="chip">${tag}</span>`).join(""); $("portrait").textContent = result.portrait; $("strength").textContent = result.strength; $("risk").textContent = result.risk; $("fit").textContent = result.fit; $("advice-list").innerHTML = result.advices.map((advice) => `<div class="advice-item">${advice}</div>`).join(""); $("partner-note").textContent = result.note;
       renderRadarChart(dimensions); $("dimension-list").innerHTML = dimensions.map(([name, value, left, right]) => `<div><div class="dimension-head"><span>${name}</span><span>${value}% 偏向${value >= 50 ? right : left}</span></div><div class="dimension-track"><div class="dimension-fill" style="width:${value}%"></div></div><div class="dimension-caption"><span>${left}</span><span>${right}</span></div></div>`).join(""); $("copy-btn").dataset.summary = `我的历史女主结果是「${result.name}」：${result.alias}。${result.quote}`;
+      $("dimension-list").innerHTML = dimensions.map(([name, value, left, right]) => `<div><div class="dimension-head"><span>${name}</span><span>${value}% 偏向${value >= 50 ? right : left}</span></div><div class="dimension-track"><div class="dimension-fill" style="width:${value}%"></div></div><div class="dimension-caption"><span>${left}</span><span>${right}</span></div></div>`).join(""); $("copy-btn").dataset.summary = `我的历史女主结果是「${result.name}」：${result.alias}。${result.quote}`;
+      YunduHistory.saveResult(buildHistorySnapshot(result, dimensions)).catch(() => {});
+      YunduMember.getMember().then((member) => { document.querySelector("[data-history-link]").href = YunduHistory.historyHref(member); }).catch(() => {});
     }
     function loadPosterImage(src) { return new Promise((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src; }); }
     function drawRoundRect(ctx, x, y, width, height, radius, fill, stroke = null) { ctx.beginPath(); ctx.roundRect(x, y, width, height, radius); ctx.fillStyle = fill; ctx.fill(); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); } }
@@ -403,10 +412,10 @@
       drawRoundRect(ctx, 66, 910, 768, 394, 28, "#fffdf8", "#e0d6c6"); drawText(ctx, "ACTION ADVICE", 102, 958, 16, "#9e7439", "left", "700"); drawText(ctx, "给我的三条行动建议", 102, 994, 29, "#2d2635", "left", "700"); result.advices.forEach((advice, index) => { const rowY = 1020 + index * 86; drawRoundRect(ctx, 96, rowY, 708, 72, 16, index === 0 ? "#f1e7d7" : "#f8f3e9", "#e7dbc7"); ctx.fillStyle = "#4e3b64"; ctx.beginPath(); ctx.arc(132, rowY + 36, 18, 0, Math.PI * 2); ctx.fill(); drawText(ctx, `${index + 1}`, 132, rowY + 42, 15, "#ffffff", "center", "700"); drawWrappedTextBlock(ctx, advice, 168, rowY + 36, 600, 24, 17, "#4b4055", "left"); });
       drawRoundRect(ctx, 66, 1332, 768, 160, 26, "#302342", "#c79b55"); drawRoundRect(ctx, 96, 1354, 116, 116, 14, "#ffffff", "#e0bd78"); ctx.drawImage(qrImage, 103, 1361, 102, 102); drawText(ctx, "测测你是哪位历史女主", 246, 1380, 25, "#fffaf0", "left", "700"); drawText(ctx, "长按识别二维码 · 解锁完整女主报告", 246, 1418, 18, "#d9cede", "left", "500"); drawText(ctx, "分享给朋友，看看谁和你是同款女主", 246, 1454, 17, "#e0bd78", "left", "600"); drawText(ctx, "云渡测评实验室 · YUNDU EVALUATION LAB", width / 2, 1532, 15, "#756484", "center", "600"); return canvas.toDataURL("image/png");
     }
-    $("start-btn").addEventListener("click", async () => { const button = $("start-btn"); const code = $("access-code").value.trim().toUpperCase(); button.disabled = true; button.textContent = "正在验证..."; $("gate-error").textContent = ""; try { await memberReady; if (!activeMember) await verifyDailyAccessCode("historical-heroines", code); state.index = 0; state.answers = []; state.lastResult = null; renderQuestion(); showScreen("quiz-screen"); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始测试" : "开始测试"; } });
+    $("start-btn").addEventListener("click", async () => { const button = $("start-btn"); const code = $("access-code").value.trim().toUpperCase(); button.disabled = true; button.textContent = "正在验证..."; $("gate-error").textContent = ""; try { await memberReady; if (!activeMember) await verifyDailyAccessCode("historical-heroines", code); state.index = 0; state.answers = []; state.lastResult = null; state.historyAttemptId = null; renderQuestion(); showScreen("quiz-screen"); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始测试" : "开始测试"; } });
     $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); });
     $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } });
-    $("restart-btn").addEventListener("click", () => { state.index = 0; state.answers = []; renderQuestion(); showScreen("quiz-screen"); });
+    $("restart-btn").addEventListener("click", () => { state.index = 0; state.answers = []; state.historyAttemptId = null; renderQuestion(); showScreen("quiz-screen"); });
     $("copy-btn").addEventListener("click", async () => { const button = $("copy-btn"); try { await navigator.clipboard.writeText(button.dataset.summary); button.textContent = "已复制结果"; } catch { button.textContent = "复制失败，请手动截图"; } setTimeout(() => { button.textContent = "复制结果摘要"; }, 1800); });
     $("save-poster-btn").addEventListener("click", async () => { if (!state.lastResult) return; $("poster-image").src = await createPosterImage(); $("poster-modal").classList.add("active"); });
     $("poster-close").addEventListener("click", () => $("poster-modal").classList.remove("active")); $("poster-modal").addEventListener("click", (event) => { if (event.target === $("poster-modal")) $("poster-modal").classList.remove("active"); }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("active")); $("cashback-close").addEventListener("click", () => $("cashback-modal").classList.remove("active")); $("cashback-modal").addEventListener("click", (event) => { if (event.target === $("cashback-modal")) $("cashback-modal").classList.remove("active"); }); document.addEventListener("keydown", (event) => { if (event.key === "Escape") { $("poster-modal").classList.remove("active"); $("cashback-modal").classList.remove("active"); } });
@@ -436,6 +445,42 @@
     "numberOfQuestions": 30,
     "inLanguage": "zh-CN"
 }
+  </script>
+  <script>
+    YunduHistoryReplay.init("historical-heroines", (snapshot) => {
+      const key = Object.keys(TYPES).find((item) => TYPES[item].name === snapshot.result.name);
+      if (!key) throw new Error("测试结果不存在");
+      const sections = YunduHistoryReplay.sectionMap(snapshot);
+      const base = TYPES[key];
+      const result = Object.assign({}, base, {
+        name: snapshot.result.name,
+        alias: snapshot.result.subtitle,
+        quote: snapshot.result.quote,
+        icon: snapshot.result.icon,
+        tags: snapshot.tags,
+        portrait: sections.get("你的女主画像")?.body || "",
+        strength: sections.get("核心优势")?.body || "",
+        risk: sections.get("风险提醒")?.body || "",
+        fit: sections.get("适合的舞台")?.body || "",
+        advices: sections.get("行动建议")?.items || [],
+        note: sections.get("给你的提醒")?.body || ""
+      });
+      const dimensions = YunduHistoryReplay.dimensionTuples(snapshot);
+      state.lastResult = { result, dimensions };
+      $("result-icon").textContent = result.icon;
+      $("result-name").textContent = result.name;
+      $("result-alias").textContent = result.alias;
+      $("result-quote").textContent = `“${result.quote}”`;
+      YunduHistoryReplay.renderTags($("trait-tags"), result.tags);
+      $("portrait").textContent = result.portrait;
+      $("strength").textContent = result.strength;
+      $("risk").textContent = result.risk;
+      $("fit").textContent = result.fit;
+      YunduHistoryReplay.renderItems($("advice-list"), result.advices);
+      $("partner-note").textContent = result.note;
+      YunduHistoryReplay.renderDimensions($("dimension-list"), snapshot.dimensions);
+      $("copy-btn").dataset.summary = `我的历史女主结果是「${result.name}」：${result.alias}。${result.quote}`;
+    }, () => showScreen("result-screen"));
   </script>
 </body>
 </html>

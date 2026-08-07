@@ -18,6 +18,13 @@
 .gate-row.member-access-active { grid-template-columns: 1fr !important; }
 .gate-row.member-access-active .access-input { display: none !important; }
 
+.history-link-row { margin: 16px 0 0; text-align: center; }
+.history-link { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; color: inherit; font-size: 12px; font-weight: 700; opacity: .72; text-decoration: none; }
+.history-link:hover { opacity: 1; text-decoration: underline; }
+
 @media (max-width: 640px) {
   .member-unlock { align-items: flex-start; flex-direction: column; gap: 7px; }
 }
+
+.history-result-mode .site-return { display: none !important; }
+.history-result-mode [hidden] { display: none !important; }

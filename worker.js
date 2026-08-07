@@ -201,6 +201,92 @@ async function verifyCode(request, env) {
   }
 }
 
+const MAX_RESULT_SNAPSHOT_BYTES = 64 * 1024;
+
+function validateResultSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") return "测试记录无效";
+  if (snapshot.schemaVersion !== 1) return "测试记录版本无效";
+  if (!PRODUCT_IDS.has(snapshot.productId)) return "测试项目不存在";
+  if (typeof snapshot.attemptId !== "string" || !snapshot.attemptId || snapshot.attemptId.length > 80) return "测试记录标识无效";
+  if (typeof snapshot.productTitle !== "string" || !snapshot.productTitle || snapshot.productTitle.length > 80) return "测试名称无效";
+  if (!snapshot.result || typeof snapshot.result.name !== "string" || !snapshot.result.name || snapshot.result.name.length > 100) return "测试结果无效";
+  const image = String(snapshot.result.image || "");
+  if (image && (!image.startsWith("/images/") || image.includes("..") || image.includes(":"))) return "图片路径无效";
+  if (!Array.isArray(snapshot.tags) || !Array.isArray(snapshot.overview) || !Array.isArray(snapshot.dimensions) || !Array.isArray(snapshot.sections)) return "测试内容无效";
+  if (!snapshot.createdAt || Number.isNaN(Date.parse(snapshot.createdAt))) return "完成时间无效";
+  if (new TextEncoder().encode(JSON.stringify(snapshot)).length > MAX_RESULT_SNAPSHOT_BYTES) return "测试记录内容过大";
+  return "";
+}
+
+function parseResultSnapshot(row) {
+  try { return JSON.parse(row.snapshot_json); } catch { return null; }
+}
+
+function serializeResultPreview(row) {
+  const snapshot = parseResultSnapshot(row);
+  return { id: row.id, productId: row.product_id, productTitle: snapshot?.productTitle || row.product_id, resultName: snapshot?.result?.name || "历史结果", createdAt: row.created_at };
+}
+
+async function requireMember(request, env) {
+  const member = await getMemberFromRequest(request, env);
+  return member && member.status !== "disabled" ? member : null;
+}
+
+async function findMemberResultByAttempt(env, memberId, attemptId) {
+  return env.DB.prepare("SELECT id, member_id, attempt_id, product_id, snapshot_json, created_at FROM test_results WHERE member_id = ? AND attempt_id = ? LIMIT 1").bind(memberId, attemptId).first();
+}
+
+async function createMemberResult(request, env) {
+  if (request.method !== "POST") return json({ success: false, message: "仅支持 POST 请求" }, 405);
+  if (!isSameOrigin(request)) return json({ success: false, message: "请求来源不正确" }, 403);
+  const member = await requireMember(request, env);
+  if (!member) return json({ success: false, message: "请先登录会员" }, 401);
+  const body = await readJson(request);
+  const snapshot = body?.snapshot;
+  const validationError = validateResultSnapshot(snapshot);
+  if (validationError) return json({ success: false, message: validationError }, 400);
+  const existing = await findMemberResultByAttempt(env, member.id, snapshot.attemptId);
+  if (existing) return json({ success: true, record: { ...existing, snapshot: parseResultSnapshot(existing) } });
+  const id = crypto.randomUUID();
+  try {
+    await env.DB.prepare("INSERT INTO test_results (id, member_id, attempt_id, product_id, snapshot_json, created_at) VALUES (?, ?, ?, ?, ?, ?)").bind(id, member.id, snapshot.attemptId, snapshot.productId, JSON.stringify(snapshot), snapshot.createdAt).run();
+  } catch (error) {
+    const raced = await findMemberResultByAttempt(env, member.id, snapshot.attemptId);
+    if (!raced) throw error;
+    return json({ success: true, record: { ...raced, snapshot: parseResultSnapshot(raced) } });
+  }
+  return json({ success: true, record: { id, memberId: member.id, attemptId: snapshot.attemptId, productId: snapshot.productId, snapshot, createdAt: snapshot.createdAt } }, 201);
+}
+
+async function listMemberResults(request, env) {
+  if (request.method !== "GET") return json({ success: false, message: "仅支持 GET 请求" }, 405);
+  const member = await requireMember(request, env);
+  if (!member) return json({ success: false, message: "请先登录会员" }, 401);
+  const result = await env.DB.prepare("SELECT id, member_id, attempt_id, product_id, snapshot_json, created_at FROM test_results WHERE member_id = ? ORDER BY created_at DESC, id DESC").bind(member.id).all();
+  return json({ success: true, records: (result.results || []).map(serializeResultPreview) });
+}
+
+async function getMemberResult(request, env, resultId) {
+  if (request.method !== "GET") return json({ success: false, message: "仅支持 GET 请求" }, 405);
+  const member = await requireMember(request, env);
+  if (!member) return json({ success: false, message: "请先登录会员" }, 401);
+  const row = await env.DB.prepare("SELECT id, member_id, attempt_id, product_id, snapshot_json, created_at FROM test_results WHERE id = ? AND member_id = ? LIMIT 1").bind(resultId, member.id).first();
+  if (!row) return json({ success: false, message: "测试记录不存在" }, 404);
+  const snapshot = parseResultSnapshot(row);
+  if (!snapshot) return json({ success: false, message: "测试记录暂时无法展示" }, 422);
+  return json({ success: true, record: { ...row, snapshot } });
+}
+
+async function deleteMemberResult(request, env, resultId) {
+  if (request.method !== "DELETE") return json({ success: false, message: "仅支持 DELETE 请求" }, 405);
+  if (!isSameOrigin(request)) return json({ success: false, message: "请求来源不正确" }, 403);
+  const member = await requireMember(request, env);
+  if (!member) return json({ success: false, message: "请先登录会员" }, 401);
+  const deleted = await env.DB.prepare("DELETE FROM test_results WHERE id = ? AND member_id = ?").bind(resultId, member.id).run();
+  if (Number(deleted.meta?.changes || 0) !== 1) return json({ success: false, message: "测试记录不存在" }, 404);
+  return json({ success: true });
+}
+
 async function getMemberFromRequest(request, env) {
   const token = parseCookies(request)[SESSION_COOKIE];
   if (!token || token.length > 128) return null;
@@ -626,6 +712,17 @@ export default {
     if (url.pathname === "/api/member/me") return memberMe(request, env);
     if (url.pathname === "/api/member/logout") return memberLogout(request, env);
     if (url.pathname === "/api/member/redeem") return memberRedeem(request, env);
+    if (url.pathname === "/api/member/results") {
+      if (request.method === "POST") return createMemberResult(request, env);
+      if (request.method === "GET") return listMemberResults(request, env);
+      return json({ success: false, message: "请求方法不支持" }, 405);
+    }
+    const resultMatch = url.pathname.match(/^\/api\/member\/results\/([0-9a-z-]+)$/i);
+    if (resultMatch) {
+      if (request.method === "GET") return getMemberResult(request, env, resultMatch[1]);
+      if (request.method === "DELETE") return deleteMemberResult(request, env, resultMatch[1]);
+      return json({ success: false, message: "请求方法不支持" }, 405);
+    }
 
     return env.ASSETS.fetch(request);
   }
