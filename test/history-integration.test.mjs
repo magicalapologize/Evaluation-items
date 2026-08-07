@@ -24,6 +24,12 @@ test("历史页加载公共模块并提供记录列表", () => {
   assert.doesNotMatch(html, /id="history-detail"/);
 });
 
+test("独立历史页自动识别已登录会员", () => {
+  const script = read("assets/js/history-page.js");
+  assert.match(script, /YunduMember\.getMember\(\)/);
+  assert.match(script, /memberMode\s*=\s*Boolean\(member\?\.authenticated\)/);
+});
+
 test("快照内容不通过 innerHTML 渲染", () => {
   const script = read("assets/js/history-page.js");
   assert.doesNotMatch(script, /\.innerHTML\s*=/);
@@ -66,9 +72,19 @@ test("会员独立历史页先同步待上传记录", () => {
 
 test("首页提供我的测试结果入口", () => {
   const html = read("index.html");
+  const css = read("assets/css/preview.css");
   assert.match(html, /id="history-entry"/);
-  assert.match(html, />我的测试结果</);
-  assert.match(html, /historyEntry\.href\s*=\s*"history\/\?member=1"/);
+  assert.match(html, /class="nav-label-full">我的测试结果</);
+  assert.match(html, /class="nav-label-short">记录</);
+  assert.doesNotMatch(html, /historyEntry\.href\s*=\s*"history\/\?member=1"/);
+  assert.doesNotMatch(html, /<script\s+defer\s+src="assets\/js\/member-auth\.js/);
+  assert.match(css, /\.top-nav > a:not\(#history-entry\):not\(\.nav-cta\)\s*\{\s*display:\s*none;/);
+  assert.match(css, /\.top-nav #history-entry\s*\{\s*display:\s*inline-flex;/);
+});
+
+test("会员中心明确提供独立历史记录入口", () => {
+  const html = read("member/index.html");
+  assert.match(html, /href="\.\.\/history\/\?member=1"[^>]*>独立查看/);
 });
 
 test("七宗罪历史入口使用居中的小按钮样式", () => {

@@ -20,7 +20,7 @@
   <meta name="twitter:image" content="https://eval.yundu.app/images/yundu-logo.webp" />
   <link rel="canonical" href="https://eval.yundu.app/member/" />
   <link rel="icon" href="../images/yundu-logo.webp?v=20260805" type="image/webp" />
-  <link rel="stylesheet" href="../assets/css/member.css?v=20260804-logo" />
+  <link rel="stylesheet" href="../assets/css/member.css?v=20260808-history-nav" />
 </head>
 <body>
   <a class="skip-link" href="#logged-out-panel">跳到主内容</a>
@@ -104,7 +104,10 @@
     <section id="test-history" class="member-history" hidden aria-labelledby="member-history-title">
       <div class="member-history-heading">
         <div><p>TEST ARCHIVE</p><h2 id="member-history-title">我的测试记录</h2></div>
-        <a href="../#tests">去做测试</a>
+        <div class="member-history-actions">
+          <a href="../history/?member=1">独立查看</a>
+          <a href="../#tests">去做测试</a>
+        </div>
       </div>
       <div id="member-history-list" class="member-history-list" aria-live="polite"></div>
       <p id="member-history-message" class="auth-message" aria-live="polite"></p>

@@ -58,6 +58,7 @@ p { color: var(--muted); margin: 0; }
 .top-nav { display: flex; align-items: center; gap: 28px; }
 .top-nav a { font-size: 14px; color: var(--muted); transition: color 0.2s; min-height: 44px; display: inline-flex; align-items: center; }
 .top-nav a:hover { color: var(--ink); }
+.nav-label-short { display: none; }
 .nav-cta { background: var(--purple-bg); border: 1px solid var(--purple-border); padding: 7px 16px; border-radius: 20px; font-size: 13px; color: var(--purple-light) !important; transition: all 0.2s; min-height: 44px; }
 .nav-cta:hover { background: rgba(139,92,246,0.2); box-shadow: 0 0 16px var(--purple-glow); }
 
@@ -237,14 +238,17 @@ p { color: var(--muted); margin: 0; }
 	.method-grid article:first-child { border-top: none; }
 }
 @media (max-width: 600px) {
+	.site-header .inner { width: calc(100% - 16px); }
 	.hero-section { padding: 130px 0 60px; }
 	.hero-copy h1 { font-size: clamp(30px, 9vw, 42px); }
 	.hero-character { display: none; }
 	.metric-strip { grid-template-columns: 1fr 1fr; gap: 10px; }
 	.metric-strip > div { padding: 18px 12px; }
 	.metric-strip strong { font-size: 22px; }
-	.nav-shell { padding: 0 12px; }
-	/* Mobile header keeps the membership entry visible beside the brand. */
+	.nav-shell { padding: 0 8px; }
+	.brand { gap: 8px; }
+	.brand small { display: none; }
+	/* Mobile keeps both core destinations visible with shorter labels. */
 	.nav-toggle { display: none; }
 	.top-nav {
 		position: static; flex: 0 0 auto;
@@ -252,8 +256,12 @@ p { color: var(--muted); margin: 0; }
 		background: transparent; border: 0; padding: 0; max-height: none; overflow: visible;
 		transition: none;
 	}
-	.top-nav > a:not(.nav-cta) { display: none; }
-	.nav-cta { margin: 0; padding: 6px 12px; min-height: 38px; font-size: 11px; white-space: nowrap; text-align: center; justify-content: center; }
+	.top-nav > a:not(#history-entry):not(.nav-cta) { display: none; }
+	.top-nav #history-entry { display: inline-flex; }
+	.top-nav a { min-height: 44px; padding: 0 8px; font-size: 11px; white-space: nowrap; text-align: center; justify-content: center; }
+	.top-nav .nav-label-full { display: none; }
+	.top-nav .nav-label-short { display: inline; }
+	.top-nav .nav-cta { margin: 0; padding: 0 9px; }
 	.method-section > .inner { padding: 36px 20px 28px; border-radius: 16px; }
 	.footer-grid { grid-template-columns: 1fr; }
 	.footer-meta { text-align: left; }

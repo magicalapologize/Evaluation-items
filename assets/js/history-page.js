@@ -3,7 +3,7 @@
   const message = document.getElementById("history-message");
   const note = document.getElementById("history-note");
   const params = new URLSearchParams(window.location.search);
-  const memberMode = params.has("member");
+  let memberMode = params.get("member") === "1";
 
   function appendText(parent, tag, className, text) {
     const element = document.createElement(tag);
@@ -93,11 +93,23 @@
       renderList(payload.records || []);
       return;
     }
+    note.textContent = "临时记录仅保存在当前设备，最近 5 条会显示在这里。";
     renderList(YunduHistory.listLocal());
+  }
+
+  async function resolveMemberMode() {
+    if (memberMode) return;
+    try {
+      const member = await YunduMember.getMember();
+      memberMode = Boolean(member?.authenticated);
+    } catch {
+      memberMode = false;
+    }
   }
 
   async function init() {
     try {
+      await resolveMemberMode();
       await loadRecords();
       if (params.get("error") === "missing") {
         message.textContent = "这条记录不存在、已被删除或暂时无法读取。";
