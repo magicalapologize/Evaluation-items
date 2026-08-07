@@ -35,6 +35,11 @@ test("历史页不会把 HTML 错误页当作 JSON 解析", () => {
   assert.match(read("assets/js/member-history.js"), /content-type/);
 });
 
+test("独立历史页加载会员认证模块", () => {
+  const html = read("history/index.html");
+  assert.match(html, /member-auth\.js/);
+});
+
 test("会员中心包含历史记录区域", () => {
   const html = read("member/index.html");
   assert.match(html, /id="test-history"/);
