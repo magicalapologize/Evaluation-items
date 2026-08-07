@@ -4,13 +4,28 @@ export function tierIndexFor(clearCount) {
   return TIERS.findIndex((tier) => clearCount >= tier.min && clearCount <= tier.max);
 }
 
-function buildContrastScale(raw) {
+function stableJitter(seed, max) {
+  if (max <= 0) return 0;
+  let value = (seed ^ 0x9e3779b9) >>> 0;
+  value = Math.imul(value ^ (value >>> 16), 2246822507) >>> 0;
+  value = Math.imul(value ^ (value >>> 13), 3266489909) >>> 0;
+  return value % (max + 1);
+}
+
+function buildContrastScale(raw, answers) {
   const ordered = [...new Set(Object.values(raw))].sort((a, b) => a - b);
   if (ordered.length === 1) return new Map([[ordered[0], 68]]);
-  return new Map(ordered.map((value, index) => {
+  const scale = new Map(ordered.map((value, index) => {
     const position = index / (ordered.length - 1);
-    return [value, Math.round(10 + Math.pow(position, 1.18) * 90)];
+    return [value, Math.round(25 + Math.pow(position, 1.05) * 63)];
   }));
+  const highestRaw = ordered.at(-1);
+  const secondRaw = ordered.at(-2);
+  const secondValue = scale.get(secondRaw);
+  const topMinimum = Math.min(97, Math.round(85 + Math.max(0, secondValue - 70) * 2 / 3));
+  const topValue = topMinimum + stableJitter(answerFingerprint(answers), 100 - topMinimum);
+  scale.set(highestRaw, topValue);
+  return scale;
 }
 
 export function calculateResult(role, answers) {
@@ -30,11 +45,13 @@ export function calculateResult(role, answers) {
     raw[selected.secondary] += 1;
   });
 
-  const contrastScale = buildContrastScale(raw);
+  const contrastScale = buildContrastScale(raw, answers);
+  const highestRaw = Math.max(...Object.values(raw));
   const dimensions = DIMENSIONS.map((dimension) => ({
     ...dimension,
     raw: raw[dimension.key],
-    value: contrastScale.get(raw[dimension.key])
+    value: contrastScale.get(raw[dimension.key]),
+    isMax: raw[dimension.key] === highestRaw
   }));
   const sorted = [...dimensions].sort((a, b) => b.raw - a.raw || a.key.localeCompare(b.key));
   const tierIndex = tierIndexFor(clearCount);

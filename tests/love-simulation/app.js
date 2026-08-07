@@ -104,15 +104,15 @@ function renderRadar(dimensions) {
   const rings = [20, 40, 60, 80, 100].map((value) => `<polygon class="radar-grid" points="${dimensions.map((_, index) => radarPoint(index, value).join(",")).join(" ")}" />`).join("");
   const axes = dimensions.map((_, index) => { const [x, y] = radarPoint(index, 100); return `<line class="radar-axis" x1="210" y1="184" x2="${x}" y2="${y}" />`; }).join("");
   const area = dimensions.map((dimension, index) => radarPoint(index, dimension.value).join(",")).join(" ");
-  const dots = dimensions.map((dimension, index) => { const [x, y] = radarPoint(index, dimension.value); return `<circle class="radar-dot${dimension.value === 100 ? " is-max" : ""}" cx="${x}" cy="${y}" r="5" />`; }).join("");
+  const dots = dimensions.map((dimension, index) => { const [x, y] = radarPoint(index, dimension.value); return `<circle class="radar-dot${dimension.isMax ? " is-max" : ""}" cx="${x}" cy="${y}" r="5" />`; }).join("");
   const labels = dimensions.map((dimension, index) => {
     const angle = -Math.PI / 2 + index * Math.PI / 3;
     const x = 210 + Math.cos(angle) * 160;
     const y = 184 + Math.sin(angle) * 160;
     const anchor = Math.cos(angle) > .2 ? "start" : Math.cos(angle) < -.2 ? "end" : "middle";
-    const badgeWidth = dimension.value === 100 ? 52 : 44;
+    const badgeWidth = dimension.isMax ? 52 : 44;
     const badgeX = anchor === "start" ? x : anchor === "end" ? x - badgeWidth : x - badgeWidth / 2;
-    return `<g class="radar-label-group${dimension.value === 100 ? " is-max" : dimension.value <= 20 ? " is-min" : ""}"><text class="radar-label" x="${x}" y="${y - 7}" text-anchor="${anchor}">${dimension.name}</text><rect class="radar-value-bg" x="${badgeX}" y="${y + 1}" width="${badgeWidth}" height="23" rx="3"/><text class="radar-value" x="${anchor === "start" ? x + badgeWidth / 2 : anchor === "end" ? x - badgeWidth / 2 : x}" y="${y + 17}" text-anchor="middle">${dimension.value}%</text></g>`;
+    return `<g class="radar-label-group${dimension.isMax ? " is-max" : dimension.value <= 20 ? " is-min" : ""}"><text class="radar-label" x="${x}" y="${y - 7}" text-anchor="${anchor}">${dimension.name}</text><rect class="radar-value-bg" x="${badgeX}" y="${y + 1}" width="${badgeWidth}" height="23" rx="3"/><text class="radar-value" x="${anchor === "start" ? x + badgeWidth / 2 : anchor === "end" ? x - badgeWidth / 2 : x}" y="${y + 17}" text-anchor="middle">${dimension.value}%</text></g>`;
   }).join("");
   const center = `<g class="radar-center"><text x="210" y="177" text-anchor="middle">反差指数</text><text class="radar-contrast" x="210" y="207" text-anchor="middle">${contrast}%</text></g>`;
   $("dimension-radar").innerHTML = `<title id="radar-title">六维关系雷达图</title><desc id="radar-desc">${dimensions.map((item) => `${item.name}${item.value}%`).join("，")}，反差指数${contrast}%</desc>${rings}${axes}<polygon class="radar-area" points="${area}" />${dots}${center}${labels}`;
