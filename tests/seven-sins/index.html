@@ -388,7 +388,8 @@
       $("result-score").textContent = profile.total;
       $("result-chief").textContent = result.name;
       $("result-alias").textContent = result.alias;
-      $("result-summary-copy").textContent = `${result.summary} 压力上来时，「${second.name}」也常会跟着出现。`;
+      const secondarySummary = result.secondarySummary.replace("{second}", second.name);
+      $("result-summary-copy").textContent = `${result.summary} ${secondarySummary}`;
       $("result-tags").innerHTML = result.keywords.map((keyword) => `<span class="result-tag">${keyword}</span>`).join("");
       renderRadar(profile.displayScores);
       const ranked = [...DIMENSIONS].sort((a, b) => profile.displayScores[b.key] - profile.displayScores[a.key]);
