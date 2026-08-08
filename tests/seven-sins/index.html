@@ -340,6 +340,33 @@
       $("radar-svg").innerHTML = `<polygon class="radar-grid" points="${polygon(100)}" /><polygon class="radar-grid" points="${polygon(75)}" /><polygon class="radar-grid" points="${polygon(50)}" /><polygon class="radar-grid" points="${polygon(25)}" />${axes}<polygon class="radar-shape" points="${shape}" />${dots}`;
     }
 
+    function renderRankingRows(container, dimensions) {
+      while (container.firstChild) container.removeChild(container.firstChild);
+      [...dimensions].sort((a, b) => Number(b.value) - Number(a.value)).forEach((dimension, index) => {
+        const value = Math.max(0, Math.min(100, Number(dimension.value) || 0));
+        const row = document.createElement("div");
+        row.className = "ranking-row";
+        const rank = document.createElement("span");
+        rank.className = "ranking-rank";
+        rank.textContent = String(index + 1).padStart(2, "0");
+        const name = document.createElement("span");
+        name.className = "ranking-name";
+        name.textContent = dimension.name;
+        const bar = document.createElement("span");
+        bar.className = "ranking-bar";
+        const fill = document.createElement("span");
+        fill.className = "ranking-fill";
+        fill.style.display = "block";
+        fill.style.width = `${value}%`;
+        bar.append(fill);
+        const score = document.createElement("span");
+        score.className = "ranking-value";
+        score.textContent = String(value);
+        row.append(rank, name, bar, score);
+        container.append(row);
+      });
+    }
+
     function renderNumberedRows(container, items, rowClass, indexClass) {
       while (container.firstChild) container.removeChild(container.firstChild);
       items.forEach((item, index) => {
@@ -623,7 +650,7 @@
       $("result-alias").textContent = snapshot.result.subtitle;
       $("result-summary-copy").textContent = snapshot.result.quote;
       YunduHistoryReplay.renderTags($("result-tags"), snapshot.tags);
-      YunduHistoryReplay.renderDimensions($("ranking-list"), snapshot.dimensions);
+      renderRankingRows($("ranking-list"), snapshot.dimensions);
       renderNumberedRows($("trigger-list"), sections.get("你的常见触发场景")?.items || [], "trigger-row", "trigger-index");
       $("portrait").textContent = sections.get("你为什么会得到这个结果")?.body || "";
       $("strength").textContent = sections.get("这份倾向的核心优势")?.body || "";

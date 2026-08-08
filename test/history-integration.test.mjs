@@ -153,6 +153,44 @@ test("七宗罪历史回放与测试模块共享结果数据", () => {
   assert.match(moduleScript, /YunduHistoryReplay\.init\("seven-sins"/);
 });
 
+test("七宗罪历史排行按指数降序并保留原结果页结构", () => {
+  const html = read("tests/seven-sins/index.html");
+  const moduleScript = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+    .find(([, attrs]) => attrs.includes('type="module"'))?.[2] || "";
+  const start = moduleScript.indexOf("function renderRankingRows");
+  const end = moduleScript.indexOf("\n\n    function renderNumberedRows", start);
+  assert.notEqual(start, -1, "缺少七宗罪历史排行渲染函数");
+  assert.notEqual(end, -1, "无法读取七宗罪历史排行渲染函数");
+
+  function element() {
+    return {
+      children: [], className: "", textContent: "", style: {},
+      append(...children) { this.children.push(...children); },
+      removeChild(child) { this.children.splice(this.children.indexOf(child), 1); },
+      get firstChild() { return this.children[0] || null; }
+    };
+  }
+  const context = { document: { createElement: element } };
+  new Script(`${moduleScript.slice(start, end)}\nglobalThis.renderRankingRows = renderRankingRows;`)
+    .runInNewContext(context);
+  const container = element();
+  context.renderRankingRows(container, [
+    { name: "傲慢", value: 44 }, { name: "贪婪", value: 24 },
+    { name: "色欲", value: 76 }, { name: "嫉妒", value: 57 },
+    { name: "暴怒", value: 40 }, { name: "暴食", value: 24 },
+    { name: "懒惰", value: 69 }
+  ]);
+
+  assert.deepEqual(container.children.map((row) => row.children[1].textContent),
+    ["色欲", "懒惰", "嫉妒", "傲慢", "暴怒", "贪婪", "暴食"]);
+  assert.equal(container.children[0].className, "ranking-row");
+  assert.equal(container.children[0].children[0].textContent, "01");
+  assert.equal(container.children[0].children[2].className, "ranking-bar");
+  assert.equal(container.children[0].children[2].children[0].className, "ranking-fill");
+  assert.equal(container.children[0].children[2].children[0].style.width, "76%");
+  assert.equal(container.children[0].children[3].textContent, "76");
+});
+
 test("历史回放使用各产品完整雷达图数据结构", () => {
   const cultivation = read("tests/cultivation-protagonist/index.html");
   const solo = read("tests/solo-business/index.html");
