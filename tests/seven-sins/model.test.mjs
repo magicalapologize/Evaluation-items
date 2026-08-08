@@ -5,6 +5,15 @@ import * as model from "./model.mjs";
 
 const { calculateProfile, simulateDistribution } = model;
 const KEYS = DIMENSIONS.map(({ key }) => key);
+const COPY_BASELINES = {
+  pride: { firstReaction: 51, reminder: 49 },
+  greed: { firstReaction: 50, reminder: 39 },
+  lust: { firstReaction: 49, reminder: 45 },
+  envy: { firstReaction: 50, reminder: 63 },
+  wrath: { firstReaction: 49, reminder: 40 },
+  gluttony: { firstReaction: 54, reminder: 51 },
+  sloth: { firstReaction: 44, reminder: 49 }
+};
 
 test("七宗罪模型包含35道题、7个维度和7个结果", () => {
   assert.equal(QUESTIONS.length, 35);
@@ -29,6 +38,23 @@ test("所有结果都有独立提醒和完整结果资料", () => {
     assert.equal(result.triggers.length, 3);
     assert.equal(result.advices.length, 3);
     assert.ok(result.reminder);
+  }
+});
+
+test("七种结果拥有独立的次高维度解释且文案增量符合要求", () => {
+  const secondarySummaries = RESULTS.map((result) => result.secondarySummary);
+  assert.equal(new Set(secondarySummaries).size, RESULTS.length);
+
+  for (const result of RESULTS) {
+    assert.equal(typeof result.secondarySummary, "string");
+    assert.equal(result.secondarySummary.match(/\{second\}/g)?.length, 1);
+
+    const firstReaction = `${result.summary} ${result.secondarySummary.replace("{second}", "嫉妒")}`;
+    const firstDelta = [...firstReaction].length - COPY_BASELINES[result.key].firstReaction;
+    const reminderDelta = [...result.reminder].length - COPY_BASELINES[result.key].reminder;
+
+    assert.ok(firstDelta >= 10 && firstDelta <= 20, `${result.name}第一反应增加了${firstDelta}字`);
+    assert.ok(reminderDelta >= 10 && reminderDelta <= 20, `${result.name}提醒增加了${reminderDelta}字`);
   }
 });
 
