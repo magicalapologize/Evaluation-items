@@ -53,6 +53,56 @@ test("会员中心包含历史记录区域", () => {
   assert.match(html, /member-history\.js/);
 });
 
+test("会员中心只预览最新两条测试记录", async () => {
+  function element() {
+    return {
+      children: [], className: "", textContent: "", hidden: false,
+      append(...children) { this.children.push(...children); },
+      removeChild(child) { this.children.splice(this.children.indexOf(child), 1); },
+      addEventListener() {},
+      get firstChild() { return this.children[0] || null; }
+    };
+  }
+
+  const section = element();
+  const list = element();
+  const message = element();
+  let onMember;
+  const document = {
+    getElementById(id) {
+      return { "test-history": section, "member-history-list": list, "member-history-message": message }[id];
+    },
+    createElement: element,
+    addEventListener(type, listener) {
+      if (type === "yundu:member") onMember = listener;
+    }
+  };
+  const records = [1, 2, 3, 4].map((value) => ({
+    id: `record-${value}`,
+    productId: "seven-sins",
+    productTitle: `测试 ${value}`,
+    resultName: `结果 ${value}`,
+    createdAt: `2026-08-0${9 - value}T12:00:00.000Z`
+  }));
+  const fetch = async () => ({
+    ok: true,
+    headers: { get: () => "application/json" },
+    json: async () => ({ success: true, records })
+  });
+  const YunduHistory = {
+    syncPending: async () => {},
+    historyResultHref: (record) => `/tests/${record.productId}/?history=${record.id}&source=member`
+  };
+
+  new Script(read("assets/js/member-history.js")).runInNewContext({
+    document, fetch, YunduHistory, window: { confirm: () => true }, Date, encodeURIComponent
+  });
+  await onMember({ detail: { authenticated: true } });
+
+  assert.equal(list.children.length, 2);
+  assert.deepEqual(list.children.map((item) => item.children[0].children[1].textContent), ["结果 1", "结果 2"]);
+});
+
 test("本地预览明确拒绝会员历史接口", () => {
   const script = read("scripts/local-preview.mjs");
   assert.match(script, /api\/member\/results/);
@@ -84,7 +134,7 @@ test("首页提供我的测试结果入口", () => {
 
 test("会员中心明确提供独立历史记录入口", () => {
   const html = read("member/index.html");
-  assert.match(html, /href="\.\.\/history\/\?member=1"[^>]*>独立查看/);
+  assert.match(html, /href="\.\.\/history\/\?member=1"[^>]*>查看全部记录/);
 });
 
 test("七宗罪历史入口使用居中的小按钮样式", () => {

@@ -65,7 +65,7 @@
     try {
       message.textContent = "";
       const payload = await request("/api/member/results");
-      render(payload.records || []);
+      render((payload.records || []).slice(0, 2));
     } catch (error) {
       message.textContent = error.message;
     }
