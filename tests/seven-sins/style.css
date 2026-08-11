@@ -198,7 +198,8 @@ p, h1, h2, h3, ul { margin: 0; }
 .radar-axis { stroke: rgba(215, 173, 103, .17); stroke-width: 1; }
 .radar-shape { fill: rgba(181, 47, 61, .5); stroke: var(--gold); stroke-width: 2; }
 .radar-dot { fill: var(--gold-soft); stroke: var(--crimson); stroke-width: 2; }
-.radar-label { fill: var(--gold-soft); font-size: 13px; font-weight: 700; }
+.radar-label { fill: var(--gold-soft); font-size: 12px; font-weight: 700; }
+.radar-value { fill: var(--ink); font-family: Georgia, serif; font-size: 13px; font-weight: 800; }
 .ranking-list { display: grid; gap: 10px; margin-top: 22px; }
 .ranking-row { display: grid; grid-template-columns: 42px 92px minmax(0, 1fr) 38px; align-items: center; gap: 10px; min-height: 48px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 .ranking-rank { color: var(--gold); font-family: Georgia, serif; font-size: 18px; }
