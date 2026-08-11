@@ -35,3 +35,10 @@ test("好评返现文案明确写出返 1 元", () => {
 test("海报把七宗罪结果名称作为红色大字单独突出", () => {
   assert.match(html, /ctx\.fillStyle = "#f05a66";\s*ctx\.font = "700 96px serif";\s*ctx\.fillText\(result\.name, width \/ 2, 230\);/);
 });
+
+test("雷达图为七个维度输出罪名和倾向指数标签", () => {
+  assert.match(html, /class=\"radar-label\"/);
+  assert.match(html, /class=\"radar-value\"/);
+  assert.match(html, /displayScores\[dimension\.key\]/);
+  assert.match(html, /labelRadius/);
+});
