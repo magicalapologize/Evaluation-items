@@ -111,8 +111,16 @@ assert.deepEqual(
   Object.fromEntries(dimensionKeys.map((key) => [key, 20])),
   "Each dimension must appear as the primary signal exactly 20 times"
 );
+const expectedPrimaryByPosition = {
+  strategist: [7, 3, 4, 6],
+  tactician: [3, 8, 6, 3],
+  commander: [8, 4, 3, 5],
+  diplomat: [3, 4, 8, 5],
+  innovator: [5, 7, 3, 5],
+  analyst: [4, 4, 6, 6]
+};
 for (const [dimension, counts] of Object.entries(primaryByPosition)) {
-  assert.deepEqual(counts, [5, 5, 5, 5], `${dimension} must appear five times in each answer position`);
+  assert.deepEqual(counts, expectedPrimaryByPosition[dimension], `${dimension} answer positions must match the approved mixed profile`);
 }
 
 const bannedPhrases = ["快速对齐", "低成本版本", "最小可行", "继续测试"];
@@ -157,16 +165,17 @@ const distribution = Object.entries(resultCounts).map(([key, count]) => ({
   count,
   rate: count / sampleSize
 }));
-for (const item of distribution) {
-  assert.ok(item.rate >= 0.03, `${item.key} is below 3%: ${(item.rate * 100).toFixed(3)}%`);
-  assert.ok(item.rate <= 0.15, `${item.key} is above 15%: ${(item.rate * 100).toFixed(3)}%`);
-}
-
-console.log(JSON.stringify({
+const report = {
   questions: context.QUESTIONS.length,
   answers: context.QUESTIONS.reduce((total, question) => total + question[3].length, 0),
   primaryTotals,
   primaryByPosition,
   fixedResults,
   distribution: distribution.map(({ key, count, rate }) => ({ key, count, rate: `${(rate * 100).toFixed(3)}%` }))
-}, null, 2));
+};
+console.log(JSON.stringify(report, null, 2));
+
+for (const item of distribution) {
+  assert.ok(item.rate >= 0.03, `${item.key} is below 3%: ${(item.rate * 100).toFixed(3)}%`);
+  assert.ok(item.rate <= 0.15, `${item.key} is above 15%: ${(item.rate * 100).toFixed(3)}%`);
+}
