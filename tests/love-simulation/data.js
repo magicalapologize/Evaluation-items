@@ -131,9 +131,9 @@ const guYanQuestions = [
   ]),
   question("第三章 · 正式相处", "共同支出", "旅行订房时，顾言提出把预算和分工先列清楚。你第一反应是？", [
     option("觉得太计较，恋爱不该算得这么细", 0, "empathy", "growth"),
-    option("可以，先说最多花多少，再看订房、吃饭分别谁来付。", 5, "growth", "boundary"),
+    option("预算我能接受。订房、吃饭怎么分，我们现在说清楚就行。", 5, "growth", "boundary"),
     option("让他全安排，自己到时候配合就好", 1, "reliability", "expression"),
-    option("先告诉他我最多能花多少，再留一点钱给临时想玩的项目。", 3, "expression", "growth")
+    option("我最多出这些，剩下的给路上临时想玩的项目，别把钱花得太死。", 3, "expression", "growth")
   ]),
   question("第三章 · 正式相处", "习惯摩擦", "顾言习惯所有东西归位，你却常把衣服放在椅背上。争执后你会？", [
     option("答应他先改最明显的地方，心里却觉得自己又要迁就一次", 1, "reliability", "repair"),
@@ -142,10 +142,10 @@ const guYanQuestions = [
     option("先改掉最让他难受的两处，剩下的慢慢磨。", 3, "empathy", "repair")
   ]),
   question("第四章 · 冲突压力", "事实争执", "你们对同一件事记忆不同，顾言开始逐条复盘细节。你会？", [
-    option("我知道你想把事情捋清，但我现在很难受。先看看我们到底要解决什么。", 5, "empathy", "repair"),
+    option("我知道你想把细节捋清，可我现在只觉得委屈。我们先说这次到底要解决什么。", 5, "empathy", "repair"),
     option("认为他只想赢，停止沟通让他自己反省", 0, "boundary", "repair"),
     option("找聊天记录证明自己没错", 1, "reliability", "empathy"),
-    option("先停十分钟，各自想清楚自己记得什么、到底想要什么，再回来谈。", 3, "repair", "expression")
+    option("我们都别急着定谁记错了，缓十分钟，等会儿再把话接上。", 3, "repair", "expression")
   ]),
   question("第四章 · 冲突压力", "公开分歧", "聚会中顾言当众纠正了你的一个说法，你感觉被拆台。你会？", [
     option("笑着说‘你说得都对’，回家后把这笔账翻出来算清楚", 0, "expression", "repair"),
@@ -167,9 +167,9 @@ const guYanQuestions = [
   ]),
   question("第五章 · 长期选择", "异地机会", "顾言得到外地一年的重要项目机会，你的工作无法立刻搬走。你会？", [
     option("我会支持你去，但如果这段时间只剩我一个人等，那这段关系也没必要硬撑", 0, "growth", "boundary"),
-    option("先把各自会得到和失去的东西摊开说，再试三个月异地看看。", 5, "growth", "reliability"),
+    option("这机会对你很重要，我们把会失去什么也算进去，先试三个月再决定。", 5, "growth", "reliability"),
     option("说随便他，反正未来谁也说不准", 1, "boundary", "expression"),
-    option("先说好多久见一次、哪些事不能碰，一个月后再看还要不要继续。", 3, "reliability", "growth")
+    option("可以异地，但见面频率和联系底线得有个数，别全靠想当然。", 3, "reliability", "growth")
   ]),
   question("第五章 · 长期选择", "家庭边界", "顾言的家人开始频繁询问你们何时结婚，他没有及时制止。你会？", [
     option("当面顶回去，让所有人一次记住", 1, "expression", "boundary"),
@@ -179,9 +179,9 @@ const guYanQuestions = [
   ]),
   question("第五章 · 长期选择", "同居试运行", "顾言提出同居前先列家务、费用和独处时间。你会？", [
     option("觉得太像合同，住进去自然就知道了", 1, "empathy", "growth"),
-    option("可以，先写几条最容易吵架的，住一个月后不合适再改。", 5, "growth", "repair"),
+    option("可以写，但只记最容易吵起来的几条，住进去后发现不合适就改。", 5, "growth", "repair"),
     option("全部照他的规则，避免刚开始就争执", 0, "boundary", "expression"),
-    option("先聊家务、钱和独处这三件事，其他的遇到了再说。", 3, "reliability", "repair")
+    option("家务、钱和独处时间先聊到这儿，其他的别还没住就开会。", 3, "reliability", "repair")
   ]),
   question("第五章 · 长期选择", "未来时间表", "顾言问你：‘你希望三年后的生活是什么样？’你会？", [
     option("说计划赶不上变化，现在开心就好", 1, "boundary", "growth"),
@@ -211,16 +211,16 @@ const zhouYeQuestions = [
     option("先别拍我，等哪天状态好一点，我会主动告诉你。", 3, "boundary", "empathy")
   ]),
   question("第一章 · 初见试探", "社交热场", "朋友聚会上，周野和每个人都聊得很热络，你有些被晾在一边。你会？", [
-    option("先走过去一起聊，回去再告诉他下次别把我一个人晾这么久。", 5, "expression", "repair"),
+    option("我先凑过去一起聊，回家再跟他说，刚才我其实被晾得有点久。", 5, "expression", "repair"),
     option("提前离场，让他自己发现你不高兴", 0, "boundary", "expression"),
-    option("先找其他人聊天，散场后再说刚才确实有点被冷落。", 3, "boundary", "empathy"),
+    option("我去找别人聊，散场后再提一句刚才有点尴尬，不想当众扫兴。", 3, "boundary", "empathy"),
     option("整晚盯着他和谁说话，回家逐个盘问", 1, "reliability", "boundary")
   ]),
   question("第二章 · 暧昧升温", "冒险计划", "周野提议周末去一个没做攻略的小镇，说到了再决定。你会？", [
-    option("可以去，别的随缘，但车票、住哪和最多花多少钱得先定。", 5, "growth", "boundary"),
+    option("小镇可以去，但车票、住处和预算先别悬着，到了再随便逛。", 5, "growth", "boundary"),
     option("要求把每小时安排都定好，否则不去", 1, "reliability", "growth"),
     option("嘴上说随便，途中任何变化都怪他", 0, "repair", "expression"),
-    option("先把住处订了，到了以后想去哪儿再现场决定。", 3, "growth", "reliability")
+    option("住的地方先定下来，其他到了再看，至少别连睡哪儿都不知道。", 3, "growth", "reliability")
   ]),
   question("第二章 · 暧昧升温", "突然失联", "周野外拍一整天没信号，晚上才报平安。你会？", [
     option("人没事就好，但我今天真担心了。以后出发前发我一声。", 5, "expression", "reliability"),
@@ -248,9 +248,9 @@ const zhouYeQuestions = [
   ]),
   question("第三章 · 正式相处", "消费冲动", "周野看中一台超预算的相机，想先买再想办法。你会？", [
     option("直接说他不成熟，替他把订单取消", 0, "boundary", "empathy"),
-    option("先问他买完还剩多少钱、到底会用几次，最后让他自己决定。", 5, "growth", "boundary"),
+    option("你想买就买，但买完手里还剩多少、一个月会用几次，得自己想明白。", 5, "growth", "boundary"),
     option("支持梦想，钱不够可以先借给他", 1, "empathy", "reliability"),
-    option("先别急着下单，等两天，再看看租一台或买二手划不划算。", 3, "reliability", "growth")
+    option("先放两天，租一台或买二手也许更适合，别被今天的兴奋推着下单。", 3, "reliability", "growth")
   ]),
   question("第三章 · 正式相处", "临时朋友局", "你们约好二人晚餐，周野临时想叫朋友一起。你会？", [
     option("今天就别叫了，我已经为这顿饭空出时间，不想临时改成朋友聚餐", 1, "expression", "boundary"),
@@ -260,9 +260,9 @@ const zhouYeQuestions = [
   ]),
   question("第三章 · 正式相处", "热情降温", "热恋期后，周野的消息明显没有以前密集。你会？", [
     option("增加消息频率，直到他恢复原来的热情", 1, "reliability", "boundary"),
-    option("先过好自己的日子，见面时直接问他最近怎么突然安静了。", 5, "boundary", "expression"),
+    option("我不追着问，照常过自己的日子，见面时直接问他最近怎么了。", 5, "boundary", "expression"),
     option("默认他变心，提前结束关系", 0, "empathy", "repair"),
-    option("先看一周他见面和答应的事有没有变，再拿具体变化去问。", 3, "reliability", "empathy")
+    option("我先观察几天，看是忙还是在躲，再拿具体变化去问，不凭感觉审判。", 3, "reliability", "empathy")
   ]),
   question("第四章 · 冲突压力", "玩笑越界", "周野在朋友面前拿你的糗事开玩笑，大家都笑了。你会？", [
     option("现场用他的糗事还击", 0, "expression", "repair"),
@@ -335,9 +335,9 @@ const linWanQuestions = [
   ]),
   question("第一章 · 初见试探", "细节记忆", "林晚记得你随口提过的口味，却发现你忘了她不吃香菜。你会？", [
     option("说这种小事没必要上纲上线", 0, "boundary", "expression"),
-    option("是我忘了，先把这份换掉。下次点菜我会记得。", 5, "reliability", "empathy"),
+    option("是我忘了。这份我来换，下次点菜我记着。", 5, "reliability", "empathy"),
     option("解释自己最近太忙，希望她理解", 1, "expression", "repair"),
-    option("先把香菜挑掉或换一份，再问问她还有什么是真的不吃。", 3, "repair", "reliability")
+    option("我先把这份处理掉，回头再问清楚还有哪些东西你真的不吃。", 3, "repair", "reliability")
   ]),
   question("第二章 · 暧昧升温", "情绪回音", "林晚发来一段很长的语音，说今天被同事否定得很难受。你会？", [
     option("回复一套解决职场问题的方法", 1, "growth", "empathy"),
@@ -413,15 +413,15 @@ const linWanQuestions = [
   ]),
   question("第五章 · 长期选择", "创作低收入", "林晚想减少商业项目，用半年完成个人画册。你会？", [
     option("支持梦想，经济问题以后再想", 1, "growth", "reliability"),
-    option("先算半年最少要花多少钱，再说每个月画到哪，撑不住时怎么办。", 5, "growth", "reliability"),
+    option("半年最低开销和每月进度算一遍，撑不住时也提前说好怎么改。", 5, "growth", "reliability"),
     option("认为不赚钱的爱好不值得冒险", 0, "growth", "empathy"),
-    option("先试三个月，每月看看进度和收入，低过底线就及时调整。", 3, "reliability", "growth")
+    option("可以试三个月，每月看一次进度和收入，低过底线就调整。", 3, "reliability", "growth")
   ]),
   question("第五章 · 长期选择", "照顾家人", "林晚可能需要长期照顾生病的家人，生活安排会被打乱。你会？", [
     option("承诺所有压力都由你承担", 1, "reliability", "boundary"),
-    option("先弄清到底需要照顾到什么程度，再看她、我和家里其他人各做什么。", 5, "boundary", "reliability"),
+    option("先问清她到底需要什么，家里每个人各自能做多少，别把照顾全压给她。", 5, "boundary", "reliability"),
     option("担心拖累自己，劝她交给其他家人", 0, "boundary", "growth"),
-    option("先固定帮她做一件我能长期坚持的事，过两周再看够不够。", 3, "reliability", "boundary")
+    option("我固定帮她做一件能坚持的事，过两周再看是不是还缺什么。", 3, "reliability", "boundary")
   ]),
   question("第五章 · 长期选择", "婚礼期待", "林晚很看重婚礼细节，你更在意简单省钱。你会？", [
     option("告诉她婚礼只是形式，没必要投入太多", 0, "expression", "growth"),
@@ -523,10 +523,10 @@ const shenZhixiaQuestions = [
     option("先确认融资确实挪不了，再挑一个她能彻底关掉工作的日子补过。", 3, "growth", "reliability")
   ]),
   question("第四章 · 冲突压力", "高压语气", "沈知夏压力大时用命令式语气和你说话，事后没意识到。你会？", [
-    option("先停下来，告诉她可以着急，但别用这种口气跟我说，请她重说一遍。", 5, "boundary", "expression"),
+    option("我知道你很急，但别用命令的口气跟我说。重来一遍，我会听。", 5, "boundary", "expression"),
     option("理解她太累，先把事情做完再说", 1, "empathy", "boundary"),
     option("同样用命令语气回击", 0, "repair", "expression"),
-    option("真着急的那一步先做完，之后马上告诉她，刚才那种口气我不接受。", 3, "reliability", "boundary")
+    option("事情先做完，等她喘口气再说，刚才那种口气我不接受。", 3, "reliability", "boundary")
   ]),
   question("第四章 · 冲突压力", "输赢争论", "一次争执里，沈知夏不断拿事实证明自己的方案更有效。你会？", [
     option("你的办法也许更有效，但你一路替我做决定，我真的很不舒服。", 5, "empathy", "expression"),
