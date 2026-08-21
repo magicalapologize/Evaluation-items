@@ -3,3 +3,6 @@ Cloudflare部署与每日测试码操作手册.md
 
 # Local Wrangler runtime state.
 .wrangler/
+
+# Local isolated feature worktrees.
+.worktrees/
