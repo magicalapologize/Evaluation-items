@@ -39,3 +39,27 @@ test("四档分值在 A/B/C/D 的位置分布不过度集中", () => {
     }
   }
 });
+
+test("全选最长选项不能成为高分捷径", () => {
+  for (const role of Object.values(ROLES)) {
+    const longestChoices = role.questions.map((question) => question.options.reduce((longest, option) => option.text.length > longest.text.length ? option : longest));
+    const totalScore = longestChoices.reduce((sum, option) => sum + option.points, 0);
+    const highScoreCount = longestChoices.filter((option) => option.points === 5).length;
+    assert.ok(totalScore <= 64, `${role.name} longest score: ${totalScore}`);
+    assert.ok(highScoreCount <= 10, `${role.name} longest 5-point choices: ${highScoreCount}`);
+  }
+});
+
+test("选项字数和分值不应存在明显正相关", () => {
+  for (const role of Object.values(ROLES)) {
+    const samples = role.questions.flatMap((question) => question.options.map((option) => ({ length: option.text.length, points: option.points })));
+    const average = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+    const lengthMean = average(samples.map((sample) => sample.length));
+    const pointsMean = average(samples.map((sample) => sample.points));
+    const covariance = average(samples.map((sample) => (sample.length - lengthMean) * (sample.points - pointsMean)));
+    const lengthDeviation = Math.sqrt(average(samples.map((sample) => (sample.length - lengthMean) ** 2)));
+    const pointsDeviation = Math.sqrt(average(samples.map((sample) => (sample.points - pointsMean) ** 2)));
+    const correlation = covariance / lengthDeviation / pointsDeviation;
+    assert.ok(correlation <= 0.35, `${role.name} length-score correlation: ${correlation.toFixed(3)}`);
+  }
+});

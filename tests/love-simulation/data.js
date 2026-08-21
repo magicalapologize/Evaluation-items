@@ -16,7 +16,23 @@ export const TIERS = [
   { min: 19, max: 20, title: "隐藏结局·双向奔赴", tag: "TRUE ENDING" }
 ];
 
-const option = (text, points, primary, secondary) => ({ text, points, primary, secondary });
+const lowScoreMotives = {
+  empathy: ["我想先缓一缓。", "不想把气氛弄沉。", "一直追问也挺累的。"],
+  expression: ["不想显得我太在意。", "话说太明白会很被动。", "先看他会不会主动。"],
+  boundary: ["关系近了，不必分太清。", "现在计较显得太生分。", "忍一下，不想显得难相处。"],
+  reliability: ["眼前先过得去再说。", "承诺说死了压力更大。", "计划太细容易扫兴。"],
+  repair: ["现在聊只会更难看。", "翻篇有时反而省力。", "让他自己记住这次。"],
+  growth: ["以后再说，现在谈太早。", "走到那一步再决定。", "计划太多会不像恋爱。"]
+};
+
+const option = (text, points, primary, secondary) => {
+  if (points <= 1 && [...text].length < 24) {
+    const motives = lowScoreMotives[primary];
+    const motiveIndex = [...text].reduce((hash, char) => (hash + char.charCodeAt(0)) >>> 0, points) % motives.length;
+    text = `${text.replace(/[。；，]$/, "")}。${motives[motiveIndex]}`;
+  }
+  return { text, points, primary, secondary };
+};
 const promptEndings = ["你会怎么接？", "你第一反应是什么？", "你打算怎么回？", "你会先做哪件事？"];
 const question = (stage, scene, prompt, options) => {
   const endingIndex = [...scene].reduce((hash, char) => (hash + char.charCodeAt(0)) >>> 0, 0) % promptEndings.length;
