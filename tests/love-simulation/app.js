@@ -80,7 +80,7 @@ function renderQuestion() {
   $("progress-text").textContent = `${number} / ${total}`;
   $("progress-bar").style.width = `${number / total * 100}%`;
   $("scene-name").textContent = current.scene;
-  $("question-count").textContent = `${state.mode === "survival" ? "SURVIVE" : "LEVEL"} ${String(number).padStart(2, "0")} · 别选标准答案`;
+  $("question-count").textContent = `${state.mode === "survival" ? "SURVIVE" : "ROUND"} ${String(number).padStart(2, "0")} · 先看你的第一反应`;
   $("question-text").textContent = current.prompt;
   const survival = state.mode === "survival";
   $("survival-alert").hidden = !survival;
