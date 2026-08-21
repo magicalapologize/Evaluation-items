@@ -73,6 +73,7 @@ test("零危险完成 12 关得到隐藏结局且没有明显死因", () => {
   assert.equal(result.cleared, true);
   assert.equal(result.title, "隐藏结局·天选攻略者");
   assert.equal(result.causeText, "本局没有明显致命选择");
+  assert.equal(result.deadliest, null);
   assert.equal(result.temperature, 100);
 });
 

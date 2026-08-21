@@ -1,8 +1,8 @@
-import { ROLES } from "./data.js";
-import { calculateResult } from "./model.js";
+import { ROLES, SURVIVAL_CONFIG, SURVIVAL_COPY } from "./data.js";
+import { calculateResult, calculateSurvivalResult, settleSurvivalAnswer, shouldEndSurvival, answerFingerprint } from "./model.js";
 
 const $ = (id) => document.getElementById(id);
-const state = { roleKey: null, index: 0, answers: [], lastResult: null, historyAttemptId: null };
+const state = { mode: "full", roleKey: null, index: 0, answers: [], lastResult: null, historyAttemptId: null, failStreak: 0, totalDanger: 0, survivalHistory: [], answerLocked: false };
 let activeMember = null;
 
 function showScreen(id) {
@@ -57,6 +57,10 @@ function selectRole(roleKey) {
   state.answers = [];
   state.lastResult = null;
   state.historyAttemptId = null;
+  state.failStreak = 0;
+  state.totalDanger = 0;
+  state.survivalHistory = [];
+  state.answerLocked = false;
   const role = ROLES[roleKey];
   $("quiz-role-image").src = role.portrait;
   $("quiz-role-image").alt = `${role.name}原创角色立绘`;
@@ -68,14 +72,22 @@ function selectRole(roleKey) {
 
 function renderQuestion() {
   const role = ROLES[state.roleKey];
-  const current = role.questions[state.index];
+  const questionIndex = state.mode === "survival" ? SURVIVAL_CONFIG[state.roleKey][state.index] : state.index;
+  const current = role.questions[questionIndex];
   const number = state.index + 1;
+  const total = state.mode === "survival" ? 12 : role.questions.length;
   $("stage-name").textContent = current.stage;
-  $("progress-text").textContent = `${number} / ${role.questions.length}`;
-  $("progress-bar").style.width = `${number / role.questions.length * 100}%`;
+  $("progress-text").textContent = `${number} / ${total}`;
+  $("progress-bar").style.width = `${number / total * 100}%`;
   $("scene-name").textContent = current.scene;
-  $("question-count").textContent = `LEVEL ${String(number).padStart(2, "0")} · 别选标准答案`;
+  $("question-count").textContent = `${state.mode === "survival" ? "SURVIVE" : "LEVEL"} ${String(number).padStart(2, "0")} · 别选标准答案`;
   $("question-text").textContent = current.prompt;
+  const survival = state.mode === "survival";
+  $("survival-alert").hidden = !survival;
+  $("prev-btn").hidden = survival;
+  $("rescue-label").hidden = !(survival && number === 4 && (state.failStreak >= 3 || state.totalDanger >= 6));
+  $("survival-feedback").hidden = true;
+  if (survival) renderSurvivalAlert();
   $("answer-list").innerHTML = current.options.map((answer, index) => `
     <button class="answer-button${state.answers[state.index] === index ? " selected" : ""}" type="button" data-answer="${index}">
       <span class="answer-letter">${String.fromCharCode(65 + index)}</span><span class="answer-text">${answer.text}</span>
@@ -83,13 +95,49 @@ function renderQuestion() {
   `).join("");
   $("prev-btn").disabled = state.index === 0;
   document.querySelectorAll("[data-answer]").forEach((button) => button.addEventListener("click", () => {
+    if (state.answerLocked) return;
+    state.answerLocked = true;
     state.answers[state.index] = Number(button.dataset.answer);
     button.classList.add("selected");
-    setTimeout(() => {
+    document.querySelectorAll("[data-answer]").forEach((item) => { item.disabled = true; });
+    if (survival) settleSurvivalQuestion(questionIndex, Number(button.dataset.answer), current);
+    else setTimeout(() => {
+      state.answerLocked = false;
       if (state.index < role.questions.length - 1) { state.index += 1; renderQuestion(); }
       else { renderResult(); showScreen("result-screen"); }
     }, 100);
   }));
+}
+
+function renderSurvivalAlert() {
+  const filled = Math.min(3, state.failStreak);
+  $("alert-hearts").textContent = `${"■ ".repeat(filled)}${"□ ".repeat(3 - filled)}`.trim();
+  $("alert-copy").textContent = filled === 0 ? "目前还算安全" : filled === 1 ? "气氛开始不对了" : "再踩一次，TA 可能直接退场";
+}
+
+function stableFeedback(points, questionIndex, answerIndex) {
+  const choices = SURVIVAL_COPY.feedback[points];
+  return choices[answerFingerprint([questionIndex, answerIndex, Object.keys(ROLES).indexOf(state.roleKey)]) % choices.length];
+}
+
+function settleSurvivalQuestion(questionIndex, answerIndex, question) {
+  const selected = question.options[answerIndex];
+  const settled = settleSurvivalAnswer(state, selected);
+  state.failStreak = settled.failStreak;
+  state.totalDanger = settled.totalDanger;
+  state.survivalHistory.push({ questionIndex, answerIndex, option: selected });
+  renderSurvivalAlert();
+  $("survival-feedback").textContent = stableFeedback(selected.points, questionIndex, answerIndex);
+  $("survival-feedback").dataset.points = selected.points;
+  $("survival-feedback").hidden = false;
+  const questionNumber = state.index + 1;
+  const ended = shouldEndSurvival(state, questionNumber, selected.points);
+  setTimeout(() => {
+    state.answerLocked = false;
+    if (ended || questionNumber === 12) { renderSurvivalResult(); showScreen("survival-result-screen"); return; }
+    state.index += 1;
+    renderQuestion();
+  }, 760);
 }
 
 function radarPoint(index, value) {
@@ -99,6 +147,10 @@ function radarPoint(index, value) {
 }
 
 function renderRadar(dimensions) {
+  renderRadarInto("dimension-radar", dimensions, "反差指数");
+}
+
+function renderRadarInto(targetId, dimensions, centerLabel = "本局反差") {
   const rawValues = dimensions.map(({ raw }) => raw);
   const rawSpread = Math.max(...rawValues) - Math.min(...rawValues);
   const contrast = Math.min(99, Math.round(30 + rawSpread / 48 * 69));
@@ -115,8 +167,8 @@ function renderRadar(dimensions) {
     const badgeX = anchor === "start" ? x : anchor === "end" ? x - badgeWidth : x - badgeWidth / 2;
     return `<g class="radar-label-group${dimension.isMax ? " is-max" : dimension.value <= 20 ? " is-min" : ""}"><text class="radar-label" x="${x}" y="${y - 7}" text-anchor="${anchor}">${dimension.name}</text><rect class="radar-value-bg" x="${badgeX}" y="${y + 1}" width="${badgeWidth}" height="23" rx="3"/><text class="radar-value" x="${anchor === "start" ? x + badgeWidth / 2 : anchor === "end" ? x - badgeWidth / 2 : x}" y="${y + 17}" text-anchor="middle">${dimension.value}%</text></g>`;
   }).join("");
-  const center = `<g class="radar-center"><text x="210" y="177" text-anchor="middle">反差指数</text><text class="radar-contrast" x="210" y="207" text-anchor="middle">${contrast}%</text></g>`;
-  $("dimension-radar").innerHTML = `<title id="radar-title">六维关系雷达图</title><desc id="radar-desc">${dimensions.map((item) => `${item.name}${item.value}%`).join("，")}，反差指数${contrast}%</desc>${rings}${axes}<polygon class="radar-area" points="${area}" />${dots}${center}${labels}`;
+  const center = `<g class="radar-center"><text x="210" y="177" text-anchor="middle">${centerLabel}</text><text class="radar-contrast" x="210" y="207" text-anchor="middle">${contrast}%</text></g>`;
+  $(targetId).innerHTML = `<title>六维关系雷达图</title><desc>${dimensions.map((item) => `${item.name}${item.value}%`).join("，")}，反差指数${contrast}%</desc>${rings}${axes}<polygon class="radar-area" points="${area}" />${dots}${center}${labels}`;
 }
 
 function renderResult() {
@@ -148,6 +200,26 @@ function renderResult() {
   $("copy-btn").dataset.summary = `我在《心动副本》选择了${role.name}，通关 ${result.clearCount}/20，关系得分 ${result.score}/100，获得称号「${result.tier.title}」。最高关系维度是${result.topDimensions.map((item) => item.name).join("、")}。`;
   YunduHistory.saveResult(buildHistorySnapshot(role, result)).catch(() => {});
   YunduMember.getMember().then((member) => { $("result-screen").querySelector("[data-history-link]").href = YunduHistory.historyHref(member); }).catch(() => {});
+}
+
+function renderSurvivalResult() {
+  const role = ROLES[state.roleKey];
+  const result = calculateSurvivalResult(role, state.survivalHistory);
+  state.lastResult = { mode: "survival", role, ...result };
+  $("survival-role-line").textContent = `你选择攻略 · ${role.name} / ${role.role}`;
+  $("survival-level").textContent = result.cleared ? "成功存活 12 关" : `止步第 ${result.survivedCount} 关`;
+  $("survival-title").textContent = result.title;
+  $("survival-ending").textContent = result.ending;
+  $("survival-role-image").src = role.portrait;
+  $("survival-role-image").alt = `${role.name}原创角色立绘`;
+  $("survival-count").textContent = `${result.survivedCount} / 12`;
+  $("survival-temperature").textContent = `${result.temperature}%`;
+  $("survival-cause").textContent = result.causeText;
+  renderRadarInto("survival-radar", result.dimensions, "危险反差");
+  const question = result.deadliest ? role.questions[result.deadliest.questionIndex] : null;
+  $("deadliest-scene").textContent = question ? question.scene : "本局没有明显致命选择";
+  $("deadliest-answer").textContent = result.deadliest ? `你选了：“${result.deadliest.option.text}”` : "你没有连续踩中同一类危险信号。";
+  $("survival-correction").textContent = result.correction;
 }
 
 function buildHistorySnapshot(role, result) {
@@ -225,17 +297,59 @@ async function createPosterImage() {
   return canvas.toDataURL("image/png");
 }
 
+async function createSurvivalPosterImage() {
+  const { role, survivedCount, cleared, title, causeText, temperature } = state.lastResult;
+  const [qrImage, roleImage] = await Promise.all([loadPosterImage("../../assets/product-qrs/love-simulation.png"), loadPosterImage(role.portrait)]);
+  const canvas = document.createElement("canvas"); const scale = 2; const width = 900; const height = 1200;
+  canvas.width = width * scale; canvas.height = height * scale; const ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
+  ctx.fillStyle = "#171a21"; ctx.fillRect(0, 0, width, height);
+  drawRoundRect(ctx, 42, 42, 816, 1116, 24, "#f4f7fb");
+  drawRoundRect(ctx, 70, 70, 760, 560, 18, "#171a21");
+  ctx.save(); ctx.beginPath(); ctx.roundRect(500, 100, 290, 470, 10); ctx.clip(); ctx.drawImage(roleImage, 500, 100, 330, 470); ctx.restore();
+  const fade = ctx.createLinearGradient(350, 0, 590, 0); fade.addColorStop(0, "#171a21"); fade.addColorStop(1, "rgba(23,26,33,0)"); ctx.fillStyle = fade; ctx.fillRect(330, 100, 300, 470);
+  drawText(ctx, "HEART SURVIVAL / EVA 009", 104, 126, 16, "#55d6be", "left", "800");
+  drawText(ctx, `我选择攻略 · ${role.name}`, 104, 196, 22, "#c8cbd3", "left", "600");
+  drawText(ctx, cleared ? "12 关通关" : `止步第 ${survivedCount} 关`, 104, 292, 48, "#f3c849", "left", "900");
+  drawWrapped(ctx, title, 104, 380, 380, 56, 42, "#ffffff", "left");
+  drawText(ctx, `关系温度 ${temperature}%`, 104, 508, 25, "#ff5a6f", "left", "800");
+  drawRoundRect(ctx, 70, 666, 760, 230, 16, "#ffffff", "#d9deea");
+  drawText(ctx, "本局主要死因", 108, 720, 16, "#2864ff", "left", "800");
+  drawWrapped(ctx, causeText, 108, 790, 684, 42, 30, "#171a21", "left");
+  drawText(ctx, "超过我，就算你会谈恋爱", 108, 858, 22, "#9e111d", "left", "900");
+  drawRoundRect(ctx, 70, 930, 760, 170, 16, "#f3c849");
+  drawRoundRect(ctx, 96, 956, 118, 118, 8, "#ffffff", "#171a21"); ctx.drawImage(qrImage, 104, 964, 102, 102);
+  drawText(ctx, "心动副本 · 心动生存局", 250, 988, 25, "#171a21", "left", "900");
+  drawText(ctx, "长按识别二维码，选角色来挑战", 250, 1031, 17, "#353842", "left", "600");
+  drawText(ctx, "敢不敢看看 TA 会在哪一关退场？", 250, 1068, 16, "#2864ff", "left", "800");
+  drawText(ctx, "云渡测评实验室 · YUNDU EVALUATION LAB", width / 2, 1135, 14, "#777e8b", "center", "600");
+  return canvas.toDataURL("image/png");
+}
+
+function chooseMode(mode, roleKey = null) {
+  state.mode = mode;
+  if (roleKey) { selectRole(roleKey); return; }
+  showScreen("role-screen");
+}
+
 $("start-btn").addEventListener("click", async () => {
   const button = $("start-btn"); const code = $("access-code").value.trim().toUpperCase();
   button.disabled = true; button.textContent = "正在验证..."; $("gate-error").textContent = "";
-  try { await memberReady; if (!activeMember) await verifyAccessCode(code); showScreen("role-screen"); }
+  try { await memberReady; if (!activeMember) await verifyAccessCode(code); showScreen("mode-screen"); }
   catch (error) { $("gate-error").textContent = error.message; }
   finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始" : "开始闯关"; }
 });
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); });
-$("role-back-btn").addEventListener("click", () => showScreen("home-screen"));
-$("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } });
+$("full-mode-btn").addEventListener("click", () => chooseMode("full"));
+$("survival-mode-btn").addEventListener("click", () => chooseMode("survival"));
+$("mode-back-btn").addEventListener("click", () => showScreen("home-screen"));
+$("role-back-btn").addEventListener("click", () => showScreen("mode-screen"));
+$("prev-btn").addEventListener("click", () => { if (state.mode === "survival") return; if (state.index > 0) { state.index -= 1; renderQuestion(); } });
 $("restart-btn").addEventListener("click", () => showScreen("role-screen"));
+$("full-to-survival-btn").addEventListener("click", () => { state.mode = "survival"; showScreen("role-screen"); });
+$("survival-retry-btn").addEventListener("click", () => selectRole(state.roleKey));
+$("survival-role-btn").addEventListener("click", () => showScreen("role-screen"));
+$("survival-full-btn").addEventListener("click", () => chooseMode("full", state.roleKey));
+$("survival-poster-btn").addEventListener("click", async () => { const button = $("survival-poster-btn"); button.disabled = true; button.textContent = "正在生成..."; try { $("poster-image").src = await createSurvivalPosterImage(); $("poster-modal").classList.add("active"); } finally { button.disabled = false; button.textContent = "保存挑战卡"; } });
 $("copy-btn").addEventListener("click", async () => { const button = $("copy-btn"); try { await navigator.clipboard.writeText(button.dataset.summary); button.textContent = "已复制"; } catch { button.textContent = "复制失败，请截图"; } setTimeout(() => { button.textContent = "⧉ 复制摘要"; }, 1600); });
 $("save-poster-btn").addEventListener("click", async () => { if (!state.lastResult) return; const button = $("save-poster-btn"); button.disabled = true; button.textContent = "正在生成..."; try { $("poster-image").src = await createPosterImage(); $("poster-modal").classList.add("active"); } finally { button.disabled = false; button.textContent = "↓ 保存报告"; } });
 $("poster-close").addEventListener("click", () => $("poster-modal").classList.remove("active"));

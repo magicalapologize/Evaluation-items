@@ -55,6 +55,26 @@
       </div>
     </section>
 
+    <section id="mode-screen" class="screen">
+      <div class="mode-shell">
+        <div class="screen-heading">
+          <p class="eyebrow">CHOOSE YOUR ROUTE</p>
+          <h2>这次想慢慢谈，还是看看自己能活几关？</h2>
+        </div>
+        <div class="mode-grid">
+          <button id="full-mode-btn" class="mode-card is-recommended" type="button">
+            <span class="mode-badge">推荐首次体验</span><strong>完整恋爱线</strong>
+            <p>20 道情境题，走完一段关系，拿到六维图谱和完整建议。</p><span>约 6–8 分钟 →</span>
+          </button>
+          <button id="survival-mode-btn" class="mode-card survival-card" type="button">
+            <span class="mode-badge">高压速通</span><strong>心动生存局</strong>
+            <p>最多 12 关，连续踩雷直接退场。看看 TA 会在哪一关被你劝退。</p><span>约 2–4 分钟 →</span>
+          </button>
+        </div>
+        <button id="mode-back-btn" class="text-button" type="button">← 返回测试入口</button>
+      </div>
+    </section>
+
     <section id="role-screen" class="screen">
       <div class="role-shell">
         <div class="screen-heading">
@@ -72,11 +92,14 @@
           <div class="role-mini"><img id="quiz-role-image" alt="" /><div><strong id="quiz-role-name"></strong><span id="quiz-role-label"></span></div></div>
           <div class="progress-copy"><span id="stage-name"></span><strong id="progress-text"></strong></div>
           <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+          <div id="survival-alert" class="survival-alert" hidden><strong>心动警报</strong><span id="alert-hearts" aria-label="连续翻车次数">□ □ □</span><em id="alert-copy">目前还算安全</em></div>
         </div>
         <div class="question-panel">
           <div class="question-meta"><span id="scene-name"></span><span id="question-count"></span></div>
+          <p id="rescue-label" class="rescue-label" hidden>关系抢救关 · 这一题决定你们还能不能继续</p>
           <h2 id="question-text" class="question">加载中…</h2>
           <div id="answer-list" class="answer-list"></div>
+          <p id="survival-feedback" class="survival-feedback" aria-live="polite" hidden></p>
           <div class="quiz-actions"><button id="prev-btn" class="text-button" type="button">← 上一题</button><span>选择后自动进入下一关</span></div>
         </div>
       </div>
@@ -130,10 +153,48 @@
           <button id="save-poster-btn" class="action-button primary-action" type="button">↓ 保存报告</button>
           <button id="copy-btn" class="action-button" type="button">⧉ 复制摘要</button>
           <button id="restart-btn" class="action-button" type="button">↻ 重选角色</button>
+          <button id="full-to-survival-btn" class="action-button" type="button">⚠ 试试生存局</button>
           <button id="cashback-btn" class="action-button cashback-action" type="button">￥ 好评返现</button>
         </div>
         <p class="history-link-row"><a class="history-link" data-history-link href="/history/">查看我的测试记录</a></p>
         <p class="result-disclaimer">本测试用于娱乐和关系观察，不构成心理诊断或现实决策建议。角色反应是情境模型，不是唯一正确答案。</p>
+      </div>
+    </section>
+
+    <section id="survival-result-screen" class="screen">
+      <div class="survival-result-shell">
+        <header class="survival-hero">
+          <div class="survival-identity">
+            <p id="survival-result-tag" class="eyebrow">SURVIVAL REPORT</p>
+            <p id="survival-role-line" class="result-role-line"></p>
+            <strong id="survival-level" class="survival-level"></strong>
+            <h2 id="survival-title">结果生成中…</h2>
+            <p id="survival-ending" class="result-comment"></p>
+          </div>
+          <div class="survival-portrait"><img id="survival-role-image" alt="" /></div>
+          <div class="survival-stats">
+            <div><strong id="survival-count"></strong><span>存活关数</span></div>
+            <div><strong id="survival-temperature"></strong><span>关系温度</span></div>
+            <div><strong id="survival-cause"></strong><span>主要死因</span></div>
+          </div>
+        </header>
+        <section class="result-band survival-signal-band">
+          <div class="band-heading"><p>DANGER SIGNALS</p><h3>本局危险信号</h3></div>
+          <div class="dimension-layout">
+            <figure class="radar-figure"><svg id="survival-radar" viewBox="0 0 420 390" role="img"></svg><figcaption>根据本局已完成的选择生成，只代表这次闯关表现。</figcaption></figure>
+            <div class="survival-review">
+              <div><span>最致命的一次选择</span><strong id="deadliest-scene"></strong><p id="deadliest-answer"></p></div>
+              <div><span>下次别再这样翻车</span><p id="survival-correction"></p></div>
+            </div>
+          </div>
+        </section>
+        <div class="survival-actions">
+          <button id="survival-retry-btn" class="action-button primary-action" type="button">不服，再来一次</button>
+          <button id="survival-role-btn" class="action-button" type="button">换个角色继续挑战</button>
+          <button id="survival-full-btn" class="action-button" type="button">走完整恋爱线</button>
+          <button id="survival-poster-btn" class="action-button survival-poster-action" type="button">保存挑战卡</button>
+        </div>
+        <p class="result-disclaimer">本模式用于娱乐和关系观察。一次出局不代表现实关系能力，只说明这组选择踩中了角色的高危点。</p>
       </div>
     </section>
   </main>

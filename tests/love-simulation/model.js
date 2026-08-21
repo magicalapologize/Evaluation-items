@@ -138,7 +138,7 @@ export function calculateSurvivalResult(role, history) {
   if (!roleKey) throw new Error("生存角色无效");
   const causeKey = primaryCause(history);
   const average = history.reduce((sum, item) => sum + item.option.points, 0) / survivedCount;
-  const deadliest = history.reduce((worst, item) => !worst || item.option.points < worst.option.points ? item : worst, null);
+  const deadliest = causeKey ? history.reduce((worst, item) => !worst || item.option.points < worst.option.points ? item : worst, null) : null;
   return {
     survivedCount,
     cleared,
