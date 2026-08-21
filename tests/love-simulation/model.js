@@ -1,4 +1,4 @@
-import { DIMENSIONS, TIERS, DIMENSION_ADVICE } from "./data.js";
+import { DIMENSIONS, TIERS, DIMENSION_ADVICE, ROLES, SURVIVAL_COPY } from "./data.js";
 
 export function tierIndexFor(clearCount) {
   return TIERS.findIndex((tier) => clearCount >= tier.min && clearCount <= tier.max);
@@ -74,4 +74,82 @@ export function calculateResult(role, answers) {
 
 export function answerFingerprint(answers) {
   return answers.reduce((hash, answer, index) => (hash * 33 + (answer + 1) * (index + 7)) >>> 0, 5381);
+}
+
+export function settleSurvivalAnswer(state, selected) {
+  if (!selected || ![0, 1, 3, 5].includes(selected.points)) throw new Error("生存选项无效");
+  if (selected.points === 5) return { failStreak: 0, totalDanger: state.totalDanger };
+  if (selected.points === 3) return { failStreak: Math.max(0, state.failStreak - 1), totalDanger: state.totalDanger };
+  return {
+    failStreak: state.failStreak + 1,
+    totalDanger: state.totalDanger + (selected.points === 0 ? 2 : 1)
+  };
+}
+
+export function shouldEndSurvival(state, questionNumber, points = null) {
+  if (questionNumber < 4) return false;
+  if (questionNumber === 4 && points >= 3) return false;
+  return state.failStreak >= 3 || state.totalDanger >= 6;
+}
+
+function survivalTierIndex(survivedCount, totalDanger) {
+  if (survivedCount >= 12) return totalDanger === 0 ? 5 : 4;
+  if (survivedCount <= 5) return 0;
+  if (survivedCount <= 7) return 1;
+  if (survivedCount <= 9) return 2;
+  return 3;
+}
+
+function survivalDanger(history) {
+  return history.reduce((sum, item) => sum + (item.option.points === 0 ? 2 : item.option.points === 1 ? 1 : 0), 0);
+}
+
+function primaryCause(history) {
+  const misses = history.filter((item) => item.option.points <= 1);
+  if (!misses.length) return null;
+  const weights = Object.fromEntries(DIMENSIONS.map(({ key }) => [key, 0]));
+  misses.forEach(({ option }) => { weights[option.primary] += option.points === 0 ? 2 : 1; });
+  const maximum = Math.max(...Object.values(weights));
+  const candidates = new Set(Object.entries(weights).filter(([, value]) => value === maximum).map(([key]) => key));
+  return misses.find(({ option }) => option.points === 0 && candidates.has(option.primary))?.option.primary
+    || misses.find(({ option }) => candidates.has(option.primary)).option.primary;
+}
+
+function survivalDimensions(history) {
+  const values = Object.fromEntries(DIMENSIONS.map(({ key }) => [key, 50]));
+  const deltas = { 5: [8, 3], 3: [4, 2], 1: [-5, -2], 0: [-9, -4] };
+  history.forEach(({ option }) => {
+    const [primary, secondary] = deltas[option.points];
+    values[option.primary] += primary;
+    values[option.secondary] += secondary;
+  });
+  const bounded = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, Math.max(18, Math.min(95, value))]));
+  const maximum = Math.max(...Object.values(bounded));
+  return DIMENSIONS.map((dimension) => ({ ...dimension, raw: bounded[dimension.key], value: bounded[dimension.key], isMax: bounded[dimension.key] === maximum }));
+}
+
+export function calculateSurvivalResult(role, history) {
+  if (!role || !Array.isArray(history) || history.length < 1 || history.length > 12) throw new Error("生存答题数据不完整");
+  const totalDanger = survivalDanger(history);
+  const survivedCount = history.length;
+  const cleared = survivedCount === 12;
+  const tierIndex = survivalTierIndex(survivedCount, totalDanger);
+  const roleKey = Object.entries(ROLES).find(([, candidate]) => candidate === role)?.[0];
+  if (!roleKey) throw new Error("生存角色无效");
+  const causeKey = primaryCause(history);
+  const average = history.reduce((sum, item) => sum + item.option.points, 0) / survivedCount;
+  const deadliest = history.reduce((worst, item) => !worst || item.option.points < worst.option.points ? item : worst, null);
+  return {
+    survivedCount,
+    cleared,
+    totalDanger,
+    title: SURVIVAL_COPY.titles[tierIndex],
+    ending: SURVIVAL_COPY.roleEndings[roleKey][tierIndex],
+    temperature: Math.round(Math.max(5, Math.min(100, 20 + average * 16 - totalDanger * 4))),
+    causeKey,
+    causeText: causeKey ? SURVIVAL_COPY.causes[causeKey] : "本局没有明显致命选择",
+    correction: causeKey ? DIMENSION_ADVICE[causeKey] : "这局没有明显致命伤。继续保持直接表达，也别因为顺利就省略确认和兑现。",
+    deadliest,
+    dimensions: survivalDimensions(history)
+  };
 }
