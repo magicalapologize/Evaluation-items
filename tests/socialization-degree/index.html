@@ -152,7 +152,7 @@
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
   <script type="module">
-    import { DIMENSIONS, QUESTIONS, RESULTS, STAGES } from "./data.mjs";
+    import { DIMENSIONS, DIMENSION_STATUS_COPY, QUESTIONS, RESULTS, STAGES } from "./data.mjs";
     import { calculateProfile } from "./model.mjs";
 
     const PRODUCT_ID = "socialization-degree";
@@ -250,7 +250,15 @@
       $("radar-svg").setAttribute("aria-label", `六维社会化雷达图：${DIMENSIONS.map((dimension) => `${dimension.name}${displayScores[dimension.key]}分`).join("，")}`);
     }
 
-    function scoreHint(dimension, value) { return value >= 75 ? `你的${dimension.name}是可调用的优势，已经能在多数场景里帮你减少摩擦。` : value >= 55 ? `你的${dimension.name}正在形成，熟悉场景里表现稳定，压力上来时容易波动。` : `你的${dimension.name}是当前最值得练习的入口，先从低风险的小动作开始。`; }
+    function scoreHint(dimension, value) {
+      const level = value >= 75 ? "high" : value >= 55 ? "medium" : "low";
+      return DIMENSION_STATUS_COPY[dimension.key][level];
+    }
+
+    function formatOverallReading(result, displayScores) {
+      const ranked = [...DIMENSIONS].sort((a, b) => displayScores[b.key] - displayScores[a.key]);
+      return result.overallReading.replaceAll("{high}", ranked[0].name).replaceAll("{low}", ranked[ranked.length - 1].name);
+    }
 
     function renderReport(profile) {
       const { result } = profile; const ranked = [...DIMENSIONS].sort((a, b) => profile.displayScores[b.key] - profile.displayScores[a.key]);
@@ -260,9 +268,9 @@
       const dimensionList = $("dimension-list"); dimensionList.replaceChildren();
       ranked.forEach((dimension) => { const score = profile.displayScores[dimension.key]; const copy = result.dimensionProfiles[dimension.key]; const card = document.createElement("article"); card.className = "dimension-card"; card.innerHTML = `<div class="dimension-card-head"><div><span class="dimension-en">${dimension.en}</span><h3>${dimension.name}</h3></div><strong>${score}</strong></div><div class="dimension-track"><span style="width:${score}%"></span></div><p class="dimension-status">${scoreHint(dimension, score)}</p><div class="dimension-grid"><div><b>你的表现</b><p>${copy.focus}</p></div><div><b>容易卡住</b><p>${copy.blindSpot}</p></div><div><b>下一步</b><p>${copy.action}</p></div></div>`; dimensionList.append(card); });
       $("behavior-pattern-text").textContent = result.behaviorPattern; $("portrait").textContent = result.portrait; $("strength").textContent = result.strength; $("risk").textContent = result.risk; $("fit").textContent = result.fit;
-      const high = ranked[0]; const low = ranked[ranked.length - 1]; $("overall-reading").textContent = "你目前最稳的是「" + high.name + "」，这是可以继续依靠的优势；下一步优先练习「" + low.name + "」。你已经有一套惯用策略：" + result.alias + "。场景从熟悉变复杂时，把「" + low.name + "」的一个小动作接到现有优势上，会比要求自己全面改变更省力。";
+      $("overall-reading").textContent = formatOverallReading(result, profile.displayScores);
       const adviceList = $("advice-list"); adviceList.replaceChildren(); result.advices.forEach((advice, index) => { const row = document.createElement("div"); row.className = "advice-row"; row.innerHTML = `<span class="advice-index">${index + 1}</span><p>${advice}</p>`; adviceList.append(row); });
-      $("toolbox").innerHTML = ["开场：从眼前的人、事、环境开始。", "接话：抓一个关键词，再问一个具体问题。", "拒绝：说明当前边界，不用解释到对方满意。", "离场：给出时间点，提前结束不是失败。"].map((item) => `<span>${item}</span>`).join("");
+      $("toolbox").innerHTML = result.toolbox.map((item) => `<span>${item}</span>`).join("");
       $("reminder").textContent = result.reminder; $("copy-btn").dataset.summary = `我的社会化测试结果是「${result.name}」（${result.alias}），综合分 ${profile.total}，处于${profile.stage.name}。六维分数：${DIMENSIONS.map((dimension) => `${dimension.name}${profile.displayScores[dimension.key]}`).join("、")}。`;
       // YunduHistory.saveResult stores the immutable report snapshot for local/member history.
       globalThis.YunduHistory?.saveResult?.(buildHistorySnapshot(profile))?.catch(() => {});
@@ -271,7 +279,7 @@
 
     function buildHistorySnapshot(profile) {
       state.historyAttemptId ||= (crypto.randomUUID ? crypto.randomUUID() : `${PRODUCT_ID}-${Date.now()}`); const result = profile.result;
-      return { schemaVersion: 1, attemptId: state.historyAttemptId, productId: PRODUCT_ID, productTitle: PRODUCT_TITLE, result: { name: result.name, subtitle: result.alias, quote: result.portrait, icon: "", image: "" }, tags: result.keywords, overview: [{ label: "综合分", title: `${profile.total} / 100`, body: profile.stage.name }], dimensions: DIMENSIONS.map((item) => ({ name: item.name, value: profile.displayScores[item.key], left: item.low, right: item.high })), sections: [{ title: "行为模式", body: result.behaviorPattern, items: [] }, { title: "综合评价", body: result.portrait, items: [] }, { title: "核心优势", body: result.strength, items: [] }, { title: "风险提醒", body: result.risk, items: [] }, { title: "适合的社交环境", body: result.fit, items: [] }, { title: "行动建议", body: "", items: result.advices }, { title: "给你的提醒", body: result.reminder, items: [] }], disclaimer: "本测试用于娱乐和自我观察，不作为心理诊断、医学判断或行为预测依据。", createdAt: new Date().toISOString() };
+      return { schemaVersion: 1, attemptId: state.historyAttemptId, productId: PRODUCT_ID, productTitle: PRODUCT_TITLE, result: { name: result.name, subtitle: result.alias, quote: result.portrait, icon: "", image: "" }, tags: result.keywords, overview: [{ label: "综合分", title: `${profile.total} / 100`, body: profile.stage.name }], dimensions: DIMENSIONS.map((item) => ({ name: item.name, value: profile.displayScores[item.key], left: item.low, right: item.high })), sections: [{ title: "行为模式", body: result.behaviorPattern, items: [] }, { title: "综合评价", body: formatOverallReading(result, profile.displayScores), items: [] }, { title: "核心优势", body: result.strength, items: [] }, { title: "风险提醒", body: result.risk, items: [] }, { title: "适合的社交环境", body: result.fit, items: [] }, { title: "行动建议", body: "", items: result.advices }, { title: "给你的提醒", body: result.reminder, items: [] }], disclaimer: "本测试用于娱乐和自我观察，不作为心理诊断、医学判断或行为预测依据。", createdAt: new Date().toISOString() };
     }
 
     function loadPosterImage(src) { return new Promise((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src; }); }

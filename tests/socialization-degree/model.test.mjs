@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DIMENSIONS, QUESTIONS, RESULTS, STAGES } from "./data.mjs";
+import { DIMENSIONS, DIMENSION_STATUS_COPY, QUESTIONS, RESULTS, STAGES } from "./data.mjs";
 import {
   calculateProfile,
   getSignalBounds,
@@ -46,14 +46,30 @@ test("每个结果包含完整画像、行为模式、六维解析、三条建�
     assert.ok(result.alias);
     assert.equal(result.keywords.length, 3);
     assert.equal(Object.keys(result.dimensionProfiles).sort().join(","), [...KEYS].sort().join(","));
+    const dimensionCopy = Object.values(result.dimensionProfiles).flatMap((profile) => [profile.focus, profile.blindSpot, profile.action]);
+    assert.equal(dimensionCopy.length, DIMENSIONS.length * 3);
+    assert.equal(new Set(dimensionCopy).size, dimensionCopy.length, `${result.key} 的维度解释存在重复`);
     assert.equal(result.advices.length, 3);
     assert.ok(result.portrait);
     assert.ok(result.behaviorPattern);
     assert.ok(result.strength);
     assert.ok(result.risk);
     assert.ok(result.fit);
+    assert.ok(result.overallReading);
+    assert.equal(result.overallReading.includes("{high}"), true);
+    assert.equal(result.overallReading.includes("{low}"), true);
+    assert.equal(result.toolbox.length, 4);
+    assert.equal(new Set(result.toolbox).size, result.toolbox.length);
     assert.ok(result.reminder);
   }
+});
+
+test("分数状态提示按维度分别书写，覆盖低中高三档", () => {
+  assert.deepEqual(Object.keys(DIMENSION_STATUS_COPY).sort(), [...KEYS].sort());
+  const copy = Object.values(DIMENSION_STATUS_COPY).flatMap((levels) => Object.values(levels));
+  assert.equal(copy.length, DIMENSIONS.length * 3);
+  assert.equal(new Set(copy).size, copy.length);
+  assert.equal(copy.some((text) => text.includes("压力上来时容易波动")), false);
 });
 
 test("阶段边界按综合分确定且没有空档", () => {

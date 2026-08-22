@@ -7,7 +7,7 @@ const css = readFileSync(new URL("./style.css", import.meta.url), "utf8");
 
 test("社会化页面接入唯一产品ID和真实题库模型", () => {
   assert.match(html, /const PRODUCT_ID = "socialization-degree"/);
-  assert.match(html, /import \{ DIMENSIONS, QUESTIONS, RESULTS, STAGES \} from "\.\/data\.mjs"/);
+  assert.match(html, /import \{ DIMENSIONS, DIMENSION_STATUS_COPY, QUESTIONS, RESULTS, STAGES \} from "\.\/data\.mjs"/);
   assert.match(html, /import \{ calculateProfile \} from "\.\/model\.mjs"/);
   assert.match(html, /QUESTIONS\.length/);
 });
@@ -35,10 +35,14 @@ test("结果页在综合评价前提供行为模式板块", () => {
 });
 
 test("结果先确认优势，再给出下一步练习方向", () => {
-  assert.match(html, /你已经在使用的优势是/);
-  assert.match(html, /这是可以继续依靠的优势/);
-  assert.match(html, /下一步优先练习/);
+  assert.match(html, /formatOverallReading\(result, profile\.displayScores\)/);
+  assert.match(html, /result\.overallReading/);
   assert.match(html, /阶段表示当前常见场景的应对稳定度，不是好坏评级/);
+});
+
+test("结果工具箱按人格结果单独配置", () => {
+  assert.match(html, /result\.toolbox\.map/);
+  assert.doesNotMatch(html, /\["开场：从眼前的人、事、环境开始。/);
 });
 
 test("页面不把测试码写死，海报使用本产品独立二维码", () => {
