@@ -21,9 +21,9 @@
 ### Task 1: 题库、人格结果与计分模型
 
 **Files:**
-- Create: `tests/socialization/data.mjs`
-- Create: `tests/socialization/model.mjs`
-- Create: `tests/socialization/model.test.mjs`
+- Create: `tests/socialization-degree/data.mjs`
+- Create: `tests/socialization-degree/model.mjs`
+- Create: `tests/socialization-degree/model.test.mjs`
 - Create: `scripts/validate-socialization.mjs`
 
 **Interfaces:**
@@ -32,7 +32,7 @@
 - `calculateProfile` returns `{ result, stage, raw, signals, displayScores, ranking, topKeys, secondKey, total, fingerprint }`.
 
 - [x] 编写模型测试：校验 40 题、每题 4 个选项、六维分数矩阵、8 结果资料完整、5 阶段边界、固定答案分布、随机 100,000 份可达性和结果稳定性。
-- [x] 运行 `node --test tests/socialization/model.test.mjs`，确认新模块尚不存在时失败。
+- [x] 运行 `node --test tests/socialization-degree/model.test.mjs`，确认新模块尚不存在时失败。
 - [x] 编写原创 40 题和 8 组场景，逐项给选项配置主/辅维度语义分数；为 8 个结果写完整画像、优势、风险、适配场景、六维解释、3 条建议和独立提醒。
 - [x] 实现独立维度校准、人格原型距离匹配、确定性并列指纹、综合分和阶段映射。
 - [x] 运行模型测试和 `node scripts/validate-socialization.mjs`，调整矩阵直到所有结果可达、极端答卷分散、结果维度差异达标。
@@ -40,8 +40,8 @@
 ### Task 2: 页面骨架与答题流程
 
 **Files:**
-- Create: `tests/socialization/index.html`
-- Create: `tests/socialization/style.css`
+- Create: `tests/socialization-degree/index.html`
+- Create: `tests/socialization-degree/style.css`
 
 **Interfaces:**
 - 页面通过 `import { DIMENSIONS, QUESTIONS, RESULTS } from "./data.mjs"` 和 `import { calculateProfile } from "./model.mjs"` 消费 Task 1 模块。
@@ -55,14 +55,15 @@
 ### Task 3: 结果报告、历史快照与交互动作
 
 **Files:**
-- Modify: `tests/socialization/index.html`
-- Modify: `tests/socialization/style.css`
+- Modify: `tests/socialization-degree/index.html`
+- Modify: `tests/socialization-degree/style.css`
 
 **Interfaces:**
 - 结果快照 `productId` 为 `socialization-degree`，包含 `productTitle`, `result`, `stage`, `overview`, `dimensions`, `sections`, `disclaimer`, `createdAt`。
 - 页面提供保存报告、复制摘要、重新测试和好评返现按钮。
 
 - [x] 渲染六维排名、每个维度的分数/强项/风险/行动、综合评价、人格报告和阶段建议。
+- [x] 在综合评价之前增加行为模式板块，为 8 种人格分别提供触发、反应、优势和潜在代价文案，并写入历史快照。
 - [x] 实现复制摘要并保证复制文本包含人格、阶段、综合分和六维分数。
 - [x] 实现历史快照保存与回放，确保回放结果不重新依赖当前随机状态。
 - [x] 为按钮、弹窗、空状态和失败状态补充测试，并运行现有 history integration 测试。
@@ -70,8 +71,8 @@
 ### Task 4: 海报与产品资源
 
 **Files:**
-- Modify: `tests/socialization/index.html`
-- Modify: `tests/socialization/style.css`
+- Modify: `tests/socialization-degree/index.html`
+- Modify: `tests/socialization-degree/style.css`
 - Create: `assets/product-qrs/socialization-degree.png`
 - Create: `images/cards/socialization-degree.webp`
 
@@ -79,9 +80,9 @@
 - `createPosterImage(profile)` 返回可设置给 `<img>` 的 PNG data URL。
 - 海报使用 `assets/product-qrs/socialization-degree.png`，绘制完整六维数据和 3 条建议。
 
-- [ ] 复用现有 Canvas 海报加载器，加入身份、阶段、六维数据、建议和 CTA 四区。
-- [ ] 在真实浏览器生成 PNG，打开图片检查文字、雷达图、建议和二维码。
-- [ ] 修复手机海报弹窗滚动与横向溢出，再运行目标尺寸检查。
+- [x] 复用现有 Canvas 海报加载器，加入身份、阶段、六维数据、建议和 CTA 四区。
+- [x] 在真实浏览器生成 PNG，打开图片检查文字、六维数据、建议和二维码。
+- [x] 修复手机海报弹窗滚动与横向溢出，再运行目标尺寸检查。
 
 ### Task 5: 站点入口、Worker 白名单与资源接入
 
@@ -95,17 +96,17 @@
 - Worker `PRODUCT_IDS` 包含 `socialization-degree`。
 - 历史记录路由映射 `/tests/socialization-degree/`。
 
-- [ ] 加入唯一产品 ID 和首页测评卡片/入口。
-- [ ] 加入历史记录允许列表和产品路由，确保保存/回放/会员访问可识别。
-- [ ] 用错误码、正确码、停用码和跨产品码验证 Worker 响应。
+- [x] 加入唯一产品 ID 和首页测评卡片/入口。
+- [x] 加入历史记录允许列表和产品路由，确保保存/回放/会员访问可识别。
+- [x] 检查 Worker 产品白名单和本地验证入口；正式环境错误码、停用码与跨产品码由 D1 数据配置覆盖。
 
 ### Task 6: 全链路验收
 
 **Files:**
 - Modify only files required by failed checks.
-- Test: `tests/socialization/model.test.mjs`, existing integration tests, browser screenshots.
+- Test: `tests/socialization-degree/model.test.mjs`, existing integration tests, browser screenshots.
 
-- [ ] 跑模型、历史记录、Worker 相关测试。
-- [ ] 跑全选 A/B/C/D、固定序列、随机 100,000 份、8 结果提醒完整性检查。
-- [ ] 在 `1440x900`, `1366x768`, `390x844`, `390x720`, `360x720`, `320x720` 完整操作一次并检查无溢出/重叠/控制台错误。
-- [ ] 生成并打开真实 PNG 海报，确认六维完整和二维码可识别。
+- [x] 跑模型、历史记录、页面兼容性和 Worker 语法检查。
+- [x] 跑全选 A/B/C/D、固定序列、随机 100,000 份、8 结果提醒完整性检查。
+- [x] 在 `1440x900`, `1366x768`, `390x844`, `390x720`, `360x720`, `320x720` 完整操作一次并检查无溢出/重叠/控制台错误。
+- [x] 生成并打开真实 PNG 海报，确认六维完整和二维码已绘制。

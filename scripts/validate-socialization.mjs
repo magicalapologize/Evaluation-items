@@ -1,5 +1,5 @@
-import { DIMENSIONS, QUESTIONS, RESULTS } from "../tests/socialization/data.mjs";
-import { calculateProfile, getSignalBounds, simulateDistribution } from "../tests/socialization/model.mjs";
+import { DIMENSIONS, QUESTIONS, RESULTS } from "../tests/socialization-degree/data.mjs";
+import { calculateProfile, getSignalBounds, simulateDistribution } from "../tests/socialization-degree/model.mjs";
 
 const sampleCount = 100000;
 const distribution = simulateDistribution(sampleCount, 20260822);
@@ -16,6 +16,9 @@ if (new Set(patterns.map((profile) => profile.result.key)).size < 3) {
 
 for (const result of RESULTS) {
   const profile = calculateProfile(Array.from({ length: QUESTIONS.length }, (_, index) => index % 4));
+  if (!result.behaviorPattern || RESULTS.filter((item) => item.behaviorPattern === result.behaviorPattern).length !== 1) {
+    throw new Error(`${result.key} 缺少独立行为模式`);
+  }
   if (!result.reminder || RESULTS.filter((item) => item.reminder === result.reminder).length !== 1) {
     throw new Error(`${result.key} 缺少独立提醒`);
   }

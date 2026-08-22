@@ -13,7 +13,8 @@
     "solo-business", "love-personality", "workplace-madness",
     "three-kingdoms-advisor", "historical-emperor",
     "historical-heroines", "cultivation-protagonist",
-    "talent-career", "love-simulation", "seven-sins"
+    "talent-career", "love-simulation", "seven-sins",
+    "socialization-degree"
   ]);
   const PRODUCT_PATHS = Object.freeze({
     "solo-business": "/tests/solo-business/",
@@ -25,7 +26,8 @@
     "historical-heroines": "/tests/historical-heroines/",
     "talent-career": "/tests/talent-career/",
     "love-simulation": "/tests/love-simulation/",
-    "seven-sins": "/tests/seven-sins/"
+    "seven-sins": "/tests/seven-sins/",
+    "socialization-degree": "/tests/socialization-degree/"
   });
 
   function assertKeys(value, allowed, label) {

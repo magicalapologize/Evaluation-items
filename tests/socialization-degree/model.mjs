@@ -34,12 +34,8 @@ function matchScale(signals) {
   return Object.fromEntries(KEYS.map((key) => [key, signals[key]]));
 }
 
-function displayScale(signals, result) {
-  const displayPrototype = result.displayPrototype || result.prototype;
-  return Object.fromEntries(KEYS.map((key) => {
-    const blended = displayPrototype[key] * 0.72 + signals[key] * 0.28;
-    return [key, Math.round(clamp(blended * 100, 35, 95))];
-  }));
+function displayScale(signals) {
+  return Object.fromEntries(KEYS.map((key) => [key, Math.round(clamp(signals[key] * 100, 0, 100))]));
 }
 
 function distance(left, right) {
@@ -78,7 +74,7 @@ export function calculateProfile(answerIndexes) {
   const signals = normalizeSignals(raw);
   const matchSignals = matchScale(signals);
   const { result, topKeys } = chooseResult(matchSignals, answerIndexes);
-  const displayScores = displayScale(signals, result);
+  const displayScores = displayScale(signals);
   const ranking = [...KEYS].sort((left, right) => displayScores[right] - displayScores[left]);
   const total = Math.round(Object.values(displayScores).reduce((sum, value) => sum + value, 0) / KEYS.length);
   const stage = getStageForScore(total);

@@ -216,7 +216,8 @@ test("七宗罪历史文案保留序号和正文两列结构", () => {
 const products = [
   "solo-business", "cultivation-protagonist", "love-personality",
   "workplace-madness", "three-kingdoms-advisor", "historical-emperor",
-  "historical-heroines", "talent-career", "love-simulation", "seven-sins"
+  "historical-heroines", "talent-career", "love-simulation", "seven-sins",
+  "socialization-degree"
 ];
 
 test("全部测试页的脚本结构可解析", () => {
