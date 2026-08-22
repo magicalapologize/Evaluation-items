@@ -139,7 +139,7 @@
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
   <script type="module">
-    import { DIMENSIONS, QUESTIONS } from "./data.mjs";
+    import { DIMENSIONS, QUESTIONS, RESULTS, STAGES } from "./data.mjs";
     import { calculateProfile } from "./model.mjs";
 
     const PRODUCT_ID = "socialization-degree";
@@ -249,7 +249,18 @@
     $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("active"));
     document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("active")));
     document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("active"); }));
-    if (globalThis.YunduHistoryReplay?.init) { globalThis.YunduHistoryReplay.init(PRODUCT_ID, (snapshot) => { if (!snapshot?.dimensions) return; $("result-score").textContent = snapshot.overview?.[0]?.title?.split(" ")[0] || "-"; $("result-chief").textContent = snapshot.result?.name || "历史结果"; $("result-alias").textContent = snapshot.result?.subtitle || ""; showScreen("result-screen"); }); }
+    function renderHistorySnapshot(snapshot) {
+      if (!snapshot?.dimensions?.length) return;
+      const result = RESULTS.find((item) => item.name === snapshot.result?.name) || RESULTS[0];
+      const displayScores = Object.fromEntries(snapshot.dimensions.map((item) => [DIMENSIONS.find((dimension) => dimension.name === item.name)?.key, Number(item.value)]).filter(([key]) => key));
+      const total = Number.parseInt(snapshot.overview?.[0]?.title || "0", 10) || 0;
+      const stage = STAGES.find((item) => item.name === snapshot.overview?.[0]?.body) || STAGES[0];
+      renderReport({ result, displayScores, total, stage, secondKey: DIMENSIONS[1].key });
+    }
+
+    if (globalThis.YunduHistoryReplay?.init) {
+      globalThis.YunduHistoryReplay.init(PRODUCT_ID, renderHistorySnapshot, () => showScreen("result-screen"));
+    }
   </script>
 </body>
 </html>

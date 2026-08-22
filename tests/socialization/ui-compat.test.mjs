@@ -7,7 +7,7 @@ const css = readFileSync(new URL("./style.css", import.meta.url), "utf8");
 
 test("社会化页面接入唯一产品ID和真实题库模型", () => {
   assert.match(html, /const PRODUCT_ID = "socialization-degree"/);
-  assert.match(html, /import \{ DIMENSIONS, QUESTIONS \} from "\.\/data\.mjs"/);
+  assert.match(html, /import \{ DIMENSIONS, QUESTIONS, RESULTS, STAGES \} from "\.\/data\.mjs"/);
   assert.match(html, /import \{ calculateProfile \} from "\.\/model\.mjs"/);
   assert.match(html, /QUESTIONS\.length/);
 });
@@ -19,6 +19,12 @@ test("页面包含完整测试流程和结果操作", () => {
   for (const id of ["start-btn", "prev-btn", "save-poster-btn", "copy-btn", "restart-btn", "cashback-btn", "radar-svg", "dimension-list"]) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
+});
+
+test("历史回放恢复快照并使用公共回放模块显示结果", () => {
+  assert.match(html, /YunduHistoryReplay\.init\(PRODUCT_ID, renderHistorySnapshot, \(\) => showScreen\("result-screen"\)\)/);
+  assert.match(html, /function renderHistorySnapshot\(snapshot\)/);
+  assert.match(html, /snapshot\.dimensions\.map/);
 });
 
 test("页面不把测试码写死，海报使用本产品独立二维码", () => {
