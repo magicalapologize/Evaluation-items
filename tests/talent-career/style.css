@@ -153,6 +153,8 @@ a { color: inherit; text-decoration: none; }
 .career-skills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
 .career-skills span { padding: 5px 8px; border-radius: 6px; color: var(--blue); background: #e2eaff; font-size: 11px; font-weight: 800; }
 .career-card.rank-one .career-skills span { color: #c9faff; background: rgba(34,211,238,.12); }
+.career-fit { margin-top: 14px !important; color: var(--blue) !important; font-weight: 800; }
+.career-card.rank-one .career-fit { color: var(--cyan) !important; }
 .career-entry { margin-top: 14px !important; padding-top: 12px; border-top: 1px solid rgba(98,112,138,.2); }
 .work-fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
 .career-map { display: grid; gap: 12px; }

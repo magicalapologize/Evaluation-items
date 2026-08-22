@@ -4,24 +4,31 @@
   const { DIMENSIONS, TYPES, QUESTIONS, CAREERS } = window.TalentCareerData;
   const DIMENSION_KEYS = Object.keys(DIMENSIONS);
   const TYPE_KEYS = Object.keys(TYPES);
-  // Calibrated against 200,000 uniformly random answer sets so neutral answer noise
-  // does not make structurally similar archetypes dominate the result pool.
+  // Each dimension is not offered by the same number of options. Normalize
+  // against its own attainable maximum before comparing profiles.
+  const DIMENSION_MAX = Object.fromEntries(DIMENSION_KEYS.map((key) => [
+    key,
+    QUESTIONS.reduce((total, question) => total + Math.max(...question.options.map((option) => option.scores[key] || 0)), 0)
+  ]));
+  // Dimension normalization now puts neutral random answer sets on a comparable
+  // scale. Keep the calibration table explicit so a future data revision can be
+  // recalibrated without changing the matching flow.
   const TYPE_CALIBRATION = {
-    strategist: -0.034307,
-    researcher: -0.089823,
-    builder: -0.256349,
-    solver: -0.198159,
-    creator: 0.009545,
-    innovator: -0.158657,
-    connector: 0.187776,
-    mentor: 0.229185,
-    organizer: 0.149319,
-    operator: -0.045868,
-    pioneer: 0.140153,
-    explorer: 0.067186
+    strategist: 0,
+    researcher: 0,
+    builder: 0,
+    solver: 0,
+    creator: 0,
+    innovator: 0,
+    connector: 0,
+    mentor: 0,
+    organizer: 0,
+    operator: 0,
+    pioneer: 0,
+    explorer: 0
   };
   const $ = (id) => document.getElementById(id);
-  const state = { index: 0, answers: [], resultKey: null, rawProfile: null, displayProfile: null, rankedCareers: [], historyAttemptId: null };
+  const state = { index: 0, answers: [], optionOrders: [], resultKey: null, rawProfile: null, displayProfile: null, rankedCareers: [], historyAttemptId: null };
   let activeMember = null;
 
   function validateData() {
@@ -83,10 +90,25 @@
   function startQuiz() {
     state.index = 0;
     state.answers = [];
+    state.optionOrders = QUESTIONS.map((_, questionIndex) => shuffledIndexes(questionIndex));
     state.historyAttemptId = null;
     state.resultKey = null;
     showScreen("quiz-screen");
     renderQuestion();
+  }
+
+  function shuffledIndexes(questionIndex) {
+    const indexes = [0, 1, 2, 3];
+    let seed = (Date.now() ^ ((questionIndex + 1) * 0x9e3779b9)) >>> 0;
+    const next = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    for (let index = indexes.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(next() * (index + 1));
+      [indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]];
+    }
+    return indexes;
   }
 
   function renderQuestion() {
@@ -96,11 +118,15 @@
     $("progress-bar").style.width = `${((state.index + 1) / QUESTIONS.length) * 100}%`;
     $("question-text").textContent = question.text;
     $("prev-btn").disabled = state.index === 0;
-    $("answer-list").innerHTML = question.options.map((option, index) => `
-      <button class="answer-btn${state.answers[state.index] === index ? " selected" : ""}" type="button" data-answer="${index}">
-        <span>${String.fromCharCode(65 + index)}</span><span>${option.text}</span>
+    const optionOrder = state.optionOrders[state.index] || [0, 1, 2, 3];
+    $("answer-list").innerHTML = optionOrder.map((optionIndex, displayIndex) => {
+      const option = question.options[optionIndex];
+      return `
+      <button class="answer-btn${state.answers[state.index] === optionIndex ? " selected" : ""}" type="button" data-answer="${optionIndex}">
+        <span>${String.fromCharCode(65 + displayIndex)}</span><span>${option.text}</span>
       </button>
-    `).join("");
+    `;
+    }).join("");
     $("answer-list").querySelectorAll(".answer-btn").forEach((button) => {
       button.addEventListener("click", () => selectAnswer(Number(button.dataset.answer), button));
     });
@@ -135,6 +161,13 @@
     return raw;
   }
 
+  function normalizedProfile(raw) {
+    return Object.fromEntries(DIMENSION_KEYS.map((key) => [
+      key,
+      (Number(raw[key] || 0) / (DIMENSION_MAX[key] || 1)) * 100
+    ]));
+  }
+
   function centeredUnit(vector) {
     const values = DIMENSION_KEYS.map((key) => Number(vector[key] || 0));
     const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -152,7 +185,7 @@
   }
 
   function matchType(raw, answers) {
-    const user = centeredUnit(raw);
+    const user = centeredUnit(normalizedProfile(raw));
     const fingerprint = answerFingerprint(answers);
     return TYPE_KEYS.map((key, index) => ({
       key,
@@ -163,11 +196,12 @@
   }
 
   function displayProfile(raw) {
-    const values = DIMENSION_KEYS.map((key) => raw[key]);
+    const profile = normalizedProfile(raw);
+    const values = DIMENSION_KEYS.map((key) => profile[key]);
     const min = Math.min(...values);
     const max = Math.max(...values);
     const spread = max - min || 1;
-    return Object.fromEntries(DIMENSION_KEYS.map((key) => [key, Math.round(38 + ((raw[key] - min) / spread) * 57)]));
+    return Object.fromEntries(DIMENSION_KEYS.map((key) => [key, Math.round(38 + ((profile[key] - min) / spread) * 57)]));
   }
 
   function careerPrototype(career) {
@@ -176,12 +210,21 @@
     return profile;
   }
 
-  function rankCareers(raw) {
-    const user = centeredUnit(raw);
+  function rankCareers(raw, profileIsNormalized = false) {
+    const user = centeredUnit(profileIsNormalized ? raw : normalizedProfile(raw));
     return CAREERS.map((item) => {
       const similarity = cosine(user, centeredUnit(careerPrototype(item)));
       return { ...item, similarity, score: Math.max(58, Math.min(96, Math.round(72 + similarity * 25))) };
     }).sort((a, b) => (b.similarity - a.similarity) || a.name.localeCompare(b.name, "zh-CN"));
+  }
+
+  function careerSignal(careerItem) {
+    const signals = careerItem.dims
+      .map((key) => ({ name: DIMENSIONS[key].name, value: state.displayProfile[key] }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 2)
+      .map((item) => item.name);
+    return `你的答卷信号：${signals.join("、")}`;
   }
 
   function calculateResult() {
@@ -204,7 +247,7 @@
     $("result-alias").textContent = result.alias;
     $("result-tags").innerHTML = result.tags.map((tag) => `<span>${tag}</span>`).join("");
     $("result-summary").textContent = result.summary;
-    $("top-match").textContent = `${matchScore}%`;
+    $("top-match").textContent = String(matchScore);
     $("result-portrait").textContent = result.portrait;
     $("result-strengths").textContent = result.strengths;
     $("result-risk").textContent = result.risk;
@@ -221,10 +264,11 @@
 
     $("top-careers").innerHTML = state.rankedCareers.slice(0, 3).map((careerItem, index) => `
       <article class="career-card${index === 0 ? " rank-one" : ""}">
-        <div class="career-rank"><span>TOP ${index + 1} · ${careerItem.group}</span><strong class="career-score">${careerItem.score}%</strong></div>
+        <div class="career-rank"><span>TOP ${index + 1} · ${careerItem.group}</span><strong class="career-score">参考 ${careerItem.score}</strong></div>
         <h3>${careerItem.name}</h3><p>${careerItem.mode}</p>
         <div class="career-skills">${careerItem.dims.map((key) => `<span>${DIMENSIONS[key].name}</span>`).join("")}</div>
-        <p class="career-entry">进入建议：${careerItem.entry}</p>
+        <p class="career-fit">${careerSignal(careerItem)}</p>
+        <p class="career-entry">验证路径：${careerItem.entry}</p>
       </article>
     `).join("");
     renderCareerMap();
@@ -248,7 +292,7 @@
         match: Math.max(72, Math.min(96, Math.round(76 + Math.max(0, state.typeSimilarity || 0) * 23)))
       },
       tags: result.tags,
-      overview: state.rankedCareers.slice(0, 3).map((item, index) => ({ label: `TOP ${index + 1}`, title: item.name, body: `${item.group} · ${item.score}%` })),
+      overview: state.rankedCareers.slice(0, 3).map((item, index) => ({ label: `TOP ${index + 1}`, title: item.name, body: `${item.group} · 参考 ${item.score}`, reason: careerSignal(item) })),
       dimensions: dimensions.map((item) => ({ name: item.name, value: item.value, left: item.short, right: item.name })),
       sections: [
         { title: "你如何创造价值", body: result.portrait, items: [] },
@@ -293,8 +337,8 @@
     $("career-map").innerHTML = groups.map((group) => {
       const items = CAREERS.filter((item) => item.group === group).map((item) => rankByName.get(item.name));
       return `<section class="career-group"><h3>${group}<span>8 个方向</span></h3><div class="career-grid">${items.map((item) => {
-        const tier = item.rank < 16 ? ["high", "高匹配"] : item.rank < 48 ? ["explore", "值得探索"] : ["caution", "谨慎核对"];
-        return `<div class="career-cell ${tier[0]}"><strong>${item.name}</strong><span>${tier[1]} · ${item.score}%</span></div>`;
+        const tier = item.rank < 16 ? ["high", "优先验证"] : item.rank < 48 ? ["explore", "值得了解"] : ["caution", "需要核对"];
+        return `<div class="career-cell ${tier[0]}"><strong>${item.name}</strong><span>${tier[1]} · 参考 ${item.score}</span></div>`;
       }).join("")}</div></section>`;
     }).join("");
   }
@@ -361,8 +405,8 @@
     drawWrappedText(ctx, result.summary, 110, 565, 1180, 42, 2);
     ctx.fillStyle = "#22d3ee"; ctx.font = "900 82px PingFang SC, sans-serif"; ctx.textAlign = "right";
     const matchScore = Math.max(72, Math.min(96, Math.round(76 + Math.max(0, state.typeSimilarity) * 23)));
-    ctx.fillText(`${matchScore}%`, 1660, 344);
-    ctx.fillStyle = "#8fa1bf"; ctx.font = "500 23px PingFang SC, sans-serif"; ctx.fillText("职业画像契合度", 1660, 385);
+    ctx.fillText(String(matchScore), 1660, 344);
+    ctx.fillStyle = "#8fa1bf"; ctx.font = "500 23px PingFang SC, sans-serif"; ctx.fillText("职业画像参考分", 1660, 385);
 
     ctx.textAlign = "left"; ctx.fillStyle = "#13203a"; ctx.font = "900 38px PingFang SC, sans-serif"; ctx.fillText("九维天赋图谱", 110, 735);
     ctx.fillStyle = "#62708a"; ctx.font = "500 22px PingFang SC, sans-serif"; ctx.fillText("反映本次答卷内部的相对强弱", 110, 775);
@@ -378,13 +422,13 @@
       roundedRect(ctx, x + 24, y + 70, 452 * state.displayProfile[key] / 100, 10, 5, "#2457ff");
     });
 
-    ctx.textAlign = "left"; ctx.fillStyle = "#13203a"; ctx.font = "900 38px PingFang SC, sans-serif"; ctx.fillText("优先探索的职业方向", 110, 1345);
+    ctx.textAlign = "left"; ctx.fillStyle = "#13203a"; ctx.font = "900 38px PingFang SC, sans-serif"; ctx.fillText("优先验证的职业方向", 110, 1345);
     state.rankedCareers.slice(0, 3).forEach((item, index) => {
       const x = 110 + index * 540;
       const y = 1390;
       roundedRect(ctx, x, y, 500, 270, 14, index === 0 ? "#10182b" : "#ffffff", index === 0 ? "#10182b" : "#d7e2f2");
       ctx.fillStyle = index === 0 ? "#22d3ee" : "#2457ff"; ctx.font = "800 21px PingFang SC, sans-serif"; ctx.textAlign = "left"; ctx.fillText(`TOP ${index + 1} · ${item.group}`, x + 24, y + 40);
-      ctx.textAlign = "right"; ctx.font = "900 32px PingFang SC, sans-serif"; ctx.fillText(`${item.score}%`, x + 472, y + 42);
+      ctx.textAlign = "right"; ctx.font = "900 32px PingFang SC, sans-serif"; ctx.fillText(`参考 ${item.score}`, x + 472, y + 42);
       ctx.textAlign = "left"; ctx.fillStyle = index === 0 ? "#ffffff" : "#13203a"; ctx.font = "900 34px PingFang SC, sans-serif"; ctx.fillText(item.name, x + 24, y + 96);
       ctx.fillStyle = index === 0 ? "#b9c6db" : "#62708a"; ctx.font = "500 22px PingFang SC, sans-serif"; drawWrappedText(ctx, item.mode, x + 24, y + 140, 450, 34, 3);
       ctx.fillStyle = index === 0 ? "#dffbff" : "#2457ff"; ctx.font = "700 20px PingFang SC, sans-serif"; ctx.fillText(item.dims.map((key) => DIMENSIONS[key].short).join(" · "), x + 24, y + 238);
@@ -480,7 +524,7 @@
     $("result-alias").textContent = snapshot.result.subtitle;
     YunduHistoryReplay.renderTags($("result-tags"), snapshot.tags);
     $("result-summary").textContent = snapshot.result.quote;
-    $("top-match").textContent = snapshot.result.match === undefined ? "历史记录" : `${snapshot.result.match}%`;
+    $("top-match").textContent = snapshot.result.match === undefined ? "历史记录" : String(snapshot.result.match);
     $("result-portrait").textContent = sections.get("你如何创造价值")?.body || "";
     $("result-strengths").textContent = sections.get("最值得放大的能力")?.body || "";
     $("result-risk").textContent = sections.get("优势过度使用时")?.body || "";
@@ -490,12 +534,12 @@
     YunduHistoryReplay.renderItems($("advice-list"), sections.get("未来 90 天行动建议")?.items || []);
     $("dimension-list").innerHTML = snapshot.dimensions.map((item) => `<div class="dimension-item"><span class="dimension-name">${item.name}</span><span class="dimension-track"><i style="width:${item.value}%"></i></span><strong class="dimension-value">${item.value}</strong></div>`).join("");
     renderRadar();
-    $("top-careers").innerHTML = (snapshot.overview || []).map((item, index) => `<article class="career-card${index === 0 ? " rank-one" : ""}"><div class="career-rank"><span>${item.label}</span><strong class="career-score">${item.body}</strong></div><h3>${item.title}</h3><p>历史记录中的优先探索方向</p></article>`).join("");
-    state.rankedCareers = rankCareers(state.displayProfile);
+    $("top-careers").innerHTML = (snapshot.overview || []).map((item, index) => `<article class="career-card${index === 0 ? " rank-one" : ""}"><div class="career-rank"><span>${item.label}</span><strong class="career-score">${item.body}</strong></div><h3>${item.title}</h3><p>${item.reason || "历史记录中的优先验证方向"}</p></article>`).join("");
+    state.rankedCareers = rankCareers(state.displayProfile, true);
     renderCareerMap();
     $("copy-result-btn").dataset.summary = `我的天赋原型：${result.name}。${snapshot.result.quote}`;
   }, () => showScreen("result-screen"));
 
   validateData();
-  window.__talentCareerTest = { rawProfileForAnswers, matchType, displayProfile, rankCareers, calculateResult, data: { DIMENSIONS, TYPES, QUESTIONS, CAREERS } };
+  window.__talentCareerTest = { rawProfileForAnswers, normalizedProfile, matchType, displayProfile, rankCareers, calculateResult, data: { DIMENSIONS, TYPES, QUESTIONS, CAREERS } };
 })();
