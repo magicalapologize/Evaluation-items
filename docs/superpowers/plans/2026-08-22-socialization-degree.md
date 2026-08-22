@@ -31,11 +31,11 @@
 - `model.mjs` exports `calculateProfile(answerIndexes)`, `getSignalBounds()`, `simulateDistribution(sampleCount, seed)`.
 - `calculateProfile` returns `{ result, stage, raw, signals, displayScores, ranking, topKeys, secondKey, total, fingerprint }`.
 
-- [ ] 编写模型测试：校验 40 题、每题 4 个选项、六维分数矩阵、8 结果资料完整、5 阶段边界、固定答案分布、随机 100,000 份可达性和结果稳定性。
-- [ ] 运行 `node --test tests/socialization/model.test.mjs`，确认新模块尚不存在时失败。
-- [ ] 编写原创 40 题和 8 组场景，逐项给选项配置主/辅维度语义分数；为 8 个结果写完整画像、优势、风险、适配场景、六维解释、3 条建议和独立提醒。
-- [ ] 实现独立维度校准、人格原型距离匹配、确定性并列指纹、综合分和阶段映射。
-- [ ] 运行模型测试和 `node scripts/validate-socialization.mjs`，调整矩阵直到所有结果可达、极端答卷分散、结果维度差异达标。
+- [x] 编写模型测试：校验 40 题、每题 4 个选项、六维分数矩阵、8 结果资料完整、5 阶段边界、固定答案分布、随机 100,000 份可达性和结果稳定性。
+- [x] 运行 `node --test tests/socialization/model.test.mjs`，确认新模块尚不存在时失败。
+- [x] 编写原创 40 题和 8 组场景，逐项给选项配置主/辅维度语义分数；为 8 个结果写完整画像、优势、风险、适配场景、六维解释、3 条建议和独立提醒。
+- [x] 实现独立维度校准、人格原型距离匹配、确定性并列指纹、综合分和阶段映射。
+- [x] 运行模型测试和 `node scripts/validate-socialization.mjs`，调整矩阵直到所有结果可达、极端答卷分散、结果维度差异达标。
 
 ### Task 2: 页面骨架与答题流程
 
