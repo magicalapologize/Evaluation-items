@@ -144,7 +144,7 @@
       </div>
     </section>
 
-    <div id="poster-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="poster-title"><div class="modal-panel"><div class="modal-head"><h2 id="poster-title">请长按保存报告</h2><button class="modal-close" type="button" data-close-modal="poster-modal" aria-label="关闭保存报告弹窗">×</button></div><p class="modal-tip">保存这张长图，分享你的社会化阶段、六维分布和行动建议。</p><div class="poster-preview"><div id="poster-status" class="poster-status" role="status" aria-live="polite">正在生成高清报告，请稍候...</div><img id="poster-image" src="../../assets/product-qrs/socialization-degree.png" alt="社会化程度测试结果报告" hidden /></div></div></div>
+    <div id="poster-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="poster-title"><div class="modal-panel"><div class="modal-head"><h2 id="poster-title">请长按保存报告</h2><button class="modal-close" type="button" data-close-modal="poster-modal" aria-label="关闭保存报告弹窗">×</button></div><p class="modal-tip">保存这张长图，发给朋友或评论区，看看你们的分数和社交类型是不是同一套。</p><div class="poster-preview"><div id="poster-status" class="poster-status" role="status" aria-live="polite">正在生成高清报告，请稍候...</div><img id="poster-image" src="../../assets/product-qrs/socialization-degree.png" alt="社会化程度分享报告" hidden /></div></div></div>
     <div id="cashback-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cashback-title"><div class="modal-panel"><div class="modal-head"><h2 id="cashback-title">好评返现</h2><button class="modal-close" type="button" data-close-modal="cashback-modal" aria-label="关闭好评返现弹窗">×</button></div><p class="cashback-copy">五星好评，带 3 张截图，15 字以上就能返 1 元。截图发给店铺客服即可，活动可能随时结束。</p><div class="cashback-qr"><img src="../../assets/images/wechat-qr.webp" alt="微信二维码" /></div></div></div>
   </main>
 
@@ -283,7 +283,143 @@
     }
 
     function loadPosterImage(src) { return new Promise((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src; }); }
-    async function createPosterImage() { if (!state.profile) return ""; const { result, displayScores, total, stage } = state.profile; const qrImage = await loadPosterImage("../../assets/product-qrs/socialization-degree.png"); const scale = 2; const width = 900; const height = 1680; const canvas = document.createElement("canvas"); canvas.width = width * scale; canvas.height = height * scale; const ctx = canvas.getContext("2d"); ctx.scale(scale, scale); ctx.fillStyle = "#101718"; ctx.fillRect(0, 0, width, height); ctx.fillStyle = "#f3eee4"; ctx.font = "700 25px sans-serif"; ctx.textAlign = "center"; ctx.fillText("SOCIALIZATION REPORT", width / 2, 70); ctx.fillStyle = "#f29b73"; ctx.font = "700 72px sans-serif"; ctx.fillText(result.name, width / 2, 165); ctx.fillStyle = "#d2c7b6"; ctx.font = "500 22px sans-serif"; ctx.fillText(stage.name, width / 2, 210); ctx.fillStyle = "#f3eee4"; ctx.font = "700 74px Georgia"; ctx.fillText(String(total), width / 2, 305); ctx.font = "500 18px sans-serif"; ctx.fillText("综合社会化分 / 100", width / 2, 338); ctx.textAlign = "left"; ctx.fillStyle = "#d2c7b6"; ctx.font = "500 20px sans-serif"; ctx.fillText(result.alias, 80, 390); ctx.fillStyle = "#1b2829"; ctx.fillRect(60, 430, 780, 410); ctx.fillStyle = "#f3eee4"; ctx.font = "700 20px sans-serif"; ctx.fillText("六维分布", 90, 470); DIMENSIONS.forEach((dimension, index) => { const col = index % 2; const row = Math.floor(index / 2); const x = 90 + col * 370; const y = 535 + row * 80; ctx.fillStyle = "#f3eee4"; ctx.font = "700 17px sans-serif"; ctx.fillText(dimension.name, x, y); ctx.fillStyle = "#314849"; ctx.fillRect(x, y + 18, 290, 10); ctx.fillStyle = "#f29b73"; ctx.fillRect(x, y + 18, 290 * displayScores[dimension.key] / 100, 10); ctx.fillStyle = "#f3eee4"; ctx.font = "700 16px Georgia"; ctx.textAlign = "right"; ctx.fillText(String(displayScores[dimension.key]), x + 290, y); ctx.textAlign = "left"; }); ctx.fillStyle = "#f3eee4"; ctx.font = "700 20px sans-serif"; ctx.fillText("给你的三个动作", 80, 900); result.advices.forEach((advice, index) => { ctx.fillStyle = "#f29b73"; ctx.font = "700 20px Georgia"; ctx.fillText(String(index + 1).padStart(2, "0"), 85, 960 + index * 100); ctx.fillStyle = "#d2c7b6"; ctx.font = "500 18px sans-serif"; const chars = []; let line = ""; for (const char of advice) { if (ctx.measureText(line + char).width > 710) { chars.push(line); line = char; } else line += char; } if (line) chars.push(line); chars.slice(0, 3).forEach((text, lineIndex) => ctx.fillText(text, 135, 950 + index * 100 + lineIndex * 28)); }); ctx.fillStyle = "#1b2829"; ctx.fillRect(60, 1290, 780, 300); ctx.drawImage(qrImage, 90, 1340, 180, 180); ctx.fillStyle = "#f3eee4"; ctx.font = "700 23px sans-serif"; ctx.fillText("长按识别二维码", 320, 1385); ctx.fillStyle = "#d2c7b6"; ctx.font = "500 18px sans-serif"; ctx.fillText("查看完整社会化报告", 320, 1425); ctx.fillText("把你的社交生存力分享给朋友", 320, 1460); return canvas.toDataURL("image/png"); }
+    function wrapCanvasText(ctx, text, maxWidth) { const lines = []; let line = ""; for (const char of text) { if (ctx.measureText(line + char).width > maxWidth && line) { lines.push(line); line = char; } else line += char; } if (line) lines.push(line); return lines; }
+    function drawCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines = Infinity) { const lines = wrapCanvasText(ctx, text, maxWidth).slice(0, maxLines); lines.forEach((line, index) => ctx.fillText(line, x, y + index * lineHeight)); return y + lines.length * lineHeight; }
+    function drawCanvasCard(ctx, x, y, width, height, fill = "#172324", radius = 18) { ctx.fillStyle = fill; ctx.beginPath(); ctx.roundRect(x, y, width, height, radius); ctx.fill(); }
+    function drawCanvasPill(ctx, text, x, y) { const width = ctx.measureText(text).width + 28; ctx.strokeStyle = "rgba(213,226,216,.28)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x, y - 22, width, 34, 17); ctx.stroke(); ctx.fillText(text, x + 14, y); return width; }
+    async function createPosterImage() {
+      if (!state.profile) return "";
+      const { result, displayScores, total, stage } = state.profile;
+      const qrImage = await loadPosterImage("../../assets/product-qrs/socialization-degree.png");
+      const ranked = [...DIMENSIONS].sort((a, b) => displayScores[b.key] - displayScores[a.key]);
+      const highest = ranked[0];
+      const lowest = ranked[ranked.length - 1];
+      const scale = 2;
+      const width = 900;
+      const height = 2320;
+      const canvas = document.createElement("canvas");
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(scale, scale);
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#101718";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.fillStyle = "#8ec9b8";
+      ctx.font = "800 22px sans-serif";
+      ctx.letterSpacing = "3px";
+      ctx.fillText("SOCIALIZATION FIELD TEST", 70, 72);
+      ctx.letterSpacing = "0px";
+      ctx.fillStyle = "#f29b73";
+      ctx.font = "700 78px sans-serif";
+      ctx.fillText(result.name, 70, 170);
+      ctx.fillStyle = "#d2c7b6";
+      ctx.font = "500 25px sans-serif";
+      ctx.fillText(result.alias, 74, 218);
+      ctx.font = "700 17px sans-serif";
+      let pillX = 70;
+      result.keywords.forEach((keyword) => { pillX += drawCanvasPill(ctx, keyword, pillX, 270) + 10; });
+
+      drawCanvasCard(ctx, 60, 330, 780, 230, "#172324");
+      ctx.fillStyle = "#8ec9b8";
+      ctx.font = "800 17px sans-serif";
+      ctx.fillText("你的社会化阶段", 95, 375);
+      ctx.fillStyle = "#f3eee4";
+      ctx.font = "700 58px sans-serif";
+      ctx.fillText(stage.name, 95, 445);
+      ctx.fillStyle = "#f29b73";
+      ctx.font = "700 92px Georgia";
+      ctx.fillText(String(total), 650, 455);
+      ctx.fillStyle = "#d2c7b6";
+      ctx.font = "500 17px sans-serif";
+      ctx.fillText("综合分 / 100", 655, 490);
+      ctx.fillStyle = "#879792";
+      ctx.font = "500 19px sans-serif";
+      drawCanvasText(ctx, stage.description, 95, 505, 480, 28, 2);
+
+      drawCanvasCard(ctx, 60, 590, 780, 290, "#1b2829");
+      ctx.fillStyle = "#f29b73";
+      ctx.font = "800 17px sans-serif";
+      ctx.fillText("一句话看懂你", 95, 635);
+      ctx.fillStyle = "#f3eee4";
+      ctx.font = "500 24px sans-serif";
+      drawCanvasText(ctx, result.portrait, 95, 685, 700, 38, 4);
+      ctx.fillStyle = "#8ec9b8";
+      ctx.font = "700 18px sans-serif";
+      ctx.fillText("你是哪一型？朋友眼里的你，会不会也是这个答案？", 95, 840);
+
+      drawCanvasCard(ctx, 60, 910, 780, 500, "#172324");
+      ctx.fillStyle = "#f3eee4";
+      ctx.font = "700 23px sans-serif";
+      ctx.fillText("六维社交信号", 95, 960);
+      DIMENSIONS.forEach((dimension, index) => {
+        const col = index % 2;
+        const row = Math.floor(index / 2);
+        const x = 95 + col * 370;
+        const y = 1035 + row * 112;
+        const score = displayScores[dimension.key];
+        ctx.fillStyle = "#8ec9b8";
+        ctx.font = "700 15px sans-serif";
+        ctx.fillText(dimension.name, x, y);
+        ctx.fillStyle = "#f3eee4";
+        ctx.font = "700 22px Georgia";
+        ctx.textAlign = "right";
+        ctx.fillText(String(score), x + 300, y);
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#304244";
+        ctx.beginPath();
+        ctx.roundRect(x, y + 20, 300, 12, 6);
+        ctx.fill();
+        ctx.fillStyle = "#f29b73";
+        ctx.beginPath();
+        ctx.roundRect(x, y + 20, 300 * score / 100, 12, 6);
+        ctx.fill();
+      });
+      ctx.fillStyle = "#879792";
+      ctx.font = "500 16px sans-serif";
+      ctx.fillText("分数不是好坏评级，而是你在不同场景里的常用应对方式。", 95, 1360);
+
+      drawCanvasCard(ctx, 60, 1440, 780, 250, "#2a2723");
+      ctx.fillStyle = "#f29b73";
+      ctx.font = "800 17px sans-serif";
+      ctx.fillText("你的社交反差", 95, 1485);
+      ctx.fillStyle = "#f3eee4";
+      ctx.font = "700 25px sans-serif";
+      ctx.fillText(`最稳：${highest.name} ${displayScores[highest.key]}分`, 95, 1540);
+      ctx.fillText(`最容易卡住：${lowest.name} ${displayScores[lowest.key]}分`, 95, 1585);
+      ctx.fillStyle = "#d2c7b6";
+      ctx.font = "500 18px sans-serif";
+      drawCanvasText(ctx, result.dimensionProfiles[lowest.key].blindSpot, 95, 1630, 700, 28, 2);
+
+      drawCanvasCard(ctx, 60, 1720, 780, 340, "#172324");
+      ctx.fillStyle = "#8ec9b8";
+      ctx.font = "800 17px sans-serif";
+      ctx.fillText("给你三个能马上用的动作", 95, 1765);
+      result.advices.forEach((advice, index) => {
+        const y = 1825 + index * 76;
+        ctx.fillStyle = "#f29b73";
+        ctx.font = "700 22px Georgia";
+        ctx.fillText(String(index + 1).padStart(2, "0"), 98, y);
+        ctx.fillStyle = "#d2c7b6";
+        ctx.font = "500 17px sans-serif";
+        drawCanvasText(ctx, advice, 150, y, 610, 25, 2);
+      });
+
+      drawCanvasCard(ctx, 60, 2090, 780, 180, "#1b2829");
+      ctx.fillStyle = "#f3eee4";
+      ctx.font = "700 20px sans-serif";
+      ctx.fillText("把这张图发给朋友，看看他们眼里的你是不是同一型", 95, 2135);
+      ctx.drawImage(qrImage, 95, 2160, 100, 100);
+      ctx.fillStyle = "#f29b73";
+      ctx.font = "700 21px sans-serif";
+      ctx.fillText("扫码测一测你的社会化阶段", 235, 2195);
+      ctx.fillStyle = "#d2c7b6";
+      ctx.font = "500 17px sans-serif";
+      ctx.fillText("解锁完整报告，再把结果发到评论区对照", 235, 2230);
+      ctx.fillText("看看谁的分数和你最接近。", 235, 2258);
+      return canvas.toDataURL("image/png");
+    }
 
     $("start-btn").addEventListener("click", async () => { await memberReady; $("gate-error").textContent = ""; const code = $("access-code").value.trim(); try { if (!activeMember) await verifyDailyAccessCode(PRODUCT_ID, code); state.index = 0; state.answers = []; renderQuestion(); showScreen("quiz-screen"); } catch (error) { $("gate-error").textContent = error.message; } });
     $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } });

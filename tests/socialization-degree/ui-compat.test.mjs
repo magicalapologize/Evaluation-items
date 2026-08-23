@@ -45,6 +45,16 @@ test("结果工具箱按人格结果单独配置", () => {
   assert.doesNotMatch(html, /\["开场：从眼前的人、事、环境开始。/);
 });
 
+test("保存报告包含可分享的身份、反差、建议和商品二维码", () => {
+  assert.match(html, /发给朋友或评论区/);
+  assert.match(html, /一句话看懂你/);
+  assert.match(html, /你的社交反差/);
+  assert.match(html, /给你三个能马上用的动作/);
+  assert.match(html, /const height = 2320/);
+  assert.match(html, /drawImage\(qrImage/);
+  assert.match(html, /product-qrs\/socialization-degree\.png/);
+});
+
 test("页面不把测试码写死，海报使用本产品独立二维码", () => {
   assert.doesNotMatch(html, /ACCESS_CODE\s*=|validCode\s*:/);
   assert.match(html, /fetch\("\/api\/verify-code"/);
