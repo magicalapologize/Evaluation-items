@@ -247,7 +247,7 @@
     $("result-alias").textContent = result.alias;
     $("result-tags").innerHTML = result.tags.map((tag) => `<span>${tag}</span>`).join("");
     $("result-summary").textContent = result.summary;
-    $("top-match").textContent = String(matchScore);
+    $("top-match").textContent = `${matchScore}%`;
     $("result-portrait").textContent = result.portrait;
     $("result-strengths").textContent = result.strengths;
     $("result-risk").textContent = result.risk;
@@ -264,7 +264,7 @@
 
     $("top-careers").innerHTML = state.rankedCareers.slice(0, 3).map((careerItem, index) => `
       <article class="career-card${index === 0 ? " rank-one" : ""}">
-        <div class="career-rank"><span>TOP ${index + 1} · ${careerItem.group}</span><strong class="career-score">参考 ${careerItem.score}</strong></div>
+        <div class="career-rank"><span>TOP ${index + 1} · ${careerItem.group}</span><strong class="career-score">契合度 ${careerItem.score}%</strong></div>
         <h3>${careerItem.name}</h3><p>${careerItem.mode}</p>
         <div class="career-skills">${careerItem.dims.map((key) => `<span>${DIMENSIONS[key].name}</span>`).join("")}</div>
         <p class="career-fit">${careerSignal(careerItem)}</p>
@@ -292,7 +292,7 @@
         match: Math.max(72, Math.min(96, Math.round(76 + Math.max(0, state.typeSimilarity || 0) * 23)))
       },
       tags: result.tags,
-      overview: state.rankedCareers.slice(0, 3).map((item, index) => ({ label: `TOP ${index + 1}`, title: item.name, body: `${item.group} · 参考 ${item.score}`, reason: careerSignal(item) })),
+      overview: state.rankedCareers.slice(0, 3).map((item, index) => ({ label: `TOP ${index + 1}`, title: item.name, body: `${item.group} · 契合度 ${item.score}%`, reason: careerSignal(item) })),
       dimensions: dimensions.map((item) => ({ name: item.name, value: item.value, left: item.short, right: item.name })),
       sections: [
         { title: "你如何创造价值", body: result.portrait, items: [] },
@@ -338,7 +338,7 @@
       const items = CAREERS.filter((item) => item.group === group).map((item) => rankByName.get(item.name));
       return `<section class="career-group"><h3>${group}<span>8 个方向</span></h3><div class="career-grid">${items.map((item) => {
         const tier = item.rank < 16 ? ["high", "优先验证"] : item.rank < 48 ? ["explore", "值得了解"] : ["caution", "需要核对"];
-        return `<div class="career-cell ${tier[0]}"><strong>${item.name}</strong><span>${tier[1]} · 参考 ${item.score}</span></div>`;
+        return `<div class="career-cell ${tier[0]}"><strong>${item.name}</strong><span>${tier[1]} · 契合度 ${item.score}%</span></div>`;
       }).join("")}</div></section>`;
     }).join("");
   }
@@ -405,8 +405,8 @@
     drawWrappedText(ctx, result.summary, 110, 565, 1180, 42, 2);
     ctx.fillStyle = "#22d3ee"; ctx.font = "900 82px PingFang SC, sans-serif"; ctx.textAlign = "right";
     const matchScore = Math.max(72, Math.min(96, Math.round(76 + Math.max(0, state.typeSimilarity) * 23)));
-    ctx.fillText(String(matchScore), 1660, 344);
-    ctx.fillStyle = "#8fa1bf"; ctx.font = "500 23px PingFang SC, sans-serif"; ctx.fillText("职业画像参考分", 1660, 385);
+    ctx.fillText(`${matchScore}%`, 1660, 344);
+    ctx.fillStyle = "#8fa1bf"; ctx.font = "500 23px PingFang SC, sans-serif"; ctx.fillText("职业画像契合度", 1660, 385);
 
     ctx.textAlign = "left"; ctx.fillStyle = "#13203a"; ctx.font = "900 38px PingFang SC, sans-serif"; ctx.fillText("九维天赋图谱", 110, 735);
     ctx.fillStyle = "#62708a"; ctx.font = "500 22px PingFang SC, sans-serif"; ctx.fillText("反映本次答卷内部的相对强弱", 110, 775);
@@ -428,7 +428,7 @@
       const y = 1390;
       roundedRect(ctx, x, y, 500, 270, 14, index === 0 ? "#10182b" : "#ffffff", index === 0 ? "#10182b" : "#d7e2f2");
       ctx.fillStyle = index === 0 ? "#22d3ee" : "#2457ff"; ctx.font = "800 21px PingFang SC, sans-serif"; ctx.textAlign = "left"; ctx.fillText(`TOP ${index + 1} · ${item.group}`, x + 24, y + 40);
-      ctx.textAlign = "right"; ctx.font = "900 32px PingFang SC, sans-serif"; ctx.fillText(`参考 ${item.score}`, x + 472, y + 42);
+      ctx.textAlign = "right"; ctx.font = "900 30px PingFang SC, sans-serif"; ctx.fillText(`契合度 ${item.score}%`, x + 472, y + 42);
       ctx.textAlign = "left"; ctx.fillStyle = index === 0 ? "#ffffff" : "#13203a"; ctx.font = "900 34px PingFang SC, sans-serif"; ctx.fillText(item.name, x + 24, y + 96);
       ctx.fillStyle = index === 0 ? "#b9c6db" : "#62708a"; ctx.font = "500 22px PingFang SC, sans-serif"; drawWrappedText(ctx, item.mode, x + 24, y + 140, 450, 34, 3);
       ctx.fillStyle = index === 0 ? "#dffbff" : "#2457ff"; ctx.font = "700 20px PingFang SC, sans-serif"; ctx.fillText(item.dims.map((key) => DIMENSIONS[key].short).join(" · "), x + 24, y + 238);
@@ -524,7 +524,7 @@
     $("result-alias").textContent = snapshot.result.subtitle;
     YunduHistoryReplay.renderTags($("result-tags"), snapshot.tags);
     $("result-summary").textContent = snapshot.result.quote;
-    $("top-match").textContent = snapshot.result.match === undefined ? "历史记录" : String(snapshot.result.match);
+    $("top-match").textContent = snapshot.result.match === undefined ? "历史记录" : `${snapshot.result.match}%`;
     $("result-portrait").textContent = sections.get("你如何创造价值")?.body || "";
     $("result-strengths").textContent = sections.get("最值得放大的能力")?.body || "";
     $("result-risk").textContent = sections.get("优势过度使用时")?.body || "";
@@ -534,7 +534,10 @@
     YunduHistoryReplay.renderItems($("advice-list"), sections.get("未来 90 天行动建议")?.items || []);
     $("dimension-list").innerHTML = snapshot.dimensions.map((item) => `<div class="dimension-item"><span class="dimension-name">${item.name}</span><span class="dimension-track"><i style="width:${item.value}%"></i></span><strong class="dimension-value">${item.value}</strong></div>`).join("");
     renderRadar();
-    $("top-careers").innerHTML = (snapshot.overview || []).map((item, index) => `<article class="career-card${index === 0 ? " rank-one" : ""}"><div class="career-rank"><span>${item.label}</span><strong class="career-score">${item.body}</strong></div><h3>${item.title}</h3><p>${item.reason || "历史记录中的优先验证方向"}</p></article>`).join("");
+    $("top-careers").innerHTML = (snapshot.overview || []).map((item, index) => {
+      const scoreText = item.body.replace(/参考\s*(\d+)/, "契合度 $1%");
+      return `<article class="career-card${index === 0 ? " rank-one" : ""}"><div class="career-rank"><span>${item.label}</span><strong class="career-score">${scoreText}</strong></div><h3>${item.title}</h3><p>${item.reason || "历史记录中的优先验证方向"}</p></article>`;
+    }).join("");
     state.rankedCareers = rankCareers(state.displayProfile, true);
     renderCareerMap();
     $("copy-result-btn").dataset.summary = `我的天赋原型：${result.name}。${snapshot.result.quote}`;

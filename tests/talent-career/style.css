@@ -231,12 +231,12 @@ blockquote { margin: 22px 0 0; padding: 22px 24px; border: 1px solid rgba(34,211
   .progress-meta { margin-top: 10px; }
   .progress-track { margin-top: 7px; }
   .question-block { padding: 16px; }
-  .question-hint { margin-bottom: 5px; font-size: 12px; }
-  .question-block h2 { min-height: 50px; margin-bottom: 11px; font-size: 20px; line-height: 1.35; }
+  .question-hint { margin-bottom: 7px; font-size: 14px; }
+  .question-block h2 { min-height: 58px; margin-bottom: 14px; font-size: 24px; line-height: 1.38; }
   .answer-list { gap: 8px; }
-  .answer-btn { min-height: 58px; grid-template-columns: 30px 1fr; gap: 9px; padding: 7px 10px; }
-  .answer-btn span:first-child { width: 28px; height: 28px; }
-  .answer-btn span:last-child { font-size: 13px; line-height: 1.4; }
+  .answer-btn { min-height: 66px; grid-template-columns: 34px 1fr; gap: 11px; padding: 10px 12px; }
+  .answer-btn span:first-child { width: 32px; height: 32px; font-size: 14px; }
+  .answer-btn span:last-child { font-size: 16px; line-height: 1.45; }
   .quiz-foot { margin-top: 8px; }
   .quiz-foot > span { display: none; }
 
@@ -283,9 +283,9 @@ blockquote { margin: 22px 0 0; padding: 22px 24px; border: 1px solid rgba(34,211
   .access-input, .primary-btn { min-height: 46px; }
   .notes { margin-top: 8px; font-size: 11px; }
   .question-block { padding: 13px; }
-  .question-block h2 { font-size: 19px; }
-  .answer-btn { min-height: 56px; }
-  .answer-btn span:last-child { font-size: 12.5px; }
+  .question-block h2 { font-size: 22px; }
+  .answer-btn { min-height: 64px; }
+  .answer-btn span:last-child { font-size: 15px; }
   .result-heading h1 { font-size: 36px; }
   .career-grid { grid-template-columns: 1fr; }
   .career-cell, .career-cell:nth-child(4n) { border-right: 0; }
