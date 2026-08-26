@@ -68,6 +68,12 @@ test("移动端布局限制横向溢出并保持答题选项可点击高度", ()
   assert.match(css, /\.answer-btn\s*\{\s*min-height:\s*58px/s);
 });
 
+test("触摸设备不会把选项悬停高亮带到下一题", () => {
+  assert.match(css, /\.answer-btn\.selected\s*\{[^}]*border-color:\s*var\(--accent\)/s);
+  assert.match(css, /@media \(hover: hover\) and \(pointer: fine\)\s*\{[^}]*\.answer-btn:hover/s);
+  assert.doesNotMatch(css, /\.answer-btn:hover\s*,\s*\.answer-btn\.selected/);
+});
+
 test("页面支持浅色主题切换并记住用户选择", () => {
   assert.match(html, /id="theme-toggle"/);
   assert.match(html, /aria-pressed="false"/);
