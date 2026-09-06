@@ -14,7 +14,7 @@
     "three-kingdoms-advisor", "historical-emperor",
     "historical-heroines", "cultivation-protagonist",
     "talent-career", "love-simulation", "seven-sins",
-    "socialization-degree"
+    "socialization-degree", "talent-discovery"
   ]);
   const PRODUCT_PATHS = Object.freeze({
     "solo-business": "/tests/solo-business/",
@@ -27,7 +27,8 @@
     "talent-career": "/tests/talent-career/",
     "love-simulation": "/tests/love-simulation/",
     "seven-sins": "/tests/seven-sins/",
-    "socialization-degree": "/tests/socialization-degree/"
+    "socialization-degree": "/tests/socialization-degree/",
+    "talent-discovery": "/tests/talent-discovery/"
   });
 
   function assertKeys(value, allowed, label) {
