@@ -257,6 +257,8 @@
     }
 
     function renderQuestion() {
+      const activeElement = document.activeElement;
+      if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
       const question = QUESTIONS[state.index];
       const current = state.index + 1;
       $("progress-text").textContent = `第 ${current} / ${QUESTIONS.length} 题`;
@@ -274,6 +276,7 @@
         button.addEventListener("click", () => {
           state.answers[state.index] = Number(button.dataset.answer);
           button.classList.add("selected");
+          button.blur();
           window.setTimeout(() => {
             if (state.index < QUESTIONS.length - 1) {
               state.index += 1;

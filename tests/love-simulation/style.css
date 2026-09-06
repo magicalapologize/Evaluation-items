@@ -90,8 +90,12 @@ img { max-width: 100%; }
 .answer-list { display: grid; gap: 10px; counter-reset: answer; }
 .answer-button { position: relative; width: 100%; min-height: 68px; display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; gap: 13px; overflow: hidden; padding: 12px 46px 12px 14px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--mist); text-align: left; transition: transform .14s ease, border-color .14s ease, background .14s ease, box-shadow .14s ease; }
 .answer-button::after { content: "→"; position: absolute; right: 16px; color: var(--coral); font-size: 20px; font-weight: 900; opacity: .28; transform: translateX(-3px); transition: opacity .14s ease, transform .14s ease; }
-.answer-button:hover, .answer-button.selected { transform: translateX(5px); border-color: var(--ink); background: #fff4f5; box-shadow: -5px 0 0 var(--coral); }
-.answer-button:hover::after, .answer-button.selected::after { opacity: 1; transform: translateX(0); }
+.answer-button.selected { transform: translateX(5px); border-color: var(--ink); background: #fff4f5; box-shadow: -5px 0 0 var(--coral); }
+.answer-button.selected::after { opacity: 1; transform: translateX(0); }
+@media (hover: hover) and (pointer: fine) {
+  .answer-button:hover { transform: translateX(5px); border-color: var(--ink); background: #fff4f5; box-shadow: -5px 0 0 var(--coral); }
+  .answer-button:hover::after { opacity: 1; transform: translateX(0); }
+}
 .answer-letter { width: 32px; height: 32px; display: grid; place-items: center; border: 2px solid var(--ink); border-radius: 4px; color: var(--ink); background: var(--yellow); font-size: 12px; font-weight: 950; box-shadow: 3px 3px 0 var(--ink); }
 .answer-text { min-width: 0; font-size: 15px; font-weight: 700; line-height: 1.48; }
 .quiz-actions { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; color: var(--muted); font-size: 11px; }
@@ -166,7 +170,7 @@ img { max-width: 100%; }
     animation-iteration-count: 1 !important;
   }
   .role-card, .role-card:hover,
-  .answer-button, .answer-button:hover, .answer-button.selected {
+  .answer-button, .answer-button.selected {
     transform: none !important;
     transition: background .01ms, border-color .01ms, box-shadow .01ms !important;
   }

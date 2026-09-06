@@ -128,7 +128,8 @@
     .question { margin: 25px 0 30px; font-size: clamp(27px, 4.5vw, 39px); line-height: 1.42; }
     .answer-list { display: grid; gap: 13px; }
     .answer-btn { width: 100%; min-height: 72px; display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 16px; color: var(--ink); background: rgba(255,255,255,.62); text-align: left; transition: .16s ease; }
-    .answer-btn:hover, .answer-btn.selected { transform: translateY(-1px); border-color: var(--rose); background: #fffdf5; box-shadow: 0 10px 25px rgba(11,36,56,.08); }
+    .answer-btn.selected { transform: translateY(-1px); border-color: var(--rose); background: #fffdf5; box-shadow: 0 10px 25px rgba(11,36,56,.08); }
+    @media (hover: hover) and (pointer: fine) { .answer-btn:hover { transform: translateY(-1px); border-color: var(--rose); background: #fffdf5; box-shadow: 0 10px 25px rgba(11,36,56,.08); } }
     .letter { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--wine); background: #e6eff1; font-weight: 800; }
     .answer-text { font-size: 17px; line-height: 1.55; }
     .quiz-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
@@ -572,6 +573,8 @@ const QUESTIONS = [
     }
 
     function renderQuestion() {
+      const activeElement = document.activeElement;
+      if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
       const [stage, scene, text, answers] = QUESTIONS[state.index];
       const current = state.index + 1;
       $("stage-name").textContent = stage;
@@ -592,6 +595,7 @@ const QUESTIONS = [
         button.addEventListener("click", () => {
           state.answers[state.index] = Number(button.dataset.answer);
           button.classList.add("selected");
+          button.blur();
           setTimeout(() => {
             if (state.index < QUESTIONS.length - 1) {
               state.index += 1;

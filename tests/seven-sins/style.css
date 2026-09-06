@@ -150,7 +150,8 @@ p, h1, h2, h3, ul { margin: 0; }
 .question-help { margin-top: 14px; color: var(--muted); font-size: 14px; }
 .answer-list { display: grid; gap: 10px; margin-top: 30px; }
 .answer-btn { width: 100%; min-height: 64px; display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 13px; padding: 10px 16px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); background: rgba(9, 7, 9, .55); text-align: left; transition: border-color .16s ease, transform .16s ease, background .16s ease; }
-.answer-btn:hover, .answer-btn.selected { border-color: var(--gold); background: rgba(112, 27, 39, .46); transform: translateY(-1px); }
+.answer-btn.selected { border-color: var(--gold); background: rgba(112, 27, 39, .46); transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) { .answer-btn:hover { border-color: var(--gold); background: rgba(112, 27, 39, .46); transform: translateY(-1px); } }
 .answer-letter { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(215, 173, 103, .6); border-radius: 50%; color: var(--gold); font-family: Georgia, serif; font-size: 18px; font-weight: 700; }
 .answer-copy { font-size: 17px; line-height: 1.45; }
 .quiz-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; }

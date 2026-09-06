@@ -209,6 +209,8 @@
 
     function renderQuestion() {
       const question = QUESTIONS[state.index];
+      const activeElement = document.activeElement;
+      if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
       const current = state.index + 1;
       $("progress-text").textContent = `第 ${current} / ${QUESTIONS.length} 题`;
       $("progress-bar").style.width = `${current / QUESTIONS.length * 100}%`;
@@ -224,7 +226,7 @@
         button.type = "button";
         const letter = document.createElement("span"); letter.className = "answer-letter"; letter.textContent = String.fromCharCode(65 + index);
         const copy = document.createElement("span"); copy.className = "answer-copy"; copy.textContent = option.text;
-        button.append(letter, copy); button.addEventListener("click", () => { state.answers[state.index] = index; button.classList.add("selected"); window.setTimeout(() => { if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else beginAnalysis(); }, 120); }); list.append(button);
+        button.append(letter, copy); button.addEventListener("click", () => { state.answers[state.index] = index; button.classList.add("selected"); button.blur(); window.setTimeout(() => { if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else beginAnalysis(); }, 120); }); list.append(button);
       });
     }
 

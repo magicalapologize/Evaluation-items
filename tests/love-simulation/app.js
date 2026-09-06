@@ -71,6 +71,8 @@ function selectRole(roleKey) {
 }
 
 function renderQuestion() {
+  const activeElement = document.activeElement;
+  if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
   const role = ROLES[state.roleKey];
   const questionIndex = state.mode === "survival" ? SURVIVAL_CONFIG[state.roleKey][state.index] : state.index;
   const current = role.questions[questionIndex];
@@ -99,6 +101,7 @@ function renderQuestion() {
     state.answerLocked = true;
     state.answers[state.index] = Number(button.dataset.answer);
     button.classList.add("selected");
+    button.blur();
     document.querySelectorAll("[data-answer]").forEach((item) => { item.disabled = true; });
     if (survival) settleSurvivalQuestion(questionIndex, Number(button.dataset.answer), current);
     else setTimeout(() => {

@@ -113,6 +113,8 @@
 
   function renderQuestion() {
     const question = QUESTIONS[state.index];
+    const activeElement = document.activeElement;
+    if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
     $("question-group").textContent = question.group;
     $("question-number").textContent = state.index + 1;
     $("progress-bar").style.width = `${((state.index + 1) / QUESTIONS.length) * 100}%`;
@@ -136,6 +138,7 @@
     state.answers[state.index] = answerIndex;
     $("answer-list").querySelectorAll(".answer-btn").forEach((item) => item.classList.remove("selected"));
     button.classList.add("selected");
+    button.blur();
     window.setTimeout(() => {
       if (state.index < QUESTIONS.length - 1) {
         state.index += 1;

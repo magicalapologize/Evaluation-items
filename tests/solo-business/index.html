@@ -537,11 +537,18 @@
       transition: border-color .18s ease, background .18s ease, transform .18s ease;
     }
 
-    .answer-btn:hover,
     .answer-btn.selected {
       border-color: #b69663;
       background: #fffdf8;
       transform: translateY(-1px);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .answer-btn:hover {
+        border-color: #b69663;
+        background: #fffdf8;
+        transform: translateY(-1px);
+      }
     }
 
     .answer-letter {
@@ -2459,6 +2466,8 @@
     }
 
     function renderQuestion() {
+      const activeElement = document.activeElement;
+      if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
       const question = QUESTIONS[state.index];
       const total = QUESTIONS.length;
       const current = state.index + 1;
@@ -2481,6 +2490,7 @@
         btn.addEventListener("click", () => {
           state.answers[state.index] = btn.dataset.type;
           btn.classList.add("selected");
+          btn.blur();
           setTimeout(() => {
             if (state.index < QUESTIONS.length - 1) {
               state.index += 1;

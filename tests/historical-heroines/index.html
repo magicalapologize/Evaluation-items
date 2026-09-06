@@ -84,7 +84,8 @@
     .question { margin: 25px 0 30px; font-size: clamp(27px, 4.5vw, 39px); line-height: 1.42; }
     .answer-list { display: grid; gap: 13px; }
     .answer-btn { width: 100%; min-height: 72px; display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 16px; color: var(--ink); background: rgba(255,255,255,.62); text-align: left; transition: .16s ease; }
-    .answer-btn:hover, .answer-btn.selected { transform: translateY(-1px); border-color: var(--gold); background: #fffdf5; box-shadow: 0 10px 25px rgba(36,27,53,.08); }
+    .answer-btn.selected { transform: translateY(-1px); border-color: var(--gold); background: #fffdf5; box-shadow: 0 10px 25px rgba(36,27,53,.08); }
+    @media (hover: hover) and (pointer: fine) { .answer-btn:hover { transform: translateY(-1px); border-color: var(--gold); background: #fffdf5; box-shadow: 0 10px 25px rgba(36,27,53,.08); } }
     .letter { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--plum); background: #eee5f1; font-weight: 800; }
     .answer-text { font-size: 17px; line-height: 1.55; }
     .quiz-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
@@ -352,10 +353,12 @@
     const $ = (id) => document.getElementById(id);
     function showScreen(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active")); $(id).classList.add("active"); window.scrollTo({ top: 0, behavior: "smooth" }); }
     function renderQuestion() {
+      const activeElement = document.activeElement;
+      if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
       const [stage, scene, text, answers] = QUESTIONS[state.index]; const current = state.index + 1;
       $("stage-name").textContent = stage; $("progress-text").textContent = `${current} / ${QUESTIONS.length}`; $("progress-bar").style.width = `${current / QUESTIONS.length * 100}%`; $("scene-name").textContent = scene; $("question-count").textContent = `QUESTION ${String(current).padStart(2, "0")}`; $("question-text").textContent = text;
       $("answer-list").innerHTML = answers.map((answer, index) => `<button class="answer-btn${state.answers[state.index] === index ? " selected" : ""}" type="button" data-answer="${index}"><span class="letter">${String.fromCharCode(65 + index)}</span><span class="answer-text">${answer}</span></button>`).join(""); $("prev-btn").disabled = state.index === 0;
-      document.querySelectorAll("[data-answer]").forEach((button) => button.addEventListener("click", () => { state.answers[state.index] = Number(button.dataset.answer); button.classList.add("selected"); setTimeout(() => { if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else { renderResult(); showScreen("result-screen"); } }, 120); }));
+      document.querySelectorAll("[data-answer]").forEach((button) => button.addEventListener("click", () => { state.answers[state.index] = Number(button.dataset.answer); button.classList.add("selected"); button.blur(); setTimeout(() => { if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else { renderResult(); showScreen("result-screen"); } }, 120); }));
     }
     function calculateScores() {
       const rawScores = Object.fromEntries(SCORE_KEYS.map((key) => [key, 0]));
