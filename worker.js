@@ -9,7 +9,8 @@ const PRODUCT_IDS = new Set([
   "talent-career",
   "love-simulation",
   "seven-sins",
-  "socialization-degree"
+  "socialization-degree",
+  "talent-discovery"
 ]);
 
 const PLAN_LABELS = {
@@ -176,16 +177,20 @@ async function verifyCode(request, env) {
   }
 
   try {
+    const acceptedProducts = productId === "talent-discovery"
+      ? ["talent-discovery", "talent-career"]
+      : [productId];
+    const placeholders = acceptedProducts.map(() => "?").join(", ");
     const record = await env.DB
       .prepare(`
         SELECT 1
         FROM daily_codes
-        WHERE product_id = ?
+        WHERE product_id IN (${placeholders})
           AND UPPER(code) = ?
           AND enabled = 1
         LIMIT 1
       `)
-      .bind(productId, code)
+      .bind(...acceptedProducts, code)
       .first();
 
     if (!record) {
