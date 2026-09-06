@@ -8,6 +8,14 @@
   <link rel="icon" href="../../images/yundu-logo.webp" type="image/webp"><link rel="stylesheet" href="../../assets/css/test-member.css?v=20260808"><link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!--
+THESIS: Treat talent discovery as a quiet instrument panel for noticing patterns, not a brightly packaged quiz.
+OWN-WORLD: Ink navy, mineral blue, pale mist, and one electric chartreuse accent; thin rules, tight labels, and calm surfaces.
+STORY: The visitor sees a credible map of their tendencies, answers one concrete question at a time, then reads a report they can act on.
+FIRST VIEWPORT: A split editorial cover: title and proof on the left, illustrated map panel and access form on the right; the primary action stays in the first screen.
+FORM: Editorial instrument panel, replacement visual world for the inherited green quiz template.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
   <main class="app-shell" data-verify-endpoint="/api/verify-code">
     <section id="home-screen" class="screen home-screen active" aria-labelledby="home-title"><div class="shell">
       <header class="topbar"><a class="brand" href="../../"><span class="brand-mark">✦</span><span>天赋挖掘测试</span></a><span>MULTIPLE TALENT MAP</span></header>
@@ -29,7 +37,7 @@
       <section class="report-section"><h2>09｜获取进阶成长方案</h2><div id="growth-plan" class="growth-plan"></div><blockquote id="result-reminder"></blockquote></section>
       <div class="report-actions"><button id="save-poster-btn" class="action-btn primary" type="button">保存报告海报</button><button id="copy-result-btn" class="action-btn" type="button">复制结果摘要</button><button id="restart-btn" class="action-btn" type="button">重新测试</button><button id="cashback-btn" class="action-btn" type="button">好评返现</button></div><p><a data-history-link href="/history/">查看我的测试记录</a></p><p class="disclaimer">本测试用于职业探索和自我观察，不构成心理诊断、能力等级、职业资格判断或职业决策保证。</p>
     </div></div></section>
-    <div id="poster-modal" class="modal" role="dialog" aria-modal="true"><div class="modal-panel"><button class="modal-close" data-close-modal="poster-modal" type="button">×</button><h2>长按保存你的报告</h2><div class="poster-preview"><img id="poster-image" alt="天赋挖掘报告海报"></div></div></div>
+<div id="poster-modal" class="modal" role="dialog" aria-modal="true"><div class="modal-panel"><button class="modal-close" data-close-modal="poster-modal" type="button">×</button><h2>长按保存你的报告</h2><div class="poster-preview"><img id="poster-image" src="report-bg.png" alt="天赋挖掘报告海报"></div></div></div>
     <div id="cashback-modal" class="modal" role="dialog" aria-modal="true"><div class="modal-panel"><button class="modal-close" data-close-modal="cashback-modal" type="button">×</button><h2>好评返现</h2><p>五星好评，带 3 张截图，15 字以上即可返 1 元。截图发给店铺客服，活动可能随时结束。</p><img src="../../assets/images/wechat-qr.webp" alt="联系客服二维码"><img src="../../assets/product-qrs/talent-discovery.png" alt="天赋挖掘测试二维码"></div></div>
   </main>
   <script src="../../assets/js/member-auth.js?v=20260721"></script><script src="../../assets/js/test-history.js?v=20260808"></script><script src="../../assets/js/history-replay.js?v=20260807"></script><script type="module" src="app.js"></script>

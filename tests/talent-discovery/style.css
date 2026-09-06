@@ -3,7 +3,7 @@
   --paper:#F5F8F6; --white:#fff; --muted:#60746f; --line:#DDE7E4; --ink:#19323a;
 }
 * { box-sizing:border-box; }
-body { margin:0; background:var(--paper); color:var(--ink); font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif; letter-spacing:0; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:"Avenir Next","Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif; letter-spacing:0; }
 .screen { display:none; min-height:100vh; } .screen.active { display:block; }
 .shell { max-width:1180px; margin:auto; padding:24px; }
 .home-screen { background:var(--navy); color:#fff; }
