@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+const root = new URL("./", import.meta.url);
+const html = readFileSync(new URL("index.html", root), "utf8");
+const css = readFileSync(new URL("style.css", root), "utf8");
+test("talent discovery page keeps its public UI contract", () => {
+  assert.match(html, /talent-discovery/);
+  for (const label of ["语言表达天赋", "逻辑推演天赋", "空间想象天赋", "身体实践天赋", "音乐节奏天赋", "人际感知天赋", "内在觉察天赋", "自然观察天赋"]) assert.match(readFileSync(new URL("data.mjs", root), "utf8"), new RegExp(label));
+  for (const heading of ["01｜你的最佳天赋评估", "02｜8 项天赋综合解读", "03｜4 项活跃天赋深入分析", "04｜解锁隐藏天赋潜能", "05｜规避潜在发展瓶颈", "06｜锁定优势职业赛道", "07｜掌握天赋拓展策略", "08｜定位个人竞争力", "09｜获取进阶成长方案"]) assert.match(html, new RegExp(heading));
+  assert.match(html, /多元智能理论/); assert.match(html, /\/api\/verify-code/); assert.match(html, /product-qrs\/talent-discovery\.png/); assert.match(html, /HistoryReplay|history-replay/);
+});
+test("visual contract includes palette, mobile layout and isolated selected state", () => {
+  for (const color of ["#142A43", "#2CB7A5", "#FF8A65", "#F5C451", "#F5F8F6", "#FFFFFF", "#DDE7E4"]) assert.match(css, new RegExp(color, "i"));
+  assert.match(css, /@media[^}]*max-width/); assert.match(css, /\.answer-btn\{[^}]*min-height:68px/); assert.doesNotMatch(css, /\.answer-btn:hover,\s*\.answer-btn\.selected/);
+});

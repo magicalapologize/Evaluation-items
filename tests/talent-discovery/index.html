@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="40道生活情境题，发现你的八项天赋倾向与成长方向。"><meta name="theme-color" content="#142A43">
+  <meta property="og:title" content="天赋挖掘测试｜找到你的天赋领域"><meta property="og:image" content="../../images/cards/talent-discovery.webp">
+  <title>天赋挖掘测试｜找到你的天赋领域</title>
+  <link rel="icon" href="../../images/yundu-logo.webp" type="image/webp"><link rel="stylesheet" href="../../assets/css/test-member.css?v=20260808"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell" data-verify-endpoint="/api/verify-code">
+    <section id="home-screen" class="screen active" aria-labelledby="home-title"><div class="shell">
+      <header class="topbar"><a class="brand" href="../../"><span class="brand-mark">✦</span><span>天赋挖掘测试</span></a><span>MULTIPLE TALENT MAP</span></header>
+      <div class="home-grid"><div class="hero-copy"><p class="eyebrow">MULTIPLE TALENT MAP</p><h1 id="home-title">找到你的<br><em>天赋领域</em></h1><p class="lead">用 40 道生活情境题，观察你在学习、创作、解决问题和关系中的自然偏好。</p><div class="feature-strip"><div><strong>40</strong><span>道情境题</span></div><div><strong>8</strong><span>项天赋维度</span></div><div><strong>9</strong><span>个报告模块</span></div></div></div>
+        <div class="gate-card"><img src="../../images/cards/talent-discovery.webp" alt="多元天赋探索视觉" class="cover-art"><div class="gate-content"><p class="gate-kicker">ACCESS REPORT</p><h2>输入测试码，开始读取你的天赋线索</h2><div class="gate-row"><label class="sr-only" for="access-code">测试码</label><input id="access-code" class="access-input" type="text" autocomplete="off" placeholder="例如：TD-AB12-CD34"><button id="start-btn" class="primary-btn" type="button">验证并开始</button></div><p id="gate-error" class="gate-error" role="alert"></p><p id="member-unlock" class="member-unlock"></p><p class="gate-note">测试码以商品发货信息为准。结果用于自我观察与发展启发。</p></div></div>
+      </div><p class="theory-note">本测试参考加德纳提出的多元智能理论。为了方便理解，页面把八个理论维度称为“天赋维度”。结果反映的是本次答卷中的相对倾向，不是标准化智力诊断，也不代表固定能力等级。</p>
+    </div></section>
+    <section id="quiz-screen" class="screen" aria-labelledby="question-text"><div class="quiz-card"><header class="quiz-head"><a class="brand" href="../../"><span class="brand-mark">✦</span><span>天赋挖掘测试</span></a><div class="progress-meta"><span id="question-group">学习与理解</span><strong><span id="question-number">1</span> / 40</strong></div><div class="progress-track"><span id="progress-bar"></span></div></header><div class="question-block"><p class="question-hint">按第一反应选择，没有好坏答案</p><h2 id="question-text"></h2><div id="answer-list" class="answer-list"></div><div class="quiz-foot"><button id="prev-btn" class="text-btn" type="button">上一题</button><span>选择后自动进入下一题</span></div></div></div></section>
+    <section id="loading-screen" class="screen"><div class="loading-panel"><p>CALIBRATING YOUR SIGNALS</p><h2>正在整理你的答题线索</h2><div class="loading-bar"><span></span></div></div></section>
+    <section id="result-screen" class="screen"><div class="report-shell"><header class="report-hero"><div class="report-nav"><span>天赋挖掘测试</span><span id="report-date"></span></div><p class="eyebrow">YOUR TALENT REPORT</p><h1>你的最佳天赋：<strong id="result-name"></strong></h1><p>辅助天赋：<span id="result-support"></span></p><div id="result-tags" class="result-tags"></div><p id="result-summary" class="result-summary"></p></header><div class="report-content">
+      <section class="report-section"><h2>01｜你的最佳天赋评估</h2><p id="best-talent-reading"></p><div id="best-scenes" class="scene-list"></div></section>
+      <section class="report-section"><h2>02｜8 项天赋综合解读</h2><div class="radar-wrap"><svg id="radar-svg" viewBox="0 0 360 360" role="img" aria-label="八项天赋雷达图"></svg></div><div id="dimension-list" class="dimension-list"></div></section>
+      <section class="report-section"><h2>03｜4 项活跃天赋深入分析</h2><div id="active-talent-list" class="active-talent-list"></div></section>
+      <section class="report-section"><h2>04｜解锁隐藏天赋潜能</h2><div id="hidden-potential"></div></section>
+      <section class="report-section"><h2>05｜规避潜在发展瓶颈</h2><p id="bottleneck"></p></section>
+      <section class="report-section"><h2>06｜锁定优势职业赛道</h2><p class="muted">赛道用于探索和验证，不是固定职业结论。</p><div id="career-track-list" class="career-track-list"></div></section>
+      <section class="report-section"><h2>07｜掌握天赋拓展策略</h2><div id="strategy-list" class="strategy-list"></div></section>
+      <section class="report-section"><h2>08｜定位个人竞争力</h2><p id="competitive-edge"></p></section>
+      <section class="report-section"><h2>09｜获取进阶成长方案</h2><div id="growth-plan" class="growth-plan"></div><blockquote id="result-reminder"></blockquote></section>
+      <div class="report-actions"><button id="save-poster-btn" class="action-btn primary" type="button">保存报告海报</button><button id="copy-result-btn" class="action-btn" type="button">复制结果摘要</button><button id="restart-btn" class="action-btn" type="button">重新测试</button><button id="cashback-btn" class="action-btn" type="button">好评返现</button></div><p><a data-history-link href="/history/">查看我的测试记录</a></p><p class="disclaimer">本测试用于职业探索和自我观察，不构成心理诊断、能力等级、职业资格判断或职业决策保证。</p>
+    </div></div></section>
+    <div id="poster-modal" class="modal" role="dialog" aria-modal="true"><div class="modal-panel"><button class="modal-close" data-close-modal="poster-modal" type="button">×</button><h2>长按保存你的报告</h2><div class="poster-preview"><img id="poster-image" alt="天赋挖掘报告海报"></div></div></div>
+    <div id="cashback-modal" class="modal" role="dialog" aria-modal="true"><div class="modal-panel"><button class="modal-close" data-close-modal="cashback-modal" type="button">×</button><h2>好评返现</h2><p>五星好评，带 3 张截图，15 字以上即可返 1 元。截图发给店铺客服，活动可能随时结束。</p><img src="../../assets/images/wechat-qr.webp" alt="联系客服二维码"><img src="../../assets/product-qrs/talent-discovery.png" alt="天赋挖掘测试二维码"></div></div>
+  </main>
+  <script src="../../assets/js/member-auth.js?v=20260721"></script><script src="../../assets/js/test-history.js?v=20260808"></script><script src="../../assets/js/history-replay.js?v=20260807"></script><script type="module" src="app.js"></script>
+</body></html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-label="多元天赋探索图形">
+  <rect width="1200" height="1200" fill="#142A43"/>
+  <circle cx="600" cy="600" r="330" fill="#2CB7A5" opacity=".18"/>
+  <circle cx="600" cy="600" r="220" fill="none" stroke="#F5C451" stroke-width="18" opacity=".8"/>
+  <g fill="none" stroke="#2CB7A5" stroke-width="18" stroke-linecap="round">
+    <path d="M600 180v840M180 600h840M303 303l594 594M897 303L303 897" opacity=".65"/>
+  </g>
+  <g fill="#FF8A65">
+    <circle cx="600" cy="180" r="28"/><circle cx="1020" cy="600" r="28"/><circle cx="600" cy="1020" r="28"/><circle cx="180" cy="600" r="28"/>
+  </g>
+  <path d="M600 390l65 140 155 18-116 102 34 151-138-78-138 78 34-151-116-102 155-18z" fill="#F5C451"/>
+</svg>
