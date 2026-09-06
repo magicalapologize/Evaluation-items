@@ -59,9 +59,9 @@ function finish() {
   $("loading-progress-bar").style.transform = "scaleX(0)";
   $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "0");
   show("loading-screen");
-  window.setTimeout(() => { $("loading-state").textContent = "正在校准维度"; $("loading-detail").textContent = "比较八项天赋在本次答卷中的相对强弱"; $("loading-count").textContent = "05 / 08"; $("loading-progress-bar").style.transform = "scaleX(.62)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "62"); }, 430);
-  window.setTimeout(() => { $("loading-state").textContent = "报告已就绪"; $("loading-detail").textContent = "正在打开你的天赋地图"; $("loading-count").textContent = "08 / 08"; $("loading-progress-bar").style.transform = "scaleX(1)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "100"); }, 820);
-  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); show("result-screen"); }, 1120);
+  window.setTimeout(() => { $("loading-state").textContent = "正在校准维度"; $("loading-detail").textContent = "比较八项天赋在本次答卷中的相对强弱"; $("loading-count").textContent = "05 / 08"; $("loading-progress-bar").style.transform = "scaleX(.62)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "62"); }, 1000);
+  window.setTimeout(() => { $("loading-state").textContent = "报告已就绪"; $("loading-detail").textContent = "正在打开你的天赋地图"; $("loading-count").textContent = "08 / 08"; $("loading-progress-bar").style.transform = "scaleX(1)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "100"); }, 2200);
+  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); show("result-screen"); }, 3000);
 }
 
 $("start-btn").addEventListener("click", async () => { const code = $("access-code").value.trim(); $("gate-error").textContent = ""; if (!code) { $("gate-error").textContent = "请输入测试码"; return; } const button = $("start-btn"); button.disabled = true; try { const member = globalThis.YunduMember?.getMember ? await globalThis.YunduMember.getMember().catch(() => null) : null; if (!member?.active) await verify(code); start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; } });
