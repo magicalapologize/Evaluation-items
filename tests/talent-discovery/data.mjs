@@ -1,12 +1,12 @@
 export const DIMENSIONS = [
-  { key: "language", name: "语言表达天赋", short: "语言", theory: "语言", description: "把想法、感受和经验说清楚、写出来、讲成故事" },
-  { key: "logic", name: "逻辑推演天赋", short: "逻辑", theory: "逻辑数学", description: "发现规律、拆解问题、验证判断并建立清晰结构" },
-  { key: "spatial", name: "空间想象天赋", short: "空间", theory: "空间", description: "感知画面、方向、布局和事物之间的空间关系" },
-  { key: "body", name: "身体实践天赋", short: "实践", theory: "身体运动", description: "通过动作、操作和现场实践把问题处理掉" },
-  { key: "music", name: "音乐节奏天赋", short: "节奏", theory: "音乐", description: "感知声音、节拍、旋律和情绪变化" },
-  { key: "interpersonal", name: "人际感知天赋", short: "人际", theory: "人际", description: "读懂他人、建立关系、协调互动和形成共识" },
-  { key: "introspection", name: "内在觉察天赋", short: "内在", theory: "内省", description: "理解自己的情绪、动机、边界和价值取向" },
-  { key: "nature", name: "自然观察天赋", short: "自然", theory: "自然观察", description: "观察环境、辨认差异、分类事物并感知变化" }
+  { key: "language", name: "语言表达天赋", short: "语言", theory: "语言", color: "#1769AA", description: "把想法、感受和经验说清楚、写出来、讲成故事" },
+  { key: "logic", name: "逻辑推演天赋", short: "逻辑", theory: "逻辑数学", color: "#5B3FA3", description: "发现规律、拆解问题、验证判断并建立清晰结构" },
+  { key: "spatial", name: "空间想象天赋", short: "空间", theory: "空间", color: "#8A4B08", description: "感知画面、方向、布局和事物之间的空间关系" },
+  { key: "body", name: "身体实践天赋", short: "实践", theory: "身体运动", color: "#B23A48", description: "通过动作、操作和现场实践把问题处理掉" },
+  { key: "music", name: "音乐节奏天赋", short: "节奏", theory: "音乐", color: "#0F766E", description: "感知声音、节拍、旋律和情绪变化" },
+  { key: "interpersonal", name: "人际感知天赋", short: "人际", theory: "人际", color: "#8F3A70", description: "读懂他人、建立关系、协调互动和形成共识" },
+  { key: "introspection", name: "内在觉察天赋", short: "内在", theory: "内省", color: "#345A8A", description: "理解自己的情绪、动机、边界和价值取向" },
+  { key: "nature", name: "自然观察天赋", short: "自然", theory: "自然观察", color: "#3F6F3A", description: "观察环境、辨认差异、分类事物并感知变化" }
 ];
 
 export const SCENES = [

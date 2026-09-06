@@ -56,6 +56,21 @@ test("用户可见维度不使用智能或某某者命名", () => {
   assert.ok(visible.every((text) => !/者$/.test(text)));
 });
 
+test("八项天赋使用独立且清晰的识别色", () => {
+  const colors = DIMENSIONS.map((dimension) => dimension.color);
+  assert.equal(new Set(colors).size, DIMENSIONS.length);
+  for (const color of colors) assert.match(color, /^#[0-9A-F]{6}$/i);
+  const luminance = (hex) => {
+    const channels = hex.slice(1).match(/../g).map((part) => Number.parseInt(part, 16) / 255).map((value) => value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  };
+  const paper = luminance("#F5F8F6");
+  for (const color of colors) {
+    const value = luminance(color);
+    assert.ok((Math.max(value, paper) + 0.05) / (Math.min(value, paper) + 0.05) >= 4.5, `${color} 对比度不足`);
+  }
+});
+
 test("题目和选项文本没有重复或过长模板", () => {
   const questions = QUESTIONS.map((question) => question.text);
   const options = QUESTIONS.flatMap((question) => question.options.map((option) => option.text));
