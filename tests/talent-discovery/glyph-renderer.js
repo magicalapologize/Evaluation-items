@@ -36,7 +36,7 @@ export function linearToSrgb(channel) {
 }
 
 export function relativeLuminance(r, g, b) {
-  return 0.2126 * srgbToLinear(r) + 0.0722 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
+  return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
 }
 
 export function brightnessToGlyph(value, glyphs = GLYPHS) {
@@ -57,7 +57,7 @@ export function mixLinearColor(foreground, background, amount) {
   const fg = parseHexColor(foreground).map(srgbToLinear);
   const bg = parseHexColor(background).map(srgbToLinear);
   const channels = fg.map((value, index) => Math.round(clamp(linearToSrgb(value * ratio + bg[index] * (1 - ratio))) * 255));
-  return `rgba(${channels.join(", ")}, ${ratio})`;
+  return `rgba(${channels.join(", ")}, 1)`;
 }
 
 function seededOrder(length, seed) {
@@ -152,7 +152,7 @@ export function createGlyphRenderer(canvas, options = {}) {
       return false;
     }
     const palette = Array.isArray(config.palette) && config.palette.length ? config.palette : ["#2CB7A5"];
-    context.font = `${Math.min(options.fontSize || 12, height / rows)}px monospace`;
+    context.font = `700 ${Math.min(options.fontSize || 12, height / rows)}px monospace`;
     context.textBaseline = "top";
     const order = seededOrder(columns * rows, config.seed);
     for (const position of order) {

@@ -12,7 +12,7 @@ test("sRGB and linear conversion stays in range", () => {
 
 test("relative luminance uses linear channels", () => {
   assert.equal(relativeLuminance(0, 0, 0), 0);
-  assert.equal(relativeLuminance(1, 1, 1), 0.357);
+  assert.equal(relativeLuminance(1, 1, 1), 1);
   assert.ok(relativeLuminance(1, 1, 1) > relativeLuminance(0.2, 0.2, 0.2));
 });
 
@@ -21,12 +21,12 @@ test("brightness mapping is monotonic", () => {
 });
 
 test("relative luminance applies the specified decoded channel weights", () => {
-  const expected = 0.2126 * srgbToLinear(0.25) + 0.0722 * srgbToLinear(0.5) + 0.0722 * srgbToLinear(0.75);
+  const expected = 0.2126 * srgbToLinear(0.25) + 0.7152 * srgbToLinear(0.5) + 0.0722 * srgbToLinear(0.75);
   assert.equal(relativeLuminance(0.25, 0.5, 0.75), expected);
 });
 
-test("color mixing returns bounded rgba components", () => {
-  assert.match(mixLinearColor("#2CB7A5", "#142A43", 0.5), /^rgba\(\d+, \d+, \d+, 0\.5\)$/);
+test("linear color mixing stays opaque after blending with its background", () => {
+  assert.match(mixLinearColor("#2CB7A5", "#142A43", 0.5), /^rgba\(\d+, \d+, \d+, 1\)$/);
 });
 
 test("glyph grid stays within the responsive density bands", () => {
