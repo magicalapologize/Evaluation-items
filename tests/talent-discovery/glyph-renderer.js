@@ -188,4 +188,63 @@ export function createGlyphRenderer(canvas, options = {}) {
   return { fallback: false, load, renderStatic, play, pause, destroy };
 }
 
+function particleColor(color) {
+  const [r, g, b] = parseHexColor(color).map((channel) => Math.round(channel * 255));
+  return `rgba(${r}, ${g}, ${b}, 0.72)`;
+}
+
+export function createParticleRenderer(canvas, options = {}) {
+  if (!canvas || typeof canvas.getContext !== "function" || typeof document === "undefined") {
+    return { fallback: true, renderStatic: () => false, play: () => false, pause: () => undefined, destroy: () => undefined };
+  }
+  const context = canvas.getContext("2d");
+  if (!context) return { fallback: true, renderStatic: () => false, play: () => false, pause: () => undefined, destroy: () => undefined };
+  const count = Math.max(12, Math.min(180, Number(options.count) || 96));
+  const palette = Array.isArray(options.palette) && options.palette.length ? options.palette : ["#2CB7A5"];
+  const background = options.background || "#142A43";
+  let frame = null;
+  let destroyed = false;
+  let lastTime = 0;
+  let particles = [];
+  let width = 1;
+  let height = 1;
+  let seed = (Number(options.seed) >>> 0) || 1;
+  const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (callback) => setTimeout(() => callback(Date.now()), 16);
+  const cancel = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : clearTimeout;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let index = 0; index < count; index += 1) particles.push({ x: random(), y: random(), radius: 0.5 + random() * 2.3, drift: 0.12 + random() * 0.42, phase: random() * Math.PI * 2, color: palette[index % palette.length] });
+  const resize = () => {
+    width = Math.max(1, canvas.clientWidth || canvas.width || 1);
+    height = Math.max(1, canvas.clientHeight || canvas.height || 1);
+    const dpr = Math.min(2, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
+    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr); context.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  const resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(resize) : null;
+  const visibilityHandler = () => { if (document.hidden) pause(); };
+  if (resizeObserver?.observe) resizeObserver.observe(canvas);
+  document.addEventListener?.("visibilitychange", visibilityHandler);
+  function renderStatic(time = 0) {
+    if (destroyed) return false;
+    resize(); context.clearRect(0, 0, width, height); context.fillStyle = background; context.fillRect(0, 0, width, height);
+    for (const particle of particles) {
+      const wave = Math.sin(time * 0.00035 * particle.drift + particle.phase);
+      const x = ((particle.x + wave * 0.018) % 1 + 1) % 1 * width;
+      const y = ((particle.y + Math.cos(time * 0.00028 * particle.drift + particle.phase) * 0.014) % 1 + 1) % 1 * height;
+      const alpha = 0.25 + (wave + 1) * 0.18;
+      context.globalAlpha = alpha; context.fillStyle = particleColor(particle.color); context.beginPath(); context.arc(x, y, particle.radius, 0, Math.PI * 2); context.fill();
+    }
+    context.globalAlpha = 1; return true;
+  }
+  function pause() { if (frame !== null) { cancel(frame); frame = null; } }
+  function play() {
+    pause(); if (destroyed) return false;
+    const reduced = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    renderStatic(Date.now()); if (reduced) return true;
+    const tick = (time) => { if (destroyed) return; renderStatic(time); lastTime = time; frame = raf(tick); };
+    frame = raf(tick); return true;
+  }
+  function destroy() { pause(); destroyed = true; resizeObserver?.disconnect?.(); document.removeEventListener?.("visibilitychange", visibilityHandler); }
+  return { fallback: false, renderStatic, play, pause, destroy };
+}
+
 export { GLYPHS };

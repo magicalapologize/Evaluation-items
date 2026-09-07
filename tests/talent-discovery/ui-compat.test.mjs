@@ -17,11 +17,13 @@ test("visual contract includes palette, mobile layout and isolated selected stat
   assert.match(css, /@media[^}]*max-width/); assert.match(css, /\.answer-btn\{[^}]*min-height:68px/); assert.doesNotMatch(css, /\.answer-btn:hover,\s*\.answer-btn\.selected/);
 });
 
-test("glyph mounts and quiz signal band keep a stable visual contract", () => {
-  for (const id of ["home-glyph-canvas", "loading-glyph-canvas", "result-glyph-canvas"]) {
+test("particle background mounts and quiz signal band keep a stable visual contract", () => {
+  for (const id of ["home-particle-canvas", "loading-glyph-canvas", "result-particle-canvas"]) {
     assert.match(html, new RegExp(`<canvas[^>]+id=["']${id}["'][^>]*aria-hidden=["']true["']`));
   }
-  assert.equal((html.match(/data-glyph-fallback/g) || []).length, 3);
+  assert.equal((html.match(/data-glyph-fallback/g) || []).length, 1);
+  assert.match(html, /home-particle-canvas[\s\S]*home-hero\.png/);
+  assert.match(html, /result-particle-canvas[\s\S]*language\.png/);
   assert.equal((html.match(/class=["'][^"']*quiz-signal-block[^"']*["']/g) || []).length, 8);
   assert.match(css, /@keyframes\s+quiz-signal-drift/);
   assert.match(css, /quiz-signal-block[^}]*transform/);
@@ -31,10 +33,10 @@ test("glyph mounts and quiz signal band keep a stable visual contract", () => {
   assert.match(css, /quiz-signal-block[^}]*min-height\s*:\s*\d+px/);
 });
 
-test("home and result glyph integration keeps explicit assets and renderer lifecycle", () => {
-  assert.match(app, /import\s*\{\s*createGlyphRenderer\s*\}\s*from\s*["']\.\/glyph-renderer\.js["']/);
-  assert.match(app, /home-glyph-canvas/);
-  assert.match(app, /result-glyph-canvas/);
+test("home and result particle integration keeps explicit assets and renderer lifecycle", () => {
+  assert.match(app, /import\s*\{[\s\S]*createParticleRenderer[\s\S]*\}\s*from\s*["']\.\/glyph-renderer\.js["']/);
+  assert.match(app, /home-particle-canvas/);
+  assert.match(app, /result-particle-canvas/);
   for (const [key, file] of Object.entries({
     language: "language.png",
     logic: "logic.png",
@@ -47,9 +49,11 @@ test("home and result glyph integration keeps explicit assets and renderer lifec
   })) {
     assert.match(app, new RegExp(`${key}\\s*:\\s*["']${file.replace(".", "\\.")}["']`));
   }
-  assert.match(app, /resultGlyphRenderer\?\.destroy\(\)/);
-  assert.match(css, /\.report-hero\s*\{[^}]*display\s*:\s*grid/);
+  assert.match(app, /resultParticleRenderer\?\.destroy\(\)/);
+  assert.match(css, /\.report-hero\s*\{[^}]*position\s*:\s*relative/);
+  assert.match(css, /\.particle-background\s*\{[^}]*position\s*:\s*absolute/);
   assert.match(css, /\.result-glyph-surface\s*\{[^}]*width\s*:\s*min\(360px,100%\)[^}]*height\s*:\s*420px/);
+  assert.doesNotMatch(html, /result-glyph-surface[^>]*>[\s\S]*result-glyph-canvas/);
 });
 
 test("loading glyph assembly preserves the three-second finish contract", () => {

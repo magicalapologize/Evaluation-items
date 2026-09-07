@@ -1,6 +1,59 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { brightnessToGlyph, calculateGlyphGrid, linearToSrgb, mixLinearColor, relativeLuminance, srgbToLinear, createGlyphRenderer } from "./glyph-renderer.js";
+import { brightnessToGlyph, calculateGlyphGrid, linearToSrgb, mixLinearColor, relativeLuminance, srgbToLinear, createGlyphRenderer, createParticleRenderer } from "./glyph-renderer.js";
+
+test("particle renderer animates a background without sampling an image", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const originalRaf = globalThis.requestAnimationFrame;
+  const originalCancel = globalThis.cancelAnimationFrame;
+  let fillCalls = 0;
+  let rafCalls = 0;
+  const context = {
+    setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, arc() {}, fill() {},
+    get fillStyle() { return ""; }, set fillStyle(_) { fillCalls += 1; },
+  };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 390, matchMedia: () => ({ matches: false }) };
+  globalThis.requestAnimationFrame = (callback) => { rafCalls += 1; return 1; };
+  globalThis.cancelAnimationFrame = () => {};
+  try {
+    const canvas = { clientWidth: 320, clientHeight: 180, getContext: () => context };
+    const renderer = createParticleRenderer(canvas, { count: 8, seed: 7 });
+    assert.equal(renderer.fallback, false);
+    assert.equal(renderer.renderStatic(), true);
+    assert.ok(fillCalls > 8);
+    assert.equal(renderer.play(), true);
+    assert.equal(rafCalls, 1);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+    globalThis.requestAnimationFrame = originalRaf;
+    globalThis.cancelAnimationFrame = originalCancel;
+  }
+});
+
+test("particle renderer respects reduced motion without scheduling frames", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const originalRaf = globalThis.requestAnimationFrame;
+  let scheduled = 0;
+  const context = { setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, arc() {}, fill() {} };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, matchMedia: () => ({ matches: true }) };
+  globalThis.requestAnimationFrame = () => { scheduled += 1; return 1; };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 320, clientHeight: 180, getContext: () => context });
+    assert.equal(renderer.play(), true);
+    assert.equal(scheduled, 0);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+    globalThis.requestAnimationFrame = originalRaf;
+  }
+});
 
 test("sRGB and linear conversion stays in range", () => {
   for (const value of [0, 0.1, 0.5, 1]) {

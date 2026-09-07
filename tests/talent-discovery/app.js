@@ -1,6 +1,6 @@
 import { DIMENSIONS, SCENES, QUESTIONS, RESULTS } from "./data.mjs";
 import { calculateProfile } from "./model.mjs";
-import { createGlyphRenderer } from "./glyph-renderer.js";
+import { createGlyphRenderer, createParticleRenderer } from "./glyph-renderer.js";
 
 const PRODUCT_ID = "talent-discovery";
 const PRODUCT_TITLE = "天赋挖掘测试｜找到你的天赋领域";
@@ -17,9 +17,9 @@ const RESULT_GLYPH_ASSETS = {
 const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, historyAttemptId: null, posterUrl: null };
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
-let homeGlyphRenderer = null;
+let homeParticleRenderer = null;
 let loadingGlyphRenderer = null;
-let resultGlyphRenderer = null;
+let resultParticleRenderer = null;
 
 function answerFingerprint(answers) {
   let hash = 2166136261;
@@ -37,33 +37,21 @@ function setGlyphFallback(canvas, visible, source) {
   if (fallback) fallback.hidden = !visible;
 }
 
-async function renderHomeGlyph() {
-  const canvas = $("home-glyph-canvas");
-  if (!canvas || !homeGlyphRenderer || homeGlyphRenderer.fallback) { setGlyphFallback(canvas, true); return; }
-  try {
-    const source = await homeGlyphRenderer.load("home-hero.png");
-    const rendered = homeGlyphRenderer.renderStatic({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", seed: 17 });
-    setGlyphFallback(canvas, !rendered);
-  } catch { setGlyphFallback(canvas, true); }
+function renderHomeParticles() {
+  homeParticleRenderer?.destroy();
+  homeParticleRenderer = createParticleRenderer($("home-particle-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", count: 96, seed: 17 });
+  homeParticleRenderer.play();
 }
 
-async function renderResultGlyph(profile) {
-  const canvas = $("result-glyph-canvas");
+function renderResultParticles(profile) {
+  const canvas = $("result-particle-canvas");
   const asset = RESULT_GLYPH_ASSETS[profile.bestKey];
   const color = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey)?.color || "#2CB7A5";
-  resultGlyphRenderer?.destroy();
-  resultGlyphRenderer = createGlyphRenderer(canvas, { background: "#142A43" });
-  const renderer = resultGlyphRenderer;
-  setGlyphFallback(canvas, true, asset);
-  if (!asset || renderer.fallback) return;
-  try {
-    const source = await renderer.load(asset);
-    if (renderer !== resultGlyphRenderer) return;
-    const rendered = renderer.renderStatic({ source, palette: [color], background: "#142A43", seed: 29 });
-    setGlyphFallback(canvas, !rendered, asset);
-  } catch {
-    if (renderer === resultGlyphRenderer) setGlyphFallback(canvas, true, asset);
-  }
+  const image = $("result-visual-image");
+  if (image && asset) image.src = asset;
+  resultParticleRenderer?.destroy();
+  resultParticleRenderer = createParticleRenderer(canvas, { palette: [color, "#2CB7A5", "#F5C451"], background: "#142A43", count: 82, seed: 29 + answerFingerprint(state.answers) });
+  resultParticleRenderer.play();
 }
 
 function renderLoadingGlyph(seed) {
@@ -83,10 +71,8 @@ function renderLoadingGlyph(seed) {
 }
 
 function initializeGlyphs() {
-  homeGlyphRenderer = createGlyphRenderer($("home-glyph-canvas"), { background: "#142A43" });
   loadingGlyphRenderer = createGlyphRenderer($("loading-glyph-canvas"), { background: "#142A43" });
-  resultGlyphRenderer = createGlyphRenderer($("result-glyph-canvas"), { background: "#142A43" });
-  void renderHomeGlyph();
+  renderHomeParticles();
 }
 
 function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }
@@ -113,7 +99,7 @@ function rankedDimensions(profile) {
 
 function renderResult(profile = state.profile) {
   const result = profile.result; const best = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey); const support = DIMENSIONS.find((dimension) => dimension.key === profile.supportKey);
-  void renderResultGlyph(profile);
+  renderResultParticles(profile);
   document.querySelector(".report-hero").style.setProperty("--talent-color", best?.color || "#2CB7A5"); $("report-date").textContent = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); $("result-name").textContent = result.name; $("result-support").textContent = support?.name || "综合天赋"; $("result-tags").innerHTML = result.tags.map((tag) => `<span>${esc(tag)}</span>`).join(""); $("result-summary").textContent = result.summary; $("best-talent-reading").textContent = result.assessment ? `${result.assessment} ${result.portrait} ${result.strength}` : `${best?.description || ""} ${result.strength}`; $("best-scenes").innerHTML = `<span>${esc(result.bestScene)}</span>`; radar(profile);
   $("dimension-list").innerHTML = rankedDimensions(profile).map((dimension, index) => `<div class="dimension-item" style="--talent-color:${dimension.color}"><span class="dimension-rank">${String(index + 1).padStart(2, "0")}</span><strong>${esc(dimension.name)}</strong><div class="dimension-track"><i style="width:${profile.displayScores[dimension.key]}%"></i></div><b>${profile.displayScores[dimension.key]}</b></div>`).join("");
   $("active-talent-list").innerHTML = profile.activeKeys.map((key) => { const dimension = DIMENSIONS.find((item) => item.key === key); const copy = result.activeTalentCopy[key]; return `<article class="talent-card" style="--talent-color:${dimension.color}"><img src="${key}.png" alt="" loading="lazy"><div><h3>${esc(dimension.name)}</h3><p>${esc(copy.scene)}</p><p>${esc(copy.strength)}</p><p>${esc(copy.boundary)}</p><small>${esc(copy.action)}</small></div></article>`; }).join("");
