@@ -16,3 +16,17 @@ test("visual contract includes palette, mobile layout and isolated selected stat
   for (const color of ["#142A43", "#2CB7A5", "#FF8A65", "#F5C451", "#F5F8F6", "#FFFFFF", "#DDE7E4"]) assert.match(css, new RegExp(color, "i"));
   assert.match(css, /@media[^}]*max-width/); assert.match(css, /\.answer-btn\{[^}]*min-height:68px/); assert.doesNotMatch(css, /\.answer-btn:hover,\s*\.answer-btn\.selected/);
 });
+
+test("glyph mounts and quiz signal band keep a stable visual contract", () => {
+  for (const id of ["home-glyph-canvas", "loading-glyph-canvas", "result-glyph-canvas"]) {
+    assert.match(html, new RegExp(`<canvas[^>]+id=["']${id}["'][^>]*aria-hidden=["']true["']`));
+  }
+  assert.equal((html.match(/data-glyph-fallback/g) || []).length, 3);
+  assert.equal((html.match(/class=["'][^"']*quiz-signal-block[^"']*["']/g) || []).length, 8);
+  assert.match(css, /@keyframes\s+quiz-signal-drift/);
+  assert.match(css, /quiz-signal-block[^}]*transform/);
+  assert.match(css, /quiz-signal-block[^}]*opacity/);
+  assert.match(css, /prefers-reduced-motion\s*:\s*reduce/);
+  assert.match(css, /quiz-signal-band[^}]*pointer-events\s*:\s*none/);
+  assert.doesNotMatch(css, /quiz-signal(?:-band|-block)[^}]*\b(width|height|top|left|filter)\s*:/);
+});
