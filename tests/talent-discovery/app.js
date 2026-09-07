@@ -42,8 +42,8 @@ async function renderHomeGlyph() {
   if (!canvas || !homeGlyphRenderer || homeGlyphRenderer.fallback) { setGlyphFallback(canvas, true); return; }
   try {
     const source = await homeGlyphRenderer.load("home-hero.png");
-    homeGlyphRenderer.renderStatic({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", seed: 17 });
-    setGlyphFallback(canvas, false);
+    const rendered = homeGlyphRenderer.renderStatic({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", seed: 17 });
+    setGlyphFallback(canvas, !rendered);
   } catch { setGlyphFallback(canvas, true); }
 }
 
@@ -59,8 +59,8 @@ async function renderResultGlyph(profile) {
   try {
     const source = await renderer.load(asset);
     if (renderer !== resultGlyphRenderer) return;
-    renderer.renderStatic({ source, palette: [color], background: "#142A43", seed: 29 });
-    setGlyphFallback(canvas, false);
+    const rendered = renderer.renderStatic({ source, palette: [color], background: "#142A43", seed: 29 });
+    setGlyphFallback(canvas, !rendered, asset);
   } catch {
     if (renderer === resultGlyphRenderer) setGlyphFallback(canvas, true, asset);
   }
@@ -75,8 +75,8 @@ function renderLoadingGlyph(seed) {
   if (renderer.fallback) return;
   void renderer.load("home-hero.png").then((source) => {
     if (renderer !== loadingGlyphRenderer) return;
-    setGlyphFallback(canvas, false);
-    renderer.play({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", mode: "assembly", duration: 2600, seed });
+    const rendered = renderer.play({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", mode: "assembly", duration: 2600, seed });
+    setGlyphFallback(canvas, !rendered, "home-hero.png");
   }).catch(() => {
     if (renderer === loadingGlyphRenderer) setGlyphFallback(canvas, true, "home-hero.png");
   });

@@ -6,6 +6,25 @@ function clamp(value, min = 0, max = 1) {
   return Math.max(min, Math.min(max, number));
 }
 
+export function calculateGlyphGrid(width, height, viewportWidth = width, options = {}) {
+  const safeWidth = Math.max(1, Number(width) || 1);
+  const safeHeight = Math.max(1, Number(height) || 1);
+  const safeViewportWidth = Math.max(1, Number(viewportWidth) || safeWidth);
+  const mobile = safeViewportWidth <= 760;
+  const minColumns = mobile ? 52 : 96;
+  const maxColumns = mobile ? 72 : 120;
+  const cellWidth = Number(options.cellWidth) > 0 ? Number(options.cellWidth) : 9;
+  const cellHeight = Number(options.cellHeight) > 0 ? Number(options.cellHeight) : 14;
+  const densityCellWidth = Number(options.cellWidth) > 0 ? cellWidth : (mobile ? 5 : 5.2);
+  const columns = Math.max(minColumns, Math.min(maxColumns, Math.round(safeWidth / densityCellWidth)));
+  const minRows = mobile ? 32 : 56;
+  const maxRows = mobile ? 46 : 72;
+  const rowScale = Number(options.rowScale) > 0 ? Number(options.rowScale) : (mobile ? 0.65 : 0.9);
+  const aspectRows = columns * (safeHeight / safeWidth) * (cellWidth / cellHeight) * rowScale;
+  const rows = Math.max(minRows, Math.min(maxRows, Math.round(aspectRows)));
+  return { columns, rows };
+}
+
 export function srgbToLinear(channel) {
   const value = clamp(channel);
   return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
@@ -56,8 +75,8 @@ function noOpRenderer() {
   return {
     fallback: true,
     load: async (source) => source,
-    renderStatic: () => undefined,
-    play: () => undefined,
+    renderStatic: () => false,
+    play: () => false,
     pause: () => undefined,
     destroy: () => undefined,
   };
@@ -122,19 +141,18 @@ export function createGlyphRenderer(canvas, options = {}) {
     context.clearRect(0, 0, width, height);
     context.fillStyle = config.background || options.background || "#142A43";
     context.fillRect(0, 0, width, height);
-    if (!source || typeof samplingContext.drawImage !== "function") return;
-    const columns = Math.max(1, Math.floor(width / (options.cellWidth || 9)));
-    const rows = Math.max(1, Math.floor(height / (options.cellHeight || 14)));
+    if (!source || typeof samplingContext.drawImage !== "function") return false;
+    const { columns, rows } = calculateGlyphGrid(width, height, (typeof window !== "undefined" && window.innerWidth) || width, options);
     samplingCanvas.width = columns; samplingCanvas.height = rows;
     let pixels;
     try {
       samplingContext.drawImage(source, 0, 0, columns, rows);
       pixels = samplingContext.getImageData(0, 0, columns, rows).data;
     } catch {
-      return;
+      return false;
     }
     const palette = Array.isArray(config.palette) && config.palette.length ? config.palette : ["#2CB7A5"];
-    context.font = `${options.fontSize || 12}px monospace`;
+    context.font = `${Math.min(options.fontSize || 12, height / rows)}px monospace`;
     context.textBaseline = "top";
     const order = seededOrder(columns * rows, config.seed);
     for (const position of order) {
@@ -145,15 +163,21 @@ export function createGlyphRenderer(canvas, options = {}) {
       context.fillStyle = mixLinearColor(palette[position % palette.length], config.background || options.background || "#142A43", brightness);
       context.fillText(brightnessToGlyph(brightness), x, y);
     }
+    return true;
   }
 
   function play(config = {}) {
     pause();
-    if (config.mode !== "assembly" || destroyed) return;
+    if (config.mode !== "assembly" || destroyed) return false;
     lastConfig = { ...lastConfig, ...config };
+    if (typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return renderStatic({ ...config, mode: "static" });
+    }
+    if (!renderStatic(config)) return false;
     const start = Date.now();
     const tick = () => { if (destroyed) return; renderStatic(config); if (Date.now() - start < (config.duration || 1000)) frame = raf(tick); else frame = null; };
     frame = raf(tick);
+    return true;
   }
   function pause() { if (frame !== null) { cancel(frame); frame = null; } }
   function destroy() {

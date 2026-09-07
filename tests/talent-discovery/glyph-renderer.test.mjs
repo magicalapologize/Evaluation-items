@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { brightnessToGlyph, linearToSrgb, mixLinearColor, relativeLuminance, srgbToLinear, createGlyphRenderer } from "./glyph-renderer.js";
+import { brightnessToGlyph, calculateGlyphGrid, linearToSrgb, mixLinearColor, relativeLuminance, srgbToLinear, createGlyphRenderer } from "./glyph-renderer.js";
 
 test("sRGB and linear conversion stays in range", () => {
   for (const value of [0, 0.1, 0.5, 1]) {
@@ -27,6 +27,16 @@ test("relative luminance applies the specified decoded channel weights", () => {
 
 test("color mixing returns bounded rgba components", () => {
   assert.match(mixLinearColor("#2CB7A5", "#142A43", 0.5), /^rgba\(\d+, \d+, \d+, 0\.5\)$/);
+});
+
+test("glyph grid stays within the responsive density bands", () => {
+  const desktopGrid = calculateGlyphGrid(560, 360, 1440);
+  assert.ok(desktopGrid.columns >= 96 && desktopGrid.columns <= 120);
+  assert.ok(desktopGrid.rows >= 56 && desktopGrid.rows <= 72);
+
+  const mobileGrid = calculateGlyphGrid(320, 260, 320);
+  assert.ok(mobileGrid.columns >= 52 && mobileGrid.columns <= 72);
+  assert.ok(mobileGrid.rows >= 32 && mobileGrid.rows <= 46);
 });
 
 test("renderer safely falls back without browser APIs", async () => {
@@ -64,6 +74,58 @@ test("renderer observes resize and removes lifecycle listeners on destroy", () =
     renderer.destroy();
     assert.equal(disconnected, 1);
     assert.equal(removed, 1);
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.ResizeObserver = originalResizeObserver;
+  }
+});
+
+test("renderer does not schedule assembly frames when reduced motion is preferred", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const originalResizeObserver = globalThis.ResizeObserver;
+  const originalRaf = globalThis.requestAnimationFrame;
+  let scheduled = 0;
+  const context = { setTransform() {}, clearRect() {}, fillRect() {}, fillText() {} };
+  const samplingContext = { drawImage() {}, getImageData: () => ({ data: new Uint8ClampedArray([255, 255, 255, 255]) }) };
+  globalThis.ResizeObserver = undefined;
+  globalThis.window = { devicePixelRatio: 1, matchMedia: () => ({ matches: true }) };
+  globalThis.requestAnimationFrame = () => { scheduled += 1; return 1; };
+  globalThis.document = {
+    hidden: false,
+    createElement: () => ({ getContext: () => samplingContext }),
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  try {
+    const renderer = createGlyphRenderer({ clientWidth: 320, clientHeight: 260, getContext: () => context });
+    renderer.play({ source: { width: 1, height: 1 }, mode: "assembly", duration: 2600 });
+    assert.equal(scheduled, 0);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+    globalThis.ResizeObserver = originalResizeObserver;
+    globalThis.requestAnimationFrame = originalRaf;
+  }
+});
+
+test("renderer reports sampling failures so the image fallback remains visible", () => {
+  const originalDocument = globalThis.document;
+  const originalResizeObserver = globalThis.ResizeObserver;
+  const context = { setTransform() {}, clearRect() {}, fillRect() {}, fillText() {} };
+  const samplingContext = { drawImage() {}, getImageData: () => { throw new Error("tainted canvas"); } };
+  globalThis.ResizeObserver = undefined;
+  globalThis.document = {
+    hidden: false,
+    createElement: () => ({ getContext: () => samplingContext }),
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  try {
+    const renderer = createGlyphRenderer({ clientWidth: 320, clientHeight: 260, getContext: () => context });
+    assert.equal(renderer.renderStatic({ source: { width: 1, height: 1 } }), false);
+    renderer.destroy();
   } finally {
     globalThis.document = originalDocument;
     globalThis.ResizeObserver = originalResizeObserver;

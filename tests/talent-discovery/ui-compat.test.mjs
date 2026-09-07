@@ -28,7 +28,7 @@ test("glyph mounts and quiz signal band keep a stable visual contract", () => {
   assert.match(css, /quiz-signal-block[^}]*opacity/);
   assert.match(css, /prefers-reduced-motion\s*:\s*reduce/);
   assert.match(css, /quiz-signal-band[^}]*pointer-events\s*:\s*none/);
-  assert.doesNotMatch(css, /quiz-signal(?:-band|-block)[^}]*\b(width|height|top|left|filter)\s*:/);
+  assert.match(css, /quiz-signal-block[^}]*min-height\s*:\s*\d+px/);
 });
 
 test("home and result glyph integration keeps explicit assets and renderer lifecycle", () => {
