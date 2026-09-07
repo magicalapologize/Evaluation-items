@@ -126,8 +126,13 @@ export function createGlyphRenderer(canvas, options = {}) {
     const columns = Math.max(1, Math.floor(width / (options.cellWidth || 9)));
     const rows = Math.max(1, Math.floor(height / (options.cellHeight || 14)));
     samplingCanvas.width = columns; samplingCanvas.height = rows;
-    try { samplingContext.drawImage(source, 0, 0, columns, rows); } catch { return; }
-    const pixels = samplingContext.getImageData(0, 0, columns, rows).data;
+    let pixels;
+    try {
+      samplingContext.drawImage(source, 0, 0, columns, rows);
+      pixels = samplingContext.getImageData(0, 0, columns, rows).data;
+    } catch {
+      return;
+    }
     const palette = Array.isArray(config.palette) && config.palette.length ? config.palette : ["#2CB7A5"];
     context.font = `${options.fontSize || 12}px monospace`;
     context.textBaseline = "top";
