@@ -16,3 +16,48 @@ test("visual contract includes palette, mobile layout and isolated selected stat
   for (const color of ["#142A43", "#2CB7A5", "#FF8A65", "#F5C451", "#F5F8F6", "#FFFFFF", "#DDE7E4"]) assert.match(css, new RegExp(color, "i"));
   assert.match(css, /@media[^}]*max-width/); assert.match(css, /\.answer-btn\{[^}]*min-height:68px/); assert.doesNotMatch(css, /\.answer-btn:hover,\s*\.answer-btn\.selected/);
 });
+
+test("glyph mounts and quiz signal band keep a stable visual contract", () => {
+  for (const id of ["home-glyph-canvas", "loading-glyph-canvas", "result-glyph-canvas"]) {
+    assert.match(html, new RegExp(`<canvas[^>]+id=["']${id}["'][^>]*aria-hidden=["']true["']`));
+  }
+  assert.equal((html.match(/data-glyph-fallback/g) || []).length, 3);
+  assert.equal((html.match(/class=["'][^"']*quiz-signal-block[^"']*["']/g) || []).length, 8);
+  assert.match(css, /@keyframes\s+quiz-signal-drift/);
+  assert.match(css, /quiz-signal-block[^}]*transform/);
+  assert.match(css, /quiz-signal-block[^}]*opacity/);
+  assert.match(css, /prefers-reduced-motion\s*:\s*reduce/);
+  assert.match(css, /quiz-signal-band[^}]*pointer-events\s*:\s*none/);
+  assert.match(css, /quiz-signal-block[^}]*min-height\s*:\s*\d+px/);
+});
+
+test("home and result glyph integration keeps explicit assets and renderer lifecycle", () => {
+  assert.match(app, /import\s*\{\s*createGlyphRenderer\s*\}\s*from\s*["']\.\/glyph-renderer\.js["']/);
+  assert.match(app, /home-glyph-canvas/);
+  assert.match(app, /result-glyph-canvas/);
+  for (const [key, file] of Object.entries({
+    language: "language.png",
+    logic: "logic.png",
+    spatial: "spatial.png",
+    body: "body.png",
+    music: "music.png",
+    interpersonal: "interpersonal.png",
+    introspection: "introspection.png",
+    nature: "nature.png",
+  })) {
+    assert.match(app, new RegExp(`${key}\\s*:\\s*["']${file.replace(".", "\\.")}["']`));
+  }
+  assert.match(app, /resultGlyphRenderer\?\.destroy\(\)/);
+});
+
+test("loading glyph assembly preserves the three-second finish contract", () => {
+  const finishSource = app.slice(app.indexOf("function finish()"), app.indexOf('$("start-btn")'));
+  assert.match(finishSource, /loading-glyph-canvas|renderLoadingGlyph/);
+  assert.match(app, /play\(\{[^}]*mode:\s*["']assembly["'][^}]*duration:\s*2600/);
+  assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?\},\s*1000\)/);
+  assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?\},\s*2200\)/);
+  assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?calculateProfile\(state\.answers\)[\s\S]*?\},\s*3000\)/);
+  assert.equal((finishSource.match(/calculateProfile\(state\.answers\)/g) || []).length, 1);
+  assert.ok(finishSource.indexOf("calculateProfile(state.answers)") > finishSource.indexOf("}, 2200)"));
+  assert.doesNotMatch(css, /\.signal-map\b/);
+});

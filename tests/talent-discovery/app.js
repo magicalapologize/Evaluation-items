@@ -1,11 +1,93 @@
 import { DIMENSIONS, SCENES, QUESTIONS, RESULTS } from "./data.mjs";
 import { calculateProfile } from "./model.mjs";
+import { createGlyphRenderer } from "./glyph-renderer.js";
 
 const PRODUCT_ID = "talent-discovery";
 const PRODUCT_TITLE = "天赋挖掘测试｜找到你的天赋领域";
+const RESULT_GLYPH_ASSETS = {
+  language: "language.png",
+  logic: "logic.png",
+  spatial: "spatial.png",
+  body: "body.png",
+  music: "music.png",
+  interpersonal: "interpersonal.png",
+  introspection: "introspection.png",
+  nature: "nature.png",
+};
 const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, historyAttemptId: null, posterUrl: null };
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
+let homeGlyphRenderer = null;
+let loadingGlyphRenderer = null;
+let resultGlyphRenderer = null;
+
+function answerFingerprint(answers) {
+  let hash = 2166136261;
+  for (const answer of answers) {
+    hash ^= Number(answer) + 31;
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function setGlyphFallback(canvas, visible, source) {
+  const fallback = canvas?.parentElement?.querySelector("[data-glyph-fallback]");
+  if (source && fallback) fallback.src = source;
+  if (canvas) canvas.hidden = visible;
+  if (fallback) fallback.hidden = !visible;
+}
+
+async function renderHomeGlyph() {
+  const canvas = $("home-glyph-canvas");
+  if (!canvas || !homeGlyphRenderer || homeGlyphRenderer.fallback) { setGlyphFallback(canvas, true); return; }
+  try {
+    const source = await homeGlyphRenderer.load("home-hero.png");
+    const rendered = homeGlyphRenderer.renderStatic({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", seed: 17 });
+    setGlyphFallback(canvas, !rendered);
+  } catch { setGlyphFallback(canvas, true); }
+}
+
+async function renderResultGlyph(profile) {
+  const canvas = $("result-glyph-canvas");
+  const asset = RESULT_GLYPH_ASSETS[profile.bestKey];
+  const color = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey)?.color || "#2CB7A5";
+  resultGlyphRenderer?.destroy();
+  resultGlyphRenderer = createGlyphRenderer(canvas, { background: "#142A43" });
+  const renderer = resultGlyphRenderer;
+  setGlyphFallback(canvas, true, asset);
+  if (!asset || renderer.fallback) return;
+  try {
+    const source = await renderer.load(asset);
+    if (renderer !== resultGlyphRenderer) return;
+    const rendered = renderer.renderStatic({ source, palette: [color], background: "#142A43", seed: 29 });
+    setGlyphFallback(canvas, !rendered, asset);
+  } catch {
+    if (renderer === resultGlyphRenderer) setGlyphFallback(canvas, true, asset);
+  }
+}
+
+function renderLoadingGlyph(seed) {
+  const canvas = $("loading-glyph-canvas");
+  loadingGlyphRenderer?.destroy();
+  loadingGlyphRenderer = createGlyphRenderer(canvas, { background: "#142A43" });
+  const renderer = loadingGlyphRenderer;
+  setGlyphFallback(canvas, true, "home-hero.png");
+  if (renderer.fallback) return;
+  void renderer.load("home-hero.png").then((source) => {
+    if (renderer !== loadingGlyphRenderer) return;
+    const rendered = renderer.play({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", mode: "assembly", duration: 2600, seed });
+    setGlyphFallback(canvas, !rendered, "home-hero.png");
+  }).catch(() => {
+    if (renderer === loadingGlyphRenderer) setGlyphFallback(canvas, true, "home-hero.png");
+  });
+}
+
+function initializeGlyphs() {
+  homeGlyphRenderer = createGlyphRenderer($("home-glyph-canvas"), { background: "#142A43" });
+  loadingGlyphRenderer = createGlyphRenderer($("loading-glyph-canvas"), { background: "#142A43" });
+  resultGlyphRenderer = createGlyphRenderer($("result-glyph-canvas"), { background: "#142A43" });
+  void renderHomeGlyph();
+}
 
 function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }
 async function verify(code) { const response = await fetch("/api/verify-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: PRODUCT_ID, code }) }); const data = await response.json().catch(() => ({})); if (!response.ok || !data.success) throw new Error(data.message || "测试码验证失败"); }
@@ -31,6 +113,7 @@ function rankedDimensions(profile) {
 
 function renderResult(profile = state.profile) {
   const result = profile.result; const best = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey); const support = DIMENSIONS.find((dimension) => dimension.key === profile.supportKey);
+  void renderResultGlyph(profile);
   document.querySelector(".report-hero").style.setProperty("--talent-color", best?.color || "#2CB7A5"); $("report-date").textContent = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); $("result-name").textContent = result.name; $("result-support").textContent = support?.name || "综合天赋"; $("result-tags").innerHTML = result.tags.map((tag) => `<span>${esc(tag)}</span>`).join(""); $("result-summary").textContent = result.summary; $("best-talent-reading").textContent = result.assessment ? `${result.assessment} ${result.portrait} ${result.strength}` : `${best?.description || ""} ${result.strength}`; $("best-scenes").innerHTML = `<span>${esc(result.bestScene)}</span>`; radar(profile);
   $("dimension-list").innerHTML = rankedDimensions(profile).map((dimension, index) => `<div class="dimension-item" style="--talent-color:${dimension.color}"><span class="dimension-rank">${String(index + 1).padStart(2, "0")}</span><strong>${esc(dimension.name)}</strong><div class="dimension-track"><i style="width:${profile.displayScores[dimension.key]}%"></i></div><b>${profile.displayScores[dimension.key]}</b></div>`).join("");
   $("active-talent-list").innerHTML = profile.activeKeys.map((key) => { const dimension = DIMENSIONS.find((item) => item.key === key); const copy = result.activeTalentCopy[key]; return `<article class="talent-card" style="--talent-color:${dimension.color}"><img src="${key}.png" alt="" loading="lazy"><div><h3>${esc(dimension.name)}</h3><p>${esc(copy.scene)}</p><p>${esc(copy.strength)}</p><p>${esc(copy.boundary)}</p><small>${esc(copy.action)}</small></div></article>`; }).join("");
@@ -59,19 +142,22 @@ async function createPosterImage() {
 function renderHistorySnapshot(snapshot) { const result = RESULTS.find((item) => item.name === snapshot.result?.name); if (!result) throw new Error("测试结果不存在"); const scoreMap = Object.fromEntries(snapshot.dimensions.map((item) => [DIMENSIONS.find((dimension) => dimension.name === item.name)?.key, Number(item.value)]).filter(([key]) => key)); const ranking = Object.entries(scoreMap).sort((a, b) => b[1] - a[1]).map(([key]) => key); const profile = { result, bestKey: ranking[0], supportKey: ranking[1], activeKeys: ranking.slice(0, 4), awakeningKey: ranking[4], displayScores: scoreMap, careerTracks: [] }; renderResult(profile); const sections = globalThis.YunduHistoryReplay.sectionMap(snapshot); $("report-date").textContent = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(snapshot.createdAt)); $("bottleneck").textContent = sections.get("05｜规避潜在发展瓶颈")?.body || ""; $("competitive-edge").textContent = sections.get("08｜定位个人竞争力")?.body || ""; $("growth-plan").innerHTML = (sections.get("09｜获取进阶成长方案")?.items || []).map((item) => `<div class="growth-item">${esc(item)}</div>`).join(""); $("result-reminder").textContent = sections.get("09｜获取进阶成长方案")?.body || ""; $("active-talent-list").innerHTML = (sections.get("03｜4 项活跃天赋深入分析")?.items || []).map((item) => `<article class="talent-card"><p>${esc(item)}</p></article>`).join(""); $("career-track-list").innerHTML = (sections.get("06｜锁定优势职业赛道")?.items || []).map((item) => `<article class="career-card"><p>${esc(item)}</p></article>`).join(""); $("strategy-list").innerHTML = (sections.get("07｜掌握天赋拓展策略")?.items || []).map((item) => `<div class="strategy-item">${esc(item)}</div>`).join(""); }
 function start() { state.index = 0; state.answers = []; state.profile = null; state.historyAttemptId = null; renderQuestion(); show("quiz-screen"); }
 function finish() {
+  const loadingSeed = answerFingerprint(state.answers);
   $("loading-state").textContent = "正在读取线索";
   $("loading-detail").textContent = "正在汇总你在不同情境中的反应";
   $("loading-count").textContent = "00 / 08";
   $("loading-progress-bar").style.transform = "scaleX(0)";
   $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "0");
   show("loading-screen");
+  renderLoadingGlyph(loadingSeed);
   window.setTimeout(() => { $("loading-state").textContent = "正在校准维度"; $("loading-detail").textContent = "比较八项天赋在本次答卷中的相对强弱"; $("loading-count").textContent = "05 / 08"; $("loading-progress-bar").style.transform = "scaleX(.62)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "62"); }, 1000);
   window.setTimeout(() => { $("loading-state").textContent = "报告已就绪"; $("loading-detail").textContent = "正在打开你的天赋地图"; $("loading-count").textContent = "08 / 08"; $("loading-progress-bar").style.transform = "scaleX(1)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "100"); }, 2200);
-  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); show("result-screen"); }, 3000);
+  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); loadingGlyphRenderer?.destroy(); loadingGlyphRenderer = null; show("result-screen"); }, 3000);
 }
 
 $("start-btn").addEventListener("click", async () => { const code = $("access-code").value.trim(); $("gate-error").textContent = ""; if (!code) { $("gate-error").textContent = "请输入测试码"; return; } const button = $("start-btn"); button.disabled = true; try { const member = globalThis.YunduMember?.getMember ? await globalThis.YunduMember.getMember().catch(() => null) : null; if (!member?.active) await verify(code); start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; } });
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } }); $("restart-btn").addEventListener("click", start);
 $("copy-result-btn").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("copy-result-btn").dataset.summary || ""); $("copy-result-btn").textContent = "已复制"; window.setTimeout(() => { $("copy-result-btn").textContent = "复制结果摘要"; }, 1600); } catch { $("copy-result-btn").textContent = "请手动复制"; } }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("is-open"));
 $("save-poster-btn").addEventListener("click", async () => { const button = $("save-poster-btn"); button.disabled = true; button.textContent = "正在生成..."; try { state.posterUrl = await createPosterImage(); $("poster-image").src = state.posterUrl; $("poster-modal").classList.add("is-open"); } catch (error) { window.alert(error.message); } finally { button.disabled = false; button.textContent = "保存报告海报"; } }); document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("is-open"))); document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("is-open"); }));
+initializeGlyphs();
 if (globalThis.YunduHistoryReplay?.init) globalThis.YunduHistoryReplay.init(PRODUCT_ID, renderHistorySnapshot, () => show("result-screen"));
