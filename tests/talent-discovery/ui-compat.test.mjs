@@ -48,6 +48,8 @@ test("home and result glyph integration keeps explicit assets and renderer lifec
     assert.match(app, new RegExp(`${key}\\s*:\\s*["']${file.replace(".", "\\.")}["']`));
   }
   assert.match(app, /resultGlyphRenderer\?\.destroy\(\)/);
+  assert.match(css, /\.report-hero\s*\{[^}]*display\s*:\s*grid/);
+  assert.match(css, /\.result-glyph-surface\s*\{[^}]*width\s*:\s*min\(360px,100%\)[^}]*height\s*:\s*420px/);
 });
 
 test("loading glyph assembly preserves the three-second finish contract", () => {
