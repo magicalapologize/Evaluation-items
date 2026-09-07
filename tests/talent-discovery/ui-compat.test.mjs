@@ -56,6 +56,11 @@ test("home and result particle integration keeps explicit assets and renderer li
   assert.doesNotMatch(html, /result-glyph-surface[^>]*>[\s\S]*result-glyph-canvas/);
 });
 
+test("result title keeps the colored talent name together on its own line", () => {
+  assert.match(css, /\.report-hero h1 strong\s*\{[^}]*display\s*:\s*block/);
+  assert.match(css, /\.report-hero h1 strong\s*\{[^}]*white-space\s*:\s*nowrap/);
+});
+
 test("loading glyph assembly preserves the three-second finish contract", () => {
   const finishSource = app.slice(app.indexOf("function finish()"), app.indexOf('$("start-btn")'));
   assert.match(finishSource, /loading-glyph-canvas|renderLoadingGlyph/);
