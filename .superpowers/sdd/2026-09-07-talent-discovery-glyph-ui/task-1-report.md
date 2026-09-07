@@ -21,3 +21,13 @@
 ## 剩余疑问 / Concerns
 
 暂无。渲染器尚未接入页面，按任务范围保留为独立底层模块。
+
+## Reviewer Fixes
+
+状态：DONE
+
+- 修正 `relativeLuminance` 为指定的解码通道权重 `0.2126R + 0.0722G + 0.0722B`。
+- 注册 `ResizeObserver` 与 `visibilitychange` 监听；销毁时断开 observer 并移除监听，隐藏页面时暂停 assembly 动画，恢复时继续。
+- 删除测试尾随空格，并新增公式与生命周期覆盖。
+
+验证：`node --test tests/talent-discovery/glyph-renderer.test.mjs`（7 passed, 0 failed）；`node --check tests/talent-discovery/glyph-renderer.js`（passed）；`git diff --check`（passed）。

@@ -17,7 +17,7 @@ export function linearToSrgb(channel) {
 }
 
 export function relativeLuminance(r, g, b) {
-  return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
+  return 0.2126 * srgbToLinear(r) + 0.0722 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
 }
 
 export function brightnessToGlyph(value, glyphs = GLYPHS) {
@@ -75,8 +75,26 @@ export function createGlyphRenderer(canvas, options = {}) {
   let frame = null;
   let destroyed = false;
   let loadedSource = null;
+  let lastConfig = {};
+  let wasPlaying = false;
   const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (callback) => setTimeout(callback, 16);
   const cancel = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : clearTimeout;
+  const resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(() => {
+    if (!destroyed) renderStatic(lastConfig);
+  }) : null;
+  const visibilityHandler = () => {
+    if (typeof document === "undefined") return;
+    if (document.hidden) {
+      wasPlaying = lastConfig.mode === "assembly" && frame !== null;
+      pause();
+    } else if (wasPlaying) {
+      play(lastConfig);
+    } else if (lastConfig.source || loadedSource) {
+      renderStatic(lastConfig);
+    }
+  };
+  if (resizeObserver && typeof resizeObserver.observe === "function") resizeObserver.observe(canvas);
+  if (typeof document.addEventListener === "function") document.addEventListener("visibilitychange", visibilityHandler);
 
   function load(source) {
     if (cache.has(source)) return cache.get(source);
@@ -94,6 +112,7 @@ export function createGlyphRenderer(canvas, options = {}) {
 
   function renderStatic(config = {}) {
     if (destroyed) return;
+    lastConfig = { ...lastConfig, ...config };
     const source = config.source || loadedSource;
     const width = Math.max(1, canvas.clientWidth || canvas.width || 1);
     const height = Math.max(1, canvas.clientHeight || canvas.height || 1);
@@ -126,12 +145,17 @@ export function createGlyphRenderer(canvas, options = {}) {
   function play(config = {}) {
     pause();
     if (config.mode !== "assembly" || destroyed) return;
+    lastConfig = { ...lastConfig, ...config };
     const start = Date.now();
     const tick = () => { if (destroyed) return; renderStatic(config); if (Date.now() - start < (config.duration || 1000)) frame = raf(tick); else frame = null; };
     frame = raf(tick);
   }
   function pause() { if (frame !== null) { cancel(frame); frame = null; } }
-  function destroy() { pause(); destroyed = true; cache.clear(); loadedSource = null; }
+  function destroy() {
+    pause(); destroyed = true; cache.clear(); loadedSource = null;
+    if (resizeObserver && typeof resizeObserver.disconnect === "function") resizeObserver.disconnect();
+    if (typeof document.removeEventListener === "function") document.removeEventListener("visibilitychange", visibilityHandler);
+  }
   return { fallback: false, load, renderStatic, play, pause, destroy };
 }
 
