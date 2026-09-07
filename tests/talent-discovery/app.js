@@ -1,11 +1,66 @@
 import { DIMENSIONS, SCENES, QUESTIONS, RESULTS } from "./data.mjs";
 import { calculateProfile } from "./model.mjs";
+import { createGlyphRenderer } from "./glyph-renderer.js";
 
 const PRODUCT_ID = "talent-discovery";
 const PRODUCT_TITLE = "天赋挖掘测试｜找到你的天赋领域";
+const RESULT_GLYPH_ASSETS = {
+  language: "language.png",
+  logic: "logic.png",
+  spatial: "spatial.png",
+  body: "body.png",
+  music: "music.png",
+  interpersonal: "interpersonal.png",
+  introspection: "introspection.png",
+  nature: "nature.png",
+};
 const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, historyAttemptId: null, posterUrl: null };
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
+let homeGlyphRenderer = null;
+let resultGlyphRenderer = null;
+
+function setGlyphFallback(canvas, visible, source) {
+  const fallback = canvas?.parentElement?.querySelector("[data-glyph-fallback]");
+  if (source && fallback) fallback.src = source;
+  if (canvas) canvas.hidden = visible;
+  if (fallback) fallback.hidden = !visible;
+}
+
+async function renderHomeGlyph() {
+  const canvas = $("home-glyph-canvas");
+  if (!canvas || !homeGlyphRenderer || homeGlyphRenderer.fallback) { setGlyphFallback(canvas, true); return; }
+  try {
+    const source = await homeGlyphRenderer.load("home-hero.png");
+    homeGlyphRenderer.renderStatic({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", seed: 17 });
+    setGlyphFallback(canvas, false);
+  } catch { setGlyphFallback(canvas, true); }
+}
+
+async function renderResultGlyph(profile) {
+  const canvas = $("result-glyph-canvas");
+  const asset = RESULT_GLYPH_ASSETS[profile.bestKey];
+  const color = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey)?.color || "#2CB7A5";
+  resultGlyphRenderer?.destroy();
+  resultGlyphRenderer = createGlyphRenderer(canvas, { background: "#142A43" });
+  const renderer = resultGlyphRenderer;
+  setGlyphFallback(canvas, true, asset);
+  if (!asset || renderer.fallback) return;
+  try {
+    const source = await renderer.load(asset);
+    if (renderer !== resultGlyphRenderer) return;
+    renderer.renderStatic({ source, palette: [color], background: "#142A43", seed: 29 });
+    setGlyphFallback(canvas, false);
+  } catch {
+    if (renderer === resultGlyphRenderer) setGlyphFallback(canvas, true, asset);
+  }
+}
+
+function initializeGlyphs() {
+  homeGlyphRenderer = createGlyphRenderer($("home-glyph-canvas"), { background: "#142A43" });
+  resultGlyphRenderer = createGlyphRenderer($("result-glyph-canvas"), { background: "#142A43" });
+  void renderHomeGlyph();
+}
 
 function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }
 async function verify(code) { const response = await fetch("/api/verify-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: PRODUCT_ID, code }) }); const data = await response.json().catch(() => ({})); if (!response.ok || !data.success) throw new Error(data.message || "测试码验证失败"); }
@@ -31,6 +86,7 @@ function rankedDimensions(profile) {
 
 function renderResult(profile = state.profile) {
   const result = profile.result; const best = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey); const support = DIMENSIONS.find((dimension) => dimension.key === profile.supportKey);
+  void renderResultGlyph(profile);
   document.querySelector(".report-hero").style.setProperty("--talent-color", best?.color || "#2CB7A5"); $("report-date").textContent = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); $("result-name").textContent = result.name; $("result-support").textContent = support?.name || "综合天赋"; $("result-tags").innerHTML = result.tags.map((tag) => `<span>${esc(tag)}</span>`).join(""); $("result-summary").textContent = result.summary; $("best-talent-reading").textContent = result.assessment ? `${result.assessment} ${result.portrait} ${result.strength}` : `${best?.description || ""} ${result.strength}`; $("best-scenes").innerHTML = `<span>${esc(result.bestScene)}</span>`; radar(profile);
   $("dimension-list").innerHTML = rankedDimensions(profile).map((dimension, index) => `<div class="dimension-item" style="--talent-color:${dimension.color}"><span class="dimension-rank">${String(index + 1).padStart(2, "0")}</span><strong>${esc(dimension.name)}</strong><div class="dimension-track"><i style="width:${profile.displayScores[dimension.key]}%"></i></div><b>${profile.displayScores[dimension.key]}</b></div>`).join("");
   $("active-talent-list").innerHTML = profile.activeKeys.map((key) => { const dimension = DIMENSIONS.find((item) => item.key === key); const copy = result.activeTalentCopy[key]; return `<article class="talent-card" style="--talent-color:${dimension.color}"><img src="${key}.png" alt="" loading="lazy"><div><h3>${esc(dimension.name)}</h3><p>${esc(copy.scene)}</p><p>${esc(copy.strength)}</p><p>${esc(copy.boundary)}</p><small>${esc(copy.action)}</small></div></article>`; }).join("");
@@ -74,4 +130,5 @@ $("start-btn").addEventListener("click", async () => { const code = $("access-co
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } }); $("restart-btn").addEventListener("click", start);
 $("copy-result-btn").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("copy-result-btn").dataset.summary || ""); $("copy-result-btn").textContent = "已复制"; window.setTimeout(() => { $("copy-result-btn").textContent = "复制结果摘要"; }, 1600); } catch { $("copy-result-btn").textContent = "请手动复制"; } }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("is-open"));
 $("save-poster-btn").addEventListener("click", async () => { const button = $("save-poster-btn"); button.disabled = true; button.textContent = "正在生成..."; try { state.posterUrl = await createPosterImage(); $("poster-image").src = state.posterUrl; $("poster-modal").classList.add("is-open"); } catch (error) { window.alert(error.message); } finally { button.disabled = false; button.textContent = "保存报告海报"; } }); document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("is-open"))); document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("is-open"); }));
+initializeGlyphs();
 if (globalThis.YunduHistoryReplay?.init) globalThis.YunduHistoryReplay.init(PRODUCT_ID, renderHistorySnapshot, () => show("result-screen"));

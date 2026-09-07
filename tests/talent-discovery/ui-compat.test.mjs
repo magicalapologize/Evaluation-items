@@ -30,3 +30,22 @@ test("glyph mounts and quiz signal band keep a stable visual contract", () => {
   assert.match(css, /quiz-signal-band[^}]*pointer-events\s*:\s*none/);
   assert.doesNotMatch(css, /quiz-signal(?:-band|-block)[^}]*\b(width|height|top|left|filter)\s*:/);
 });
+
+test("home and result glyph integration keeps explicit assets and renderer lifecycle", () => {
+  assert.match(app, /import\s*\{\s*createGlyphRenderer\s*\}\s*from\s*["']\.\/glyph-renderer\.js["']/);
+  assert.match(app, /home-glyph-canvas/);
+  assert.match(app, /result-glyph-canvas/);
+  for (const [key, file] of Object.entries({
+    language: "language.png",
+    logic: "logic.png",
+    spatial: "spatial.png",
+    body: "body.png",
+    music: "music.png",
+    interpersonal: "interpersonal.png",
+    introspection: "introspection.png",
+    nature: "nature.png",
+  })) {
+    assert.match(app, new RegExp(`${key}\\s*:\\s*["']${file.replace(".", "\\.")}["']`));
+  }
+  assert.match(app, /resultGlyphRenderer\?\.destroy\(\)/);
+});
