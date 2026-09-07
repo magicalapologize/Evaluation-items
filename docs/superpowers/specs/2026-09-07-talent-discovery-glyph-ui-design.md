@@ -27,7 +27,7 @@
 
 ## 2. 现有边界与页面信息架构
 
-产品当前由 `index.html` 提供四个状态：`home-screen`、`quiz-screen`、`loading-screen`、`result-screen`。本次只在三个视觉状态插入 Canvas，答题页结构不改。
+产品当前由 `index.html` 提供四个状态：`home-screen`、`quiz-screen`、`loading-screen`、`result-screen`。本次只在首页、过场和结果页插入 Canvas；答题页保留既有信息结构，仅增加轻量 CSS 信号带。
 
 ### 首页
 
@@ -38,7 +38,11 @@
 
 ### 答题页
 
-- 不加入 Glyph，保留现有题号、进度、选项、上一题和自动跳题逻辑。
+- 保留现有题号、进度、选项、上一题和自动跳题逻辑；答题页不加入 Canvas Glyph，避免每道题都维持字符绘制。
+- 在 `.quiz-head` 顶部增加一个 `aria-hidden="true"` 的八色信号带，使用八项天赋的专属色块组成低对比度动态视觉。色块只使用 CSS `transform` 和 `opacity` 做缓慢位移、缩放和明暗呼吸，不使用滤镜、阴影、渐变、定时器或 JavaScript 帧循环。
+- 信号带固定高度约 `34px`，位于品牌行上方；色块采用 `overflow: hidden` 的绝对定位层，不改变题号、进度和题目布局，不截获点击。
+- 动画周期约 `5.5s`，各色块错峰 `animation-delay`，每个色块透明度控制在 `0.18–0.48`，确保白色品牌和进度文字有足够对比度。视觉只表达“八项天赋正在被读取”，不暗示当前题目的正确答案或分数。
+- 当 `prefers-reduced-motion: reduce` 时取消动画，保留静态八色排列；当浏览器不支持 CSS 动画时，静态色块仍可见。
 - `finish()` 的答案收集、`calculateProfile()`、历史保存和结果渲染顺序保持兼容。
 
 ### 完成测试过场
@@ -138,7 +142,7 @@ Canvas 源图像的 sRGB 通道不能直接作为亮度。每个采样像素按�
 
 ```text
 tests/talent-discovery/index.html       # 三个 Canvas 挂载点和 fallback 容器
-tests/talent-discovery/style.css        # Glyph 布局、尺寸、移动端与降级样式
+tests/talent-discovery/style.css        # Glyph 布局、答题页信号带、尺寸、移动端与降级样式
 tests/talent-discovery/app.js           # 初始化渲染器、结果素材/颜色选择、过场生命周期
 tests/talent-discovery/glyph-renderer.js # 新增，采样、Gamma、字符绘制与动画
 tests/talent-discovery/glyph-renderer.test.mjs # 新增，纯函数和生命周期契约测试
@@ -171,6 +175,7 @@ git diff --check
 使用真实页面完成：正确码/错误码、40 道题、上一题修改、结果页、历史回放、保存海报、复制摘要、好评返现和重新测试。逐一检查六个目标 viewport：
 
 - Canvas 像素非空，Glyph 未被 CSS 隐藏或裁切；
+- 答题页顶部八色信号带在 40 道题过程中持续可见但不改变题目布局；动画只使用合成属性，`prefers-reduced-motion` 下为静态色块；
 - 首页测试码入口、结果页最佳天赋名称和过场状态文字清晰；
 - 过场从显示到结果切换实际持续 3 秒；
 - 页面 `document.documentElement.scrollWidth <= window.innerWidth`；
