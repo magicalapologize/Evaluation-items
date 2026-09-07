@@ -49,3 +49,15 @@ test("home and result glyph integration keeps explicit assets and renderer lifec
   }
   assert.match(app, /resultGlyphRenderer\?\.destroy\(\)/);
 });
+
+test("loading glyph assembly preserves the three-second finish contract", () => {
+  const finishSource = app.slice(app.indexOf("function finish()"), app.indexOf('$("start-btn")'));
+  assert.match(finishSource, /loading-glyph-canvas|renderLoadingGlyph/);
+  assert.match(app, /play\(\{[^}]*mode:\s*["']assembly["'][^}]*duration:\s*2600/);
+  assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?\},\s*1000\)/);
+  assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?\},\s*2200\)/);
+  assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?calculateProfile\(state\.answers\)[\s\S]*?\},\s*3000\)/);
+  assert.equal((finishSource.match(/calculateProfile\(state\.answers\)/g) || []).length, 1);
+  assert.ok(finishSource.indexOf("calculateProfile(state.answers)") > finishSource.indexOf("}, 2200)"));
+  assert.doesNotMatch(css, /\.signal-map\b/);
+});

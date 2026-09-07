@@ -18,7 +18,17 @@ const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, historyAttemptId: null, posterUrl: null };
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
 let homeGlyphRenderer = null;
+let loadingGlyphRenderer = null;
 let resultGlyphRenderer = null;
+
+function answerFingerprint(answers) {
+  let hash = 2166136261;
+  for (const answer of answers) {
+    hash ^= Number(answer) + 31;
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
 
 function setGlyphFallback(canvas, visible, source) {
   const fallback = canvas?.parentElement?.querySelector("[data-glyph-fallback]");
@@ -56,8 +66,25 @@ async function renderResultGlyph(profile) {
   }
 }
 
+function renderLoadingGlyph(seed) {
+  const canvas = $("loading-glyph-canvas");
+  loadingGlyphRenderer?.destroy();
+  loadingGlyphRenderer = createGlyphRenderer(canvas, { background: "#142A43" });
+  const renderer = loadingGlyphRenderer;
+  setGlyphFallback(canvas, true, "home-hero.png");
+  if (renderer.fallback) return;
+  void renderer.load("home-hero.png").then((source) => {
+    if (renderer !== loadingGlyphRenderer) return;
+    setGlyphFallback(canvas, false);
+    renderer.play({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", mode: "assembly", duration: 2600, seed });
+  }).catch(() => {
+    if (renderer === loadingGlyphRenderer) setGlyphFallback(canvas, true, "home-hero.png");
+  });
+}
+
 function initializeGlyphs() {
   homeGlyphRenderer = createGlyphRenderer($("home-glyph-canvas"), { background: "#142A43" });
+  loadingGlyphRenderer = createGlyphRenderer($("loading-glyph-canvas"), { background: "#142A43" });
   resultGlyphRenderer = createGlyphRenderer($("result-glyph-canvas"), { background: "#142A43" });
   void renderHomeGlyph();
 }
@@ -115,15 +142,17 @@ async function createPosterImage() {
 function renderHistorySnapshot(snapshot) { const result = RESULTS.find((item) => item.name === snapshot.result?.name); if (!result) throw new Error("测试结果不存在"); const scoreMap = Object.fromEntries(snapshot.dimensions.map((item) => [DIMENSIONS.find((dimension) => dimension.name === item.name)?.key, Number(item.value)]).filter(([key]) => key)); const ranking = Object.entries(scoreMap).sort((a, b) => b[1] - a[1]).map(([key]) => key); const profile = { result, bestKey: ranking[0], supportKey: ranking[1], activeKeys: ranking.slice(0, 4), awakeningKey: ranking[4], displayScores: scoreMap, careerTracks: [] }; renderResult(profile); const sections = globalThis.YunduHistoryReplay.sectionMap(snapshot); $("report-date").textContent = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(snapshot.createdAt)); $("bottleneck").textContent = sections.get("05｜规避潜在发展瓶颈")?.body || ""; $("competitive-edge").textContent = sections.get("08｜定位个人竞争力")?.body || ""; $("growth-plan").innerHTML = (sections.get("09｜获取进阶成长方案")?.items || []).map((item) => `<div class="growth-item">${esc(item)}</div>`).join(""); $("result-reminder").textContent = sections.get("09｜获取进阶成长方案")?.body || ""; $("active-talent-list").innerHTML = (sections.get("03｜4 项活跃天赋深入分析")?.items || []).map((item) => `<article class="talent-card"><p>${esc(item)}</p></article>`).join(""); $("career-track-list").innerHTML = (sections.get("06｜锁定优势职业赛道")?.items || []).map((item) => `<article class="career-card"><p>${esc(item)}</p></article>`).join(""); $("strategy-list").innerHTML = (sections.get("07｜掌握天赋拓展策略")?.items || []).map((item) => `<div class="strategy-item">${esc(item)}</div>`).join(""); }
 function start() { state.index = 0; state.answers = []; state.profile = null; state.historyAttemptId = null; renderQuestion(); show("quiz-screen"); }
 function finish() {
+  const loadingSeed = answerFingerprint(state.answers);
   $("loading-state").textContent = "正在读取线索";
   $("loading-detail").textContent = "正在汇总你在不同情境中的反应";
   $("loading-count").textContent = "00 / 08";
   $("loading-progress-bar").style.transform = "scaleX(0)";
   $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "0");
   show("loading-screen");
+  renderLoadingGlyph(loadingSeed);
   window.setTimeout(() => { $("loading-state").textContent = "正在校准维度"; $("loading-detail").textContent = "比较八项天赋在本次答卷中的相对强弱"; $("loading-count").textContent = "05 / 08"; $("loading-progress-bar").style.transform = "scaleX(.62)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "62"); }, 1000);
   window.setTimeout(() => { $("loading-state").textContent = "报告已就绪"; $("loading-detail").textContent = "正在打开你的天赋地图"; $("loading-count").textContent = "08 / 08"; $("loading-progress-bar").style.transform = "scaleX(1)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "100"); }, 2200);
-  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); show("result-screen"); }, 3000);
+  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); loadingGlyphRenderer?.destroy(); loadingGlyphRenderer = null; show("result-screen"); }, 3000);
 }
 
 $("start-btn").addEventListener("click", async () => { const code = $("access-code").value.trim(); $("gate-error").textContent = ""; if (!code) { $("gate-error").textContent = "请输入测试码"; return; } const button = $("start-btn"); button.disabled = true; try { const member = globalThis.YunduMember?.getMember ? await globalThis.YunduMember.getMember().catch(() => null) : null; if (!member?.active) await verify(code); start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; } });
