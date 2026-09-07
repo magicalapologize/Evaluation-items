@@ -55,6 +55,59 @@ test("particle renderer respects reduced motion without scheduling frames", () =
   }
 });
 
+test("data-field renderer draws a dense character matrix and talent fragments", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  let fillTextCalls = 0;
+  let strokeCalls = 0;
+  const context = {
+    setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, arc() {}, fill() {},
+    moveTo() {}, lineTo() {},
+    fillText() { fillTextCalls += 1; },
+    stroke() { strokeCalls += 1; },
+    set fillStyle(_) {}, set globalAlpha(_) {}, set font(_) {}, set lineWidth(_) {},
+  };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: false }) };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 900, clientHeight: 420, getContext: () => context }, {
+      palette: ["#1769AA", "#5B3FA3", "#3F6F3A"],
+      background: "#05070B",
+      count: 3200,
+      seed: 11,
+      talentWords: ["语言", "逻辑", "空间"],
+    });
+    assert.equal(renderer.renderStatic(1000), true);
+    assert.ok(fillTextCalls >= 1800);
+    assert.ok(strokeCalls >= 1);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+  }
+});
+
+test("data-field reduced motion renders once without scheduling frames", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const originalRaf = globalThis.requestAnimationFrame;
+  let scheduled = 0;
+  const context = { setTransform() {}, clearRect() {}, fillRect() {}, fillText() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {} };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 390, matchMedia: () => ({ matches: true }) };
+  globalThis.requestAnimationFrame = () => { scheduled += 1; return 1; };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 320, clientHeight: 220, getContext: () => context }, { talentWords: ["语言"], count: 1600 });
+    assert.equal(renderer.play(), true);
+    assert.equal(scheduled, 0);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+    globalThis.requestAnimationFrame = originalRaf;
+  }
+});
+
 test("sRGB and linear conversion stays in range", () => {
   for (const value of [0, 0.1, 0.5, 1]) {
     const linear = srgbToLinear(value);

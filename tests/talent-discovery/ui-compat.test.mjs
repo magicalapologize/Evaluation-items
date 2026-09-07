@@ -33,6 +33,15 @@ test("particle background mounts and quiz signal band keep a stable visual contr
   assert.match(css, /quiz-signal-block[^}]*min-height\s*:\s*\d+px/);
 });
 
+test("data field stays behind the original artwork", () => {
+  assert.match(css, /--data-field-bg\s*:\s*#05070B/i);
+  assert.match(css, /\.particle-background[^}]*z-index\s*:\s*0/);
+  assert.match(css, /\.glyph-surface canvas[^}]*z-index\s*:\s*1/);
+  assert.match(css, /\.glyph-surface img:not\(\.glyph-fallback\)[^}]*z-index\s*:\s*2/);
+  assert.match(html, /id="result-visual-image"[^>]+src="language\.png"/);
+  assert.doesNotMatch(html, /id="result-visual-image"[^>]+hidden/);
+});
+
 test("home and result particle integration keeps explicit assets and renderer lifecycle", () => {
   assert.match(app, /import\s*\{[\s\S]*createParticleRenderer[\s\S]*\}\s*from\s*["']\.\/glyph-renderer\.js["']/);
   assert.match(app, /home-particle-canvas/);
@@ -56,6 +65,14 @@ test("home and result particle integration keeps explicit assets and renderer li
   assert.doesNotMatch(html, /result-glyph-surface[^>]*>[\s\S]*result-glyph-canvas/);
 });
 
+test("home and result fields receive talent words and dark data-field settings", () => {
+  assert.match(app, /talentWords\s*:/);
+  assert.match(app, /bestKey\s*:/);
+  assert.match(app, /background:\s*["']#05070B["']/);
+  assert.match(app, /count:\s*(?:3\d{3}|[12]\d{3})/);
+  assert.match(app, /homeParticleRenderer\?\.destroy\(\)/);
+});
+
 test("result title keeps the colored talent name together on its own line", () => {
   assert.match(css, /\.report-hero h1 strong\s*\{[^}]*display\s*:\s*block/);
   assert.match(css, /\.report-hero h1 strong\s*\{[^}]*white-space\s*:\s*nowrap/);
@@ -71,4 +88,10 @@ test("loading glyph assembly preserves the three-second finish contract", () => 
   assert.equal((finishSource.match(/calculateProfile\(state\.answers\)/g) || []).length, 1);
   assert.ok(finishSource.indexOf("calculateProfile(state.answers)") > finishSource.indexOf("}, 2200)"));
   assert.doesNotMatch(css, /\.signal-map\b/);
+});
+
+test("loading assembly uses the dark data field and talent fragments", () => {
+  assert.match(app, /function renderLoadingGlyph[\s\S]*talentWords/);
+  assert.match(app, /function renderLoadingGlyph[\s\S]*background:\s*["']#05070B["']/);
+  assert.match(app, /mode:\s*["']assembly["'][\s\S]*duration:\s*2600/);
 });

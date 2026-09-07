@@ -30,6 +30,8 @@ function answerFingerprint(answers) {
   return hash >>> 0;
 }
 
+const TALENT_WORDS = DIMENSIONS.map((dimension) => dimension.short || dimension.name.replace(/天赋$/, ""));
+
 function setGlyphFallback(canvas, visible, source) {
   const fallback = canvas?.parentElement?.querySelector("[data-glyph-fallback]");
   if (source && fallback) fallback.src = source;
@@ -39,7 +41,7 @@ function setGlyphFallback(canvas, visible, source) {
 
 function renderHomeParticles() {
   homeParticleRenderer?.destroy();
-  homeParticleRenderer = createParticleRenderer($("home-particle-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", count: 96, seed: 17 });
+  homeParticleRenderer = createParticleRenderer($("home-particle-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 3200, seed: 17 });
   homeParticleRenderer.play();
 }
 
@@ -50,20 +52,20 @@ function renderResultParticles(profile) {
   const image = $("result-visual-image");
   if (image && asset) image.src = asset;
   resultParticleRenderer?.destroy();
-  resultParticleRenderer = createParticleRenderer(canvas, { palette: [color, "#2CB7A5", "#F5C451"], background: "#142A43", count: 82, seed: 29 + answerFingerprint(state.answers) });
+  resultParticleRenderer = createParticleRenderer(canvas, { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, bestKey: profile.bestKey, bestColor: color, background: "#05070B", count: 3000, seed: 29 + answerFingerprint(state.answers) });
   resultParticleRenderer.play();
 }
 
 function renderLoadingGlyph(seed) {
   const canvas = $("loading-glyph-canvas");
   loadingGlyphRenderer?.destroy();
-  loadingGlyphRenderer = createGlyphRenderer(canvas, { background: "#142A43" });
+  loadingGlyphRenderer = createGlyphRenderer(canvas, { background: "#05070B" });
   const renderer = loadingGlyphRenderer;
   setGlyphFallback(canvas, true, "home-hero.png");
   if (renderer.fallback) return;
   void renderer.load("home-hero.png").then((source) => {
     if (renderer !== loadingGlyphRenderer) return;
-    const rendered = renderer.play({ source, palette: DIMENSIONS.map((dimension) => dimension.color), background: "#142A43", mode: "assembly", duration: 2600, seed });
+    const rendered = renderer.play({ source, palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", mode: "assembly", duration: 2600, seed });
     setGlyphFallback(canvas, !rendered, "home-hero.png");
   }).catch(() => {
     if (renderer === loadingGlyphRenderer) setGlyphFallback(canvas, true, "home-hero.png");

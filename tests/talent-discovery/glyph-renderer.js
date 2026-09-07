@@ -155,14 +155,20 @@ export function createGlyphRenderer(canvas, options = {}) {
     context.font = `700 ${Math.min(options.fontSize || 12, height / rows)}px monospace`;
     context.textBaseline = "top";
     const order = seededOrder(columns * rows, config.seed);
-    for (const position of order) {
+    const assemblyProgress = config.mode === "assembly" ? clamp(config.progress ?? 1) : 1;
+    const visibleCount = Math.max(1, Math.floor(order.length * assemblyProgress));
+    for (let orderIndex = 0; orderIndex < visibleCount; orderIndex += 1) {
+      const position = order[orderIndex];
       const offset = position * 4;
       const brightness = relativeLuminance(pixels[offset] / 255, pixels[offset + 1] / 255, pixels[offset + 2] / 255) * (pixels[offset + 3] / 255);
       const x = (position % columns) * width / columns;
       const y = Math.floor(position / columns) * height / rows;
+      const stageOpacity = config.mode === "assembly" ? 0.4 + assemblyProgress * 0.6 : 1;
+      context.globalAlpha = stageOpacity;
       context.fillStyle = mixLinearColor(palette[position % palette.length], config.background || options.background || "#142A43", brightness);
       context.fillText(brightnessToGlyph(brightness), x, y);
     }
+    context.globalAlpha = 1;
     return true;
   }
 
@@ -173,9 +179,16 @@ export function createGlyphRenderer(canvas, options = {}) {
     if (typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return renderStatic({ ...config, mode: "static" });
     }
-    if (!renderStatic(config)) return false;
+    if (!renderStatic({ ...config, progress: 0.12 })) return false;
     const start = Date.now();
-    const tick = () => { if (destroyed) return; renderStatic(config); if (Date.now() - start < (config.duration || 1000)) frame = raf(tick); else frame = null; };
+    const tick = () => {
+      if (destroyed) return;
+      const elapsed = Date.now() - start;
+      const duration = config.duration || 1000;
+      const progress = Math.min(1, elapsed / duration);
+      renderStatic({ ...config, progress });
+      if (progress < 1) frame = raf(tick); else frame = null;
+    };
     frame = raf(tick);
     return true;
   }
@@ -188,31 +201,40 @@ export function createGlyphRenderer(canvas, options = {}) {
   return { fallback: false, load, renderStatic, play, pause, destroy };
 }
 
-function particleColor(color) {
-  const [r, g, b] = parseHexColor(color).map((channel) => Math.round(channel * 255));
-  return `rgba(${r}, ${g}, ${b}, 0.72)`;
-}
-
 export function createParticleRenderer(canvas, options = {}) {
   if (!canvas || typeof canvas.getContext !== "function" || typeof document === "undefined") {
     return { fallback: true, renderStatic: () => false, play: () => false, pause: () => undefined, destroy: () => undefined };
   }
   const context = canvas.getContext("2d");
   if (!context) return { fallback: true, renderStatic: () => false, play: () => false, pause: () => undefined, destroy: () => undefined };
-  const count = Math.max(12, Math.min(180, Number(options.count) || 96));
+  const requestedCount = Number(options.count) || 3200;
   const palette = Array.isArray(options.palette) && options.palette.length ? options.palette : ["#2CB7A5"];
-  const background = options.background || "#142A43";
+  const background = options.background || "#05070B";
+  const words = Array.isArray(options.talentWords) && options.talentWords.length ? options.talentWords : ["语言", "逻辑", "空间", "身体", "音乐", "人际", "内在", "自然"];
+  const glyphs = ".:·×▫+=*#%@";
+  const bestKey = String(options.bestKey || "");
+  const bestIndex = { language: 0, logic: 1, spatial: 2, body: 3, music: 4, interpersonal: 5, introspection: 6, nature: 7 }[bestKey];
+  const bestColor = options.bestColor || (Number.isInteger(bestIndex) ? palette[bestIndex % palette.length] : null);
   let frame = null;
   let destroyed = false;
-  let lastTime = 0;
-  let particles = [];
   let width = 1;
   let height = 1;
   let seed = (Number(options.seed) >>> 0) || 1;
   const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (callback) => setTimeout(() => callback(Date.now()), 16);
   const cancel = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : clearTimeout;
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
-  for (let index = 0; index < count; index += 1) particles.push({ x: random(), y: random(), radius: 0.5 + random() * 2.3, drift: 0.12 + random() * 0.42, phase: random() * Math.PI * 2, color: palette[index % palette.length] });
+  const mobile = typeof window !== "undefined" && Number(window.innerWidth) <= 760;
+  const count = Math.max(mobile ? 1400 : 2800, Math.min(mobile ? 2200 : 4200, requestedCount));
+  const matrix = Array.from({ length: count }, (_, index) => ({
+    x: random(), y: random(), phase: random() * Math.PI * 2, drift: 0.2 + random() * 0.8,
+    brightness: 0.14 + random() * 0.6, colorIndex: index % palette.length,
+  }));
+  const fragments = Array.from({ length: Math.max(18, Math.min(48, words.length * 5)) }, (_, index) => ({
+    text: String(words[index % words.length] || "").slice(index % 2, (index % 2) + 1) || "·",
+    x: random(), y: random(), phase: random() * Math.PI * 2, drift: 0.1 + random() * 0.25,
+    colorIndex: index % palette.length, alpha: 0.16 + random() * 0.26,
+  }));
+  const orbs = Array.from({ length: 4 }, (_, index) => ({ x: 0.16 + random() * 0.68, y: 0.16 + random() * 0.68, radius: 0.12 + random() * 0.22, phase: index * 1.7 + random() * 2 }));
   const resize = () => {
     width = Math.max(1, canvas.clientWidth || canvas.width || 1);
     height = Math.max(1, canvas.clientHeight || canvas.height || 1);
@@ -226,12 +248,49 @@ export function createParticleRenderer(canvas, options = {}) {
   function renderStatic(time = 0) {
     if (destroyed) return false;
     resize(); context.clearRect(0, 0, width, height); context.fillStyle = background; context.fillRect(0, 0, width, height);
-    for (const particle of particles) {
-      const wave = Math.sin(time * 0.00035 * particle.drift + particle.phase);
-      const x = ((particle.x + wave * 0.018) % 1 + 1) % 1 * width;
-      const y = ((particle.y + Math.cos(time * 0.00028 * particle.drift + particle.phase) * 0.014) % 1 + 1) % 1 * height;
-      const alpha = 0.25 + (wave + 1) * 0.18;
-      context.globalAlpha = alpha; context.fillStyle = particleColor(particle.color); context.beginPath(); context.arc(x, y, particle.radius, 0, Math.PI * 2); context.fill();
+    const now = Number(time) || 0;
+    const colorFor = (index) => palette[index % palette.length];
+    const orbEnergy = (x, y) => orbs.reduce((total, orb) => {
+      const dx = x - orb.x; const dy = (y - orb.y) * 0.72; const distance = Math.sqrt(dx * dx + dy * dy);
+      return total + Math.max(0, 1 - distance / orb.radius) ** 2;
+    }, 0);
+    for (const cell of matrix) {
+      const wave = Math.sin(now * 0.00035 * cell.drift + cell.phase);
+      const xRatio = ((cell.x + wave * 0.012) % 1 + 1) % 1;
+      const yRatio = ((cell.y + Math.cos(now * 0.00022 * cell.drift + cell.phase) * 0.01) % 1 + 1) % 1;
+      const energy = Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06);
+      const glyph = glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
+      context.globalAlpha = Math.min(0.7, 0.12 + energy * 0.48);
+      const matrixColorIndex = bestColor && Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
+      context.fillStyle = colorFor(matrixColorIndex);
+      const x = xRatio * width; const y = yRatio * height;
+      if (typeof context.fillText === "function") {
+        context.font = `${Math.max(8, Math.min(13, width / 95))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        context.textBaseline = "top";
+        context.fillText(glyph, x, y);
+      } else if (typeof context.beginPath === "function" && typeof context.arc === "function" && typeof context.fill === "function") {
+        context.beginPath(); context.arc(x, y, 0.7 + energy * 1.3, 0, Math.PI * 2); context.fill();
+      }
+    }
+    if (typeof context.fillText === "function") {
+      context.font = `${Math.max(12, Math.min(20, width / 46))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+      context.textBaseline = "middle";
+      for (const fragment of fragments) {
+        const drift = Math.sin(now * 0.0002 * fragment.drift + fragment.phase);
+        const x = ((fragment.x + drift * 0.04) % 1 + 1) % 1 * width;
+        const y = ((fragment.y + Math.cos(now * 0.00017 * fragment.drift + fragment.phase) * 0.025) % 1 + 1) % 1 * height;
+        const focus = bestColor && fragment.colorIndex === bestIndex ? 1.45 : 1;
+        context.globalAlpha = Math.min(0.62, fragment.alpha * focus + orbEnergy(x / width, y / height) * 0.12);
+        context.fillStyle = colorFor(bestColor && fragment.colorIndex === bestIndex ? bestIndex : fragment.colorIndex);
+        context.fillText(fragment.text, x, y);
+      }
+    }
+    if (typeof context.beginPath === "function" && typeof context.moveTo === "function" && typeof context.lineTo === "function" && typeof context.stroke === "function") {
+      const scanY = ((now * 0.000035) % 1) * height;
+      context.globalAlpha = 0.12;
+      context.strokeStyle = bestColor || palette[0];
+      context.lineWidth = 1;
+      context.beginPath(); context.moveTo(0, scanY); context.lineTo(width, scanY); context.stroke();
     }
     context.globalAlpha = 1; return true;
   }
@@ -240,7 +299,7 @@ export function createParticleRenderer(canvas, options = {}) {
     pause(); if (destroyed) return false;
     const reduced = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     renderStatic(Date.now()); if (reduced) return true;
-    const tick = (time) => { if (destroyed) return; renderStatic(time); lastTime = time; frame = raf(tick); };
+    const tick = (time) => { if (destroyed) return; renderStatic(time); frame = raf(tick); };
     frame = raf(tick); return true;
   }
   function destroy() { pause(); destroyed = true; resizeObserver?.disconnect?.(); document.removeEventListener?.("visibilitychange", visibilityHandler); }
