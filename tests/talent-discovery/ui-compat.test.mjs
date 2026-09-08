@@ -95,3 +95,12 @@ test("loading assembly uses the dark data field and talent fragments", () => {
   assert.match(app, /function renderLoadingGlyph[\s\S]*background:\s*["']#05070B["']/);
   assert.match(app, /mode:\s*["']assembly["'][\s\S]*duration:\s*2600/);
 });
+
+test("quiz screen uses the clean navy header and pale reading surface", () => {
+  assert.match(css, /\.quiz-screen\s*\{[^}]*background:\s*#eef2f1/i);
+  assert.match(css, /\.quiz-card\s*\{[^}]*max-width:\s*1660px/);
+  assert.match(css, /\.quiz-head\s*\{[^}]*background:\s*#142A43/);
+  assert.match(css, /\.quiz-signal-band\s*\{[^}]*height:\s*44px/);
+  assert.match(css, /\.quiz-signal-block\s*\{[^}]*transform:\s*none/);
+  assert.match(css, /\.question-block\s*\{[^}]*background:\s*#fff/);
+});
