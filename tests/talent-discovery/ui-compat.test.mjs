@@ -89,6 +89,12 @@ test("radar labels are bold and ranked dimensions use short names with level hin
   assert.match(css, /\.dimension-level\s*\{[^}]*white-space:\s*nowrap/);
 });
 
+test("growth reminder is presented as a highlighted closing card", () => {
+  assert.match(html, /<blockquote id="result-reminder"><\/blockquote>/);
+  assert.match(css, /#result-reminder\s*\{[^}]*background:[^;]+/);
+  assert.match(css, /#result-reminder::before\s*\{[^}]*background:\s*var\(--teal\)/);
+});
+
 test("loading particle field preserves the three-second finish contract", () => {
   const finishSource = app.slice(app.indexOf("function finish()"), app.indexOf('$("start-btn")'));
   assert.match(finishSource, /loading-glyph-canvas|renderLoadingParticles/);
