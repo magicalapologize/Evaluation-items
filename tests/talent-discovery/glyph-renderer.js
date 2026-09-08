@@ -245,10 +245,13 @@ export function createParticleRenderer(canvas, options = {}) {
   const visibilityHandler = () => { if (document.hidden) pause(); };
   if (resizeObserver?.observe) resizeObserver.observe(canvas);
   document.addEventListener?.("visibilitychange", visibilityHandler);
-  function renderStatic(time = 0) {
+  function renderStatic(time = 0, runtime = {}) {
     if (destroyed) return false;
     resize(); context.clearRect(0, 0, width, height); context.fillStyle = background; context.fillRect(0, 0, width, height);
     const now = Number(time) || 0;
+    const activeWords = Array.isArray(runtime.highlightWords) && runtime.highlightWords.length ? runtime.highlightWords : words;
+    const activeBestColor = runtime.bestColor || bestColor || palette[0];
+    const shape = runtime.shape || options.shape || "field";
     const colorFor = (index) => palette[index % palette.length];
     const orbEnergy = (x, y) => orbs.reduce((total, orb) => {
       const dx = x - orb.x; const dy = (y - orb.y) * 0.72; const distance = Math.sqrt(dx * dx + dy * dy);
@@ -258,11 +261,16 @@ export function createParticleRenderer(canvas, options = {}) {
       const wave = Math.sin(now * 0.00035 * cell.drift + cell.phase);
       const xRatio = ((cell.x + wave * 0.012) % 1 + 1) % 1;
       const yRatio = ((cell.y + Math.cos(now * 0.00022 * cell.drift + cell.phase) * 0.01) % 1 + 1) % 1;
-      const energy = Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06);
+      const dx = xRatio - 0.5;
+      const dy = (yRatio - 0.5) * 1.1;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const ring = shape === "talent-map" ? Math.exp(-((distance - 0.22) ** 2) / 0.0028) : 0;
+      const core = shape === "talent-map" ? Math.exp(-(((dx + 0.055) ** 2) + ((dy + 0.02) ** 2)) / 0.018) : 0;
+      const energy = Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
       const glyph = glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
       context.globalAlpha = Math.min(0.7, 0.12 + energy * 0.48);
-      const matrixColorIndex = bestColor && Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
-      context.fillStyle = colorFor(matrixColorIndex);
+      const matrixColorIndex = Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
+      context.fillStyle = ring > 0.35 || core > 0.35 ? activeBestColor : colorFor(matrixColorIndex);
       const x = xRatio * width; const y = yRatio * height;
       if (typeof context.fillText === "function") {
         context.font = `${Math.max(8, Math.min(13, width / 95))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
@@ -281,8 +289,21 @@ export function createParticleRenderer(canvas, options = {}) {
         const y = ((fragment.y + Math.cos(now * 0.00017 * fragment.drift + fragment.phase) * 0.025) % 1 + 1) % 1 * height;
         const focus = bestColor && fragment.colorIndex === bestIndex ? 1.45 : 1;
         context.globalAlpha = Math.min(0.62, fragment.alpha * focus + orbEnergy(x / width, y / height) * 0.12);
-        context.fillStyle = colorFor(bestColor && fragment.colorIndex === bestIndex ? bestIndex : fragment.colorIndex);
+        context.fillStyle = colorFor(Number.isInteger(bestIndex) && fragment.colorIndex === bestIndex ? bestIndex : fragment.colorIndex);
         context.fillText(fragment.text, x, y);
+      }
+      if (runtime.highlightWords?.length) {
+        const highlightChars = Array.from(activeWords.join(""));
+        context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        highlightChars.forEach((character, index) => {
+          const angle = -Math.PI * 0.82 + index * 0.42 + now * 0.00012;
+          const radius = Math.min(width, height) * 0.21;
+          const x = width * 0.5 + Math.cos(angle) * radius;
+          const y = height * 0.5 + Math.sin(angle) * radius * 0.7;
+          context.globalAlpha = 0.48 + 0.3 * ((Math.sin(now * 0.002 + index) + 1) * 0.5);
+          context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
+          context.fillText(character, x, y);
+        });
       }
     }
     if (typeof context.beginPath === "function" && typeof context.moveTo === "function" && typeof context.lineTo === "function" && typeof context.stroke === "function") {
@@ -295,11 +316,11 @@ export function createParticleRenderer(canvas, options = {}) {
     context.globalAlpha = 1; return true;
   }
   function pause() { if (frame !== null) { cancel(frame); frame = null; } }
-  function play() {
+  function play(runtime = {}) {
     pause(); if (destroyed) return false;
     const reduced = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    renderStatic(Date.now()); if (reduced) return true;
-    const tick = (time) => { if (destroyed) return; renderStatic(time); frame = raf(tick); };
+    renderStatic(Date.now(), runtime); if (reduced) return true;
+    const tick = (time) => { if (destroyed) return; renderStatic(time, runtime); frame = raf(tick); };
     frame = raf(tick); return true;
   }
   function destroy() { pause(); destroyed = true; resizeObserver?.disconnect?.(); document.removeEventListener?.("visibilitychange", visibilityHandler); }

@@ -108,6 +108,31 @@ test("data-field reduced motion renders once without scheduling frames", () => {
   }
 });
 
+test("loading data field renders highlighted strings without an image source", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  let fillTextCalls = 0;
+  const context = {
+    setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
+    fillText() { fillTextCalls += 1; },
+    set fillStyle(_) {}, set globalAlpha(_) {}, set font(_) {}, set textBaseline(_) {}, set lineWidth(_) {},
+  };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: true }) };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 640, clientHeight: 520, getContext: () => context }, {
+      palette: ["#1769AA", "#2CB7A5", "#F5C451"], background: "#05070B", count: 3200,
+      talentWords: ["语言", "逻辑", "空间"], mode: "loading",
+    });
+    assert.equal(renderer.play({ mode: "loading", highlightWords: ["读取", "天赋", "地图"] }), true);
+    assert.ok(fillTextCalls >= 2800);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+  }
+});
+
 test("sRGB and linear conversion stays in range", () => {
   for (const value of [0, 0.1, 0.5, 1]) {
     const linear = srgbToLinear(value);

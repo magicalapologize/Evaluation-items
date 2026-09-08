@@ -1,6 +1,6 @@
 import { DIMENSIONS, SCENES, QUESTIONS, RESULTS } from "./data.mjs";
 import { calculateProfile } from "./model.mjs";
-import { createGlyphRenderer, createParticleRenderer } from "./glyph-renderer.js";
+import { createParticleRenderer } from "./glyph-renderer.js";
 
 const PRODUCT_ID = "talent-discovery";
 const PRODUCT_TITLE = "天赋挖掘测试｜找到你的天赋领域";
@@ -19,7 +19,7 @@ const state = { index: 0, answers: [], profile: null, historyAttemptId: null, po
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
 let homeParticleRenderer = null;
 let quizParticleRenderer = null;
-let loadingGlyphRenderer = null;
+let loadingParticleRenderer = null;
 let resultParticleRenderer = null;
 
 function answerFingerprint(answers) {
@@ -32,13 +32,6 @@ function answerFingerprint(answers) {
 }
 
 const TALENT_WORDS = DIMENSIONS.map((dimension) => dimension.short || dimension.name.replace(/天赋$/, ""));
-
-function setGlyphFallback(canvas, visible, source) {
-  const fallback = canvas?.parentElement?.querySelector("[data-glyph-fallback]");
-  if (source && fallback) fallback.src = source;
-  if (canvas) canvas.hidden = visible;
-  if (fallback) fallback.hidden = !visible;
-}
 
 function renderHomeParticles() {
   homeParticleRenderer?.destroy();
@@ -63,24 +56,14 @@ function renderResultParticles(profile) {
   resultParticleRenderer.play();
 }
 
-function renderLoadingGlyph(seed) {
+function renderLoadingParticles(seed) {
   const canvas = $("loading-glyph-canvas");
-  loadingGlyphRenderer?.destroy();
-  loadingGlyphRenderer = createGlyphRenderer(canvas, { background: "#05070B" });
-  const renderer = loadingGlyphRenderer;
-  setGlyphFallback(canvas, true, "home-hero.png");
-  if (renderer.fallback) return;
-  void renderer.load("home-hero.png").then((source) => {
-    if (renderer !== loadingGlyphRenderer) return;
-    const rendered = renderer.play({ source, palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", mode: "assembly", duration: 2600, seed });
-    setGlyphFallback(canvas, !rendered, "home-hero.png");
-  }).catch(() => {
-    if (renderer === loadingGlyphRenderer) setGlyphFallback(canvas, true, "home-hero.png");
-  });
+  loadingParticleRenderer?.destroy();
+  loadingParticleRenderer = createParticleRenderer(canvas, { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 3400, seed, mode: "loading", shape: "talent-map" });
+  loadingParticleRenderer.play({ mode: "loading", shape: "talent-map", highlightWords: ["读取", "校准", "天赋", "地图"], bestColor: "#F5F8F6" });
 }
 
 function initializeGlyphs() {
-  loadingGlyphRenderer = createGlyphRenderer($("loading-glyph-canvas"), { background: "#142A43" });
   renderHomeParticles();
   renderQuizParticles();
 }
@@ -145,10 +128,10 @@ function finish() {
   $("loading-progress-bar").style.transform = "scaleX(0)";
   $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "0");
   show("loading-screen");
-  renderLoadingGlyph(loadingSeed);
+  renderLoadingParticles(loadingSeed);
   window.setTimeout(() => { $("loading-state").textContent = "正在校准维度"; $("loading-detail").textContent = "比较八项天赋在本次答卷中的相对强弱"; $("loading-count").textContent = "05 / 08"; $("loading-progress-bar").style.transform = "scaleX(.62)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "62"); }, 1000);
   window.setTimeout(() => { $("loading-state").textContent = "报告已就绪"; $("loading-detail").textContent = "正在打开你的天赋地图"; $("loading-count").textContent = "08 / 08"; $("loading-progress-bar").style.transform = "scaleX(1)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "100"); }, 2200);
-  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); loadingGlyphRenderer?.destroy(); loadingGlyphRenderer = null; show("result-screen"); }, 3000);
+  window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); loadingParticleRenderer?.destroy(); loadingParticleRenderer = null; show("result-screen"); }, 3000);
 }
 
 $("start-btn").addEventListener("click", async () => { const code = $("access-code").value.trim(); $("gate-error").textContent = ""; if (!code) { $("gate-error").textContent = "请输入测试码"; return; } const button = $("start-btn"); button.disabled = true; try { const member = globalThis.YunduMember?.getMember ? await globalThis.YunduMember.getMember().catch(() => null) : null; if (!member?.active) await verify(code); start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; } });

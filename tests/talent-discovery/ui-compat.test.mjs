@@ -21,7 +21,7 @@ test("particle background mounts and quiz signal band keep a stable visual contr
   for (const id of ["home-particle-canvas", "loading-glyph-canvas", "result-particle-canvas"]) {
     assert.match(html, new RegExp(`<canvas[^>]+id=["']${id}["'][^>]*aria-hidden=["']true["']`));
   }
-  assert.equal((html.match(/data-glyph-fallback/g) || []).length, 1);
+  assert.equal((html.match(/data-glyph-fallback/g) || []).length, 0);
   assert.match(html, /home-particle-canvas[\s\S]*home-hero\.png/);
   assert.match(html, /result-particle-canvas[\s\S]*language\.png/);
   assert.equal((html.match(/class=["'][^"']*quiz-signal-block[^"']*["']/g) || []).length, 8);
@@ -78,10 +78,10 @@ test("result title keeps the colored talent name together on its own line", () =
   assert.match(css, /\.report-hero h1 strong\s*\{[^}]*white-space\s*:\s*nowrap/);
 });
 
-test("loading glyph assembly preserves the three-second finish contract", () => {
+test("loading particle field preserves the three-second finish contract", () => {
   const finishSource = app.slice(app.indexOf("function finish()"), app.indexOf('$("start-btn")'));
-  assert.match(finishSource, /loading-glyph-canvas|renderLoadingGlyph/);
-  assert.match(app, /play\(\{[^}]*mode:\s*["']assembly["'][^}]*duration:\s*2600/);
+  assert.match(finishSource, /loading-glyph-canvas|renderLoadingParticles/);
+  assert.match(app, /play\(\{[^}]*mode:\s*["']loading["'][^}]*highlightWords/);
   assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?\},\s*1000\)/);
   assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?\},\s*2200\)/);
   assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?calculateProfile\(state\.answers\)[\s\S]*?\},\s*3000\)/);
@@ -90,10 +90,12 @@ test("loading glyph assembly preserves the three-second finish contract", () => 
   assert.doesNotMatch(css, /\.signal-map\b/);
 });
 
-test("loading assembly uses the dark data field and talent fragments", () => {
-  assert.match(app, /function renderLoadingGlyph[\s\S]*talentWords/);
-  assert.match(app, /function renderLoadingGlyph[\s\S]*background:\s*["']#05070B["']/);
-  assert.match(app, /mode:\s*["']assembly["'][\s\S]*duration:\s*2600/);
+test("loading particle field uses the dark data field and talent fragments", () => {
+  assert.match(app, /function renderLoadingParticles[\s\S]*talentWords/);
+  assert.match(app, /function renderLoadingParticles[\s\S]*background:\s*["']#05070B["']/);
+  assert.match(app, /highlightWords:\s*\[/);
+  assert.doesNotMatch(html, /data-glyph-fallback/);
+  assert.doesNotMatch(app, /renderer\.load\("home-hero\.png"\)/);
 });
 
 test("quiz screen uses the clean navy header and pale reading surface", () => {
