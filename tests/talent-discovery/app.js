@@ -18,6 +18,7 @@ const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, historyAttemptId: null, posterUrl: null };
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
 let homeParticleRenderer = null;
+let quizParticleRenderer = null;
 let loadingGlyphRenderer = null;
 let resultParticleRenderer = null;
 
@@ -43,6 +44,12 @@ function renderHomeParticles() {
   homeParticleRenderer?.destroy();
   homeParticleRenderer = createParticleRenderer($("home-particle-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 3200, seed: 17 });
   homeParticleRenderer.play();
+}
+
+function renderQuizParticles() {
+  quizParticleRenderer?.destroy();
+  quizParticleRenderer = createParticleRenderer($("quiz-particle-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 2600, seed: 23 });
+  quizParticleRenderer.play();
 }
 
 function renderResultParticles(profile) {
@@ -75,6 +82,7 @@ function renderLoadingGlyph(seed) {
 function initializeGlyphs() {
   loadingGlyphRenderer = createGlyphRenderer($("loading-glyph-canvas"), { background: "#142A43" });
   renderHomeParticles();
+  renderQuizParticles();
 }
 
 function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }

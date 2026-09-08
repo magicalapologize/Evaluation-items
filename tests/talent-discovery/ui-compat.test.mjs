@@ -97,10 +97,12 @@ test("loading assembly uses the dark data field and talent fragments", () => {
 });
 
 test("quiz screen uses the clean navy header and pale reading surface", () => {
-  assert.match(css, /\.quiz-screen\s*\{[^}]*background:\s*#eef2f1/i);
-  assert.match(css, /\.quiz-card\s*\{[^}]*max-width:\s*1660px/);
+  assert.match(html, /id="quiz-particle-canvas"[^>]*aria-hidden="true"/);
+  assert.match(app, /renderQuizParticles[\s\S]*createParticleRenderer/);
+  assert.match(css, /\.quiz-screen\s*\{[^}]*background:\s*#05070B/i);
+  assert.match(css, /\.quiz-card\s*\{[^}]*max-width:\s*1180px/);
   assert.match(css, /\.quiz-head\s*\{[^}]*background:\s*#142A43/);
-  assert.match(css, /\.quiz-signal-band\s*\{[^}]*height:\s*44px/);
-  assert.match(css, /\.quiz-signal-block\s*\{[^}]*transform:\s*none/);
+  assert.match(css, /\.quiz-signal-band\s*\{[^}]*height:\s*34px/);
+  assert.match(css, /\.quiz-particle-background\s*\{[^}]*z-index:\s*0/);
   assert.match(css, /\.question-block\s*\{[^}]*background:\s*#fff/);
 });
