@@ -224,7 +224,10 @@ export function createParticleRenderer(canvas, options = {}) {
   const cancel = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : clearTimeout;
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   const mobile = typeof window !== "undefined" && Number(window.innerWidth) <= 760;
-  const count = Math.max(mobile ? 1400 : 2800, Math.min(mobile ? 2200 : 4200, requestedCount));
+  const signalMode = options.mode === "signal";
+  const count = signalMode
+    ? Math.max(mobile ? 220 : 320, Math.min(mobile ? 480 : 900, requestedCount))
+    : Math.max(mobile ? 1400 : 2800, Math.min(mobile ? 2200 : 4200, requestedCount));
   const matrix = Array.from({ length: count }, (_, index) => ({
     x: random(), y: random(), phase: random() * Math.PI * 2, drift: 0.2 + random() * 0.8,
     brightness: 0.14 + random() * 0.6, colorIndex: index % palette.length,
@@ -247,9 +250,9 @@ export function createParticleRenderer(canvas, options = {}) {
   document.addEventListener?.("visibilitychange", visibilityHandler);
   function renderStatic(time = 0, runtime = {}) {
     if (destroyed) return false;
-    resize(); context.clearRect(0, 0, width, height); context.fillStyle = background; context.fillRect(0, 0, width, height);
+    resize(); context.clearRect(0, 0, width, height); if (background !== "transparent") { context.fillStyle = background; context.fillRect(0, 0, width, height); }
     const now = Number(time) || 0;
-    const activeWords = Array.isArray(runtime.highlightWords) && runtime.highlightWords.length ? runtime.highlightWords : words;
+    const activeWords = Array.isArray(runtime.highlightWords) && runtime.highlightWords.length ? runtime.highlightWords : (Array.isArray(options.highlightWords) && options.highlightWords.length ? options.highlightWords : words);
     const activeBestColor = runtime.bestColor || bestColor || palette[0];
     const shape = runtime.shape || options.shape || "field";
     const colorFor = (index) => palette[index % palette.length];
@@ -292,18 +295,31 @@ export function createParticleRenderer(canvas, options = {}) {
         context.fillStyle = colorFor(Number.isInteger(bestIndex) && fragment.colorIndex === bestIndex ? bestIndex : fragment.colorIndex);
         context.fillText(fragment.text, x, y);
       }
-      if (runtime.highlightWords?.length) {
+      if (runtime.highlightWords?.length || options.highlightWords?.length) {
         const highlightChars = Array.from(activeWords.join(""));
-        context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-        highlightChars.forEach((character, index) => {
-          const angle = -Math.PI * 0.82 + index * 0.42 + now * 0.00012;
-          const radius = Math.min(width, height) * 0.21;
-          const x = width * 0.5 + Math.cos(angle) * radius;
-          const y = height * 0.5 + Math.sin(angle) * radius * 0.7;
-          context.globalAlpha = 0.48 + 0.3 * ((Math.sin(now * 0.002 + index) + 1) * 0.5);
-          context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
-          context.fillText(character, x, y);
-        });
+        if (signalMode || runtime.mode === "signal") {
+          context.font = `${Math.max(8, Math.min(13, width / 95))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+          const step = Math.max(12, width / Math.max(12, highlightChars.length));
+          const offset = (now * 0.035) % Math.max(step, width * 0.24);
+          highlightChars.forEach((character, index) => {
+            const x = ((index * step - offset) % (width + step) + width + step) % (width + step) - step;
+            const y = height * (0.26 + ((index % 3) * 0.24));
+            context.globalAlpha = 0.48 + 0.34 * ((Math.sin(now * 0.002 + index) + 1) * 0.5);
+            context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
+            context.fillText(character, x, y);
+          });
+        } else {
+          context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+          highlightChars.forEach((character, index) => {
+            const angle = -Math.PI * 0.82 + index * 0.42 + now * 0.00012;
+            const radius = Math.min(width, height) * 0.21;
+            const x = width * 0.5 + Math.cos(angle) * radius;
+            const y = height * 0.5 + Math.sin(angle) * radius * 0.7;
+            context.globalAlpha = 0.48 + 0.3 * ((Math.sin(now * 0.002 + index) + 1) * 0.5);
+            context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
+            context.fillText(character, x, y);
+          });
+        }
       }
     }
     if (typeof context.beginPath === "function" && typeof context.moveTo === "function" && typeof context.lineTo === "function" && typeof context.stroke === "function") {

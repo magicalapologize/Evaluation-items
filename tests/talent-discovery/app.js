@@ -19,6 +19,7 @@ const state = { index: 0, answers: [], profile: null, historyAttemptId: null, po
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
 let homeParticleRenderer = null;
 let quizParticleRenderer = null;
+let quizSignalRenderer = null;
 let loadingParticleRenderer = null;
 let resultParticleRenderer = null;
 
@@ -45,6 +46,12 @@ function renderQuizParticles() {
   quizParticleRenderer.play();
 }
 
+function renderQuizSignal() {
+  quizSignalRenderer?.destroy();
+  quizSignalRenderer = createParticleRenderer($("quiz-signal-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, highlightWords: TALENT_WORDS, background: "transparent", count: 720, seed: 41, mode: "signal" });
+  quizSignalRenderer.play({ mode: "signal", highlightWords: TALENT_WORDS });
+}
+
 function renderResultParticles(profile) {
   const canvas = $("result-particle-canvas");
   const asset = RESULT_GLYPH_ASSETS[profile.bestKey];
@@ -66,6 +73,7 @@ function renderLoadingParticles(seed) {
 function initializeGlyphs() {
   renderHomeParticles();
   renderQuizParticles();
+  renderQuizSignal();
 }
 
 function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }

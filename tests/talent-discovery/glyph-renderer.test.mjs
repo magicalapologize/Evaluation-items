@@ -133,6 +133,33 @@ test("loading data field renders highlighted strings without an image source", (
   }
 });
 
+test("signal mode keeps the color strip visible under a transparent glyph layer", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  let fillTextCalls = 0;
+  let fillRectCalls = 0;
+  const context = {
+    setTransform() {}, clearRect() {}, fillRect() { fillRectCalls += 1; }, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
+    fillText() { fillTextCalls += 1; },
+    set fillStyle(_) {}, set globalAlpha(_) {}, set font(_) {}, set textBaseline(_) {}, set lineWidth(_) {},
+  };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: true }) };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 640, clientHeight: 34, getContext: () => context }, {
+      palette: ["#1769AA", "#2CB7A5", "#F5C451"], background: "transparent", count: 720, seed: 41,
+      talentWords: ["语言", "逻辑", "空间"], mode: "signal",
+    });
+    assert.equal(renderer.play({ mode: "signal", highlightWords: ["语言", "逻辑", "空间"] }), true);
+    assert.ok(fillTextCalls >= 300);
+    assert.equal(fillRectCalls, 0);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+  }
+});
+
 test("sRGB and linear conversion stays in range", () => {
   for (const value of [0, 0.1, 0.5, 1]) {
     const linear = srgbToLinear(value);
