@@ -89,7 +89,7 @@ function radar(profile) {
   const svg = $("radar-svg"); const center = 180; const radius = 126; const count = DIMENSIONS.length;
   const point = (index, value) => { const angle = -Math.PI / 2 + index * Math.PI * 2 / count; return `${center + Math.cos(angle) * value},${center + Math.sin(angle) * value}`; };
   const rings = [0.33, 0.66, 1].map((scale) => `<polygon points="${DIMENSIONS.map((_, index) => point(index, radius * scale)).join(" ")}" fill="none" stroke="#dbe6e2" stroke-width="1"/>`).join("");
-  const axes = DIMENSIONS.map((dimension, index) => { const [x, y] = point(index, radius).split(","); const [lx, ly] = point(index, radius + 22).split(","); return `<line x1="${center}" y1="${center}" x2="${x}" y2="${y}" stroke="#dbe6e2"/><text x="${lx}" y="${ly}" text-anchor="middle" font-size="10" fill="${dimension.color}">${dimension.short}</text>`; }).join("");
+  const axes = DIMENSIONS.map((dimension, index) => { const [x, y] = point(index, radius).split(","); const [lx, ly] = point(index, radius + 22).split(","); return `<line x1="${center}" y1="${center}" x2="${x}" y2="${y}" stroke="#dbe6e2"/><text x="${lx}" y="${ly}" text-anchor="middle" font-size="11" font-weight="800" fill="${dimension.color}">${dimension.short}</text>`; }).join("");
   const shape = DIMENSIONS.map((dimension, index) => point(index, radius * Number(profile.displayScores[dimension.key] || 0) / 100)).join(" "); svg.innerHTML = `${rings}${axes}<polygon points="${shape}" fill="#2CB7A533" stroke="#2CB7A5" stroke-width="3"/>`;
 }
 
@@ -98,11 +98,19 @@ function rankedDimensions(profile) {
   return ranking.map((key) => DIMENSIONS.find((dimension) => dimension.key === key)).filter(Boolean);
 }
 
+function talentLevel(score) {
+  const value = Number(score) || 0;
+  if (value >= 80) return { key: "high", label: "非常擅长" };
+  if (value >= 65) return { key: "steady", label: "比较擅长" };
+  if (value >= 50) return { key: "developing", label: "有些擅长" };
+  return { key: "quiet", label: "暂不突出" };
+}
+
 function renderResult(profile = state.profile) {
   const result = profile.result; const best = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey); const support = DIMENSIONS.find((dimension) => dimension.key === profile.supportKey);
   renderResultParticles(profile);
   document.querySelector(".report-hero").style.setProperty("--talent-color", best?.color || "#2CB7A5"); $("report-date").textContent = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); $("result-name").textContent = result.name; $("result-support").textContent = support?.name || "综合天赋"; $("result-tags").innerHTML = result.tags.map((tag) => `<span>${esc(tag)}</span>`).join(""); $("result-summary").textContent = result.summary; $("best-talent-reading").textContent = result.assessment ? `${result.assessment} ${result.portrait} ${result.strength}` : `${best?.description || ""} ${result.strength}`; $("best-scenes").innerHTML = `<span>${esc(result.bestScene)}</span>`; radar(profile);
-  $("dimension-list").innerHTML = rankedDimensions(profile).map((dimension, index) => `<div class="dimension-item" style="--talent-color:${dimension.color}"><span class="dimension-rank">${String(index + 1).padStart(2, "0")}</span><strong>${esc(dimension.name)}</strong><div class="dimension-track"><i style="width:${profile.displayScores[dimension.key]}%"></i></div><b>${profile.displayScores[dimension.key]}</b></div>`).join("");
+  $("dimension-list").innerHTML = rankedDimensions(profile).map((dimension, index) => { const score = profile.displayScores[dimension.key]; const level = talentLevel(score); return `<div class="dimension-item" style="--talent-color:${dimension.color}"><span class="dimension-rank">${String(index + 1).padStart(2, "0")}</span><strong>${esc(dimension.short)}</strong><div class="dimension-track"><i style="width:${score}%"></i></div><b>${score}</b><span class="dimension-level dimension-level-${level.key}">${level.label}</span></div>`; }).join("");
   $("active-talent-list").innerHTML = profile.activeKeys.map((key) => { const dimension = DIMENSIONS.find((item) => item.key === key); const copy = result.activeTalentCopy[key]; return `<article class="talent-card" style="--talent-color:${dimension.color}"><img src="${key}.png" alt="" loading="lazy"><div><h3>${esc(dimension.name)}</h3><p>${esc(copy.scene)}</p><p>${esc(copy.strength)}</p><p>${esc(copy.boundary)}</p><small>${esc(copy.action)}</small></div></article>`; }).join("");
   const hidden = DIMENSIONS.find((dimension) => dimension.key === profile.awakeningKey); $("hidden-potential").innerHTML = `<h3 style="color:${hidden?.color || "var(--ink)"}">${esc(hidden?.name || "潜在天赋")}</h3><p>${esc(result.hiddenPotential)}</p><p class="action-note">30 天验证：在一个真实小任务中刻意使用它，记录过程与反馈。</p>`; $("bottleneck").textContent = `${result.risk} ${result.bottleneck}`;
   $("career-track-list").innerHTML = profile.careerTracks.slice(0, 5).map((career) => `<article class="career-card"><h3>${esc(career.name)}</h3><p>${esc(career.why)}</p><small>${esc(career.tryAction)}</small></article>`).join(""); $("strategy-list").innerHTML = result.advices.map((advice) => `<div class="strategy-item">${esc(advice)}</div>`).join(""); $("competitive-edge").textContent = result.edge; $("growth-plan").innerHTML = result.growth.map((item) => `<div class="growth-item">${esc(item)}</div>`).join(""); $("result-reminder").textContent = result.reminder; $("copy-result-btn").dataset.summary = `我的最佳天赋是「${result.name}」。${result.summary} 辅助天赋：${support?.name || "综合天赋"}。`;

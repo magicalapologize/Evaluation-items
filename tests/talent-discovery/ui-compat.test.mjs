@@ -80,6 +80,15 @@ test("result title keeps the colored talent name together on its own line", () =
   assert.match(css, /\.report-hero h1 strong\s*\{[^}]*white-space\s*:\s*nowrap/);
 });
 
+test("radar labels are bold and ranked dimensions use short names with level hints", () => {
+  assert.match(app, /font-size="11" font-weight="800" fill="\$\{dimension\.color\}"/);
+  assert.match(app, /talentLevel\(score\)/);
+  assert.match(app, /dimension-level-\$\{level\.key\}/);
+  assert.match(app, /esc\(dimension\.short\)/);
+  assert.match(css, /\.dimension-item\s*\{[^}]*grid-template-columns:[^}]*78px/);
+  assert.match(css, /\.dimension-level\s*\{[^}]*white-space:\s*nowrap/);
+});
+
 test("loading particle field preserves the three-second finish contract", () => {
   const finishSource = app.slice(app.indexOf("function finish()"), app.indexOf('$("start-btn")'));
   assert.match(finishSource, /loading-glyph-canvas|renderLoadingParticles/);
