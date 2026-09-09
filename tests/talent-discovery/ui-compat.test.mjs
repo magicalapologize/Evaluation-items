@@ -25,6 +25,7 @@ test("particle background mounts and quiz signal band keep a stable visual contr
   assert.match(html, /home-particle-canvas[\s\S]*home-hero\.png/);
   assert.match(html, /result-particle-canvas[\s\S]*language\.png/);
   assert.equal((html.match(/class=["'][^"']*quiz-signal-block[^"']*["']/g) || []).length, 8);
+  assert.doesNotMatch(html, /id="quiz-particle-canvas"/);
   assert.match(html, /id="quiz-signal-canvas"[^>]*class="quiz-signal-canvas"/);
   assert.match(css, /@keyframes\s+quiz-signal-drift/);
   assert.match(css, /quiz-signal-block[^}]*transform/);
@@ -116,13 +117,13 @@ test("loading particle field uses the dark data field and talent fragments", () 
 });
 
 test("quiz screen uses the clean navy header and pale reading surface", () => {
-  assert.match(html, /id="quiz-particle-canvas"[^>]*aria-hidden="true"/);
-  assert.match(app, /renderQuizParticles[\s\S]*createParticleRenderer/);
+  assert.doesNotMatch(html, /id="quiz-particle-canvas"/);
+  assert.doesNotMatch(app, /renderQuizParticles|quizParticleRenderer/);
   assert.match(app, /renderQuizSignal[\s\S]*quiz-signal-canvas[\s\S]*mode:\s*["']signal["']/);
   assert.match(css, /\.quiz-screen\s*\{[^}]*background:\s*#05070B/i);
   assert.match(css, /\.quiz-card\s*\{[^}]*max-width:\s*1180px/);
   assert.match(css, /\.quiz-head\s*\{[^}]*background:\s*#142A43/);
   assert.match(css, /\.quiz-signal-band\s*\{[^}]*height:\s*34px/);
-  assert.match(css, /\.quiz-particle-background\s*\{[^}]*z-index:\s*0/);
+  assert.doesNotMatch(css, /\.quiz-particle-background\s*\{/);
   assert.match(css, /\.question-block\s*\{[^}]*background:\s*#fff/);
 });
