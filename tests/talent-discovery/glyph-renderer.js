@@ -212,6 +212,7 @@ export function createParticleRenderer(canvas, options = {}) {
   const background = options.background || "#05070B";
   const words = Array.isArray(options.talentWords) && options.talentWords.length ? options.talentWords : ["语言", "逻辑", "空间", "身体", "音乐", "人际", "内在", "自然"];
   const glyphs = ".:·×▫+=*#%@";
+  const loadingSymbols = ["·", "米", "日", "X", "田", "窗"];
   const bestKey = String(options.bestKey || "");
   const bestIndex = { language: 0, logic: 1, spatial: 2, body: 3, music: 4, interpersonal: 5, introspection: 6, nature: 7 }[bestKey];
   const bestColor = options.bestColor || (Number.isInteger(bestIndex) ? palette[bestIndex % palette.length] : null);
@@ -262,21 +263,26 @@ export function createParticleRenderer(canvas, options = {}) {
       const dx = x - orb.x; const dy = (y - orb.y) * 0.72; const distance = Math.sqrt(dx * dx + dy * dy);
       return total + Math.max(0, 1 - distance / orb.radius) ** 2;
     }, 0);
-    for (const cell of matrix) {
+    matrix.forEach((cell, index) => {
       const wave = loadingMode ? 0 : Math.sin(now * 0.00035 * cell.drift + cell.phase);
-      const xRatio = loadingMode ? cell.x : ((cell.x + wave * 0.012) % 1 + 1) % 1;
-      const yRatio = loadingMode ? cell.y : ((cell.y + Math.cos(now * 0.00022 * cell.drift + cell.phase) * 0.01) % 1 + 1) % 1;
+      const gridColumns = loadingMode ? Math.max(40, Math.min(120, Math.round(width / 8))) : 0;
+      const gridRows = loadingMode ? Math.ceil(count / gridColumns) : 0;
+      const xRatio = loadingMode ? ((index % gridColumns) + 0.5) / gridColumns : ((cell.x + wave * 0.012) % 1 + 1) % 1;
+      const yRatio = loadingMode ? ((Math.floor(index / gridColumns) % gridRows) + 0.5) / gridRows : ((cell.y + Math.cos(now * 0.00022 * cell.drift + cell.phase) * 0.01) % 1 + 1) % 1;
       const dx = xRatio - 0.5;
       const dy = (yRatio - 0.5) * 1.1;
       const distance = Math.sqrt(dx * dx + dy * dy);
       const ring = shape === "talent-map" ? Math.exp(-((distance - 0.22) ** 2) / 0.0028) : 0;
       const core = shape === "talent-map" ? Math.exp(-(((dx + 0.055) ** 2) + ((dy + 0.02) ** 2)) / 0.018) : 0;
+      const diagonal = loadingMode ? xRatio * 0.92 + yRatio * 1.18 : 0;
+      const bandCenter = loadingMode ? progress * 2.1 - 0.18 : 0;
+      const bandGlow = loadingMode ? Math.exp(-((diagonal - bandCenter) ** 2) / 0.018) : 0;
       const reveal = loadingMode ? Math.max(0, Math.min(1, progress * 1.45 - cell.revealOrder * 0.95)) : 1;
-      const energy = loadingMode ? Math.min(1, 0.04 + cell.brightness * 0.2 + reveal * (0.5 + ring * 0.55 + core * 0.32)) : Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
-      const glyph = glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
-      context.globalAlpha = Math.min(0.7, 0.12 + energy * 0.48);
+      const energy = loadingMode ? Math.min(1, 0.03 + cell.brightness * 0.16 + bandGlow * 0.92 + reveal * ring * 0.18) : Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
+      const glyph = loadingMode ? loadingSymbols[index % loadingSymbols.length] : glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
+      context.globalAlpha = loadingMode ? Math.min(0.95, 0.16 + energy * 0.78) : Math.min(0.7, 0.12 + energy * 0.48);
       const matrixColorIndex = Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
-      context.fillStyle = ring > 0.35 || core > 0.35 ? activeBestColor : colorFor(matrixColorIndex);
+      context.fillStyle = loadingMode && bandGlow > 0.22 ? activeBestColor : (ring > 0.35 || core > 0.35 ? activeBestColor : colorFor(matrixColorIndex));
       const x = xRatio * width; const y = yRatio * height;
       if (typeof context.fillText === "function") {
         context.font = `${Math.max(8, Math.min(13, width / 95))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
@@ -285,7 +291,7 @@ export function createParticleRenderer(canvas, options = {}) {
       } else if (typeof context.beginPath === "function" && typeof context.arc === "function" && typeof context.fill === "function") {
         context.beginPath(); context.arc(x, y, 0.7 + energy * 1.3, 0, Math.PI * 2); context.fill();
       }
-    }
+    });
     if (typeof context.fillText === "function") {
       context.font = `${Math.max(12, Math.min(20, width / 46))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
       context.textBaseline = "middle";

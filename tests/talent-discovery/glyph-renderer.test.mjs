@@ -187,6 +187,33 @@ test("loading animation advances reveal progress from the animation clock", () =
   }
 });
 
+test("loading grid uses the reference symbols and a moving diagonal light band", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const draws = [];
+  const context = {
+    setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
+    fillText(text, x, y) { draws.push({ text, x, y, alpha: this.globalAlpha }); },
+    set fillStyle(_) {}, set globalAlpha(value) { this._alpha = value; }, get globalAlpha() { return this._alpha; }, set font(_) {}, set textBaseline(_) {}, set lineWidth(_) {},
+  };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: true }) };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 640, clientHeight: 520, getContext: () => context }, { palette: ["#1769AA", "#2CB7A5"], background: "#05070B", count: 3200, seed: 5, mode: "loading" });
+    renderer.renderStatic(0, { mode: "loading", progress: 0.2 });
+    const first = draws.splice(0);
+    renderer.renderStatic(0, { mode: "loading", progress: 0.8 });
+    const second = draws.splice(0);
+    assert.ok(first.some(({ text }) => ["·", "米", "日", "X", "田", "窗"].includes(text)));
+    assert.deepEqual(first.map(({ x, y }) => ({ x, y })), second.map(({ x, y }) => ({ x, y })));
+    assert.notDeepEqual(first.map(({ alpha }) => alpha), second.map(({ alpha }) => alpha));
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+  }
+});
+
 test("signal mode keeps the color strip visible under a transparent glyph layer", () => {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;
