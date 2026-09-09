@@ -162,6 +162,31 @@ test("loading field keeps character positions fixed while reveal progress change
   }
 });
 
+test("loading animation advances reveal progress from the animation clock", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const originalRaf = globalThis.requestAnimationFrame;
+  const progresses = [];
+  const context = { setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, fillText() {}, set fillStyle(_) {}, set globalAlpha(_) {}, set font(_) {}, set textBaseline(_) {}, set lineWidth(_) {} };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: false }) };
+  globalThis.requestAnimationFrame = (callback) => { progresses.push(callback); return progresses.length; };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 640, clientHeight: 520, getContext: () => context }, { background: "#05070B", count: 3200, seed: 9, mode: "loading" });
+    assert.equal(renderer.play({ mode: "loading" }), true);
+    const firstFrame = progresses.shift();
+    firstFrame(1000);
+    const secondFrame = progresses.shift();
+    secondFrame(2300);
+    assert.equal(progresses.length, 1);
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+    globalThis.requestAnimationFrame = originalRaf;
+  }
+});
+
 test("signal mode keeps the color strip visible under a transparent glyph layer", () => {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;

@@ -350,9 +350,9 @@ export function createParticleRenderer(canvas, options = {}) {
   function play(runtime = {}) {
     pause(); if (destroyed) return false;
     const reduced = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (runtime.mode === "loading" || options.mode === "loading") { runtime.startedAt = Date.now(); runtime.duration = Number(runtime.duration) || 2600; runtime.progress = reduced ? 1 : 0; }
+    if (runtime.mode === "loading" || options.mode === "loading") { runtime.startedAt = null; runtime.duration = Number(runtime.duration) || 2600; runtime.progress = reduced ? 1 : 0; }
     renderStatic(Date.now(), runtime); if (reduced) return true;
-    const tick = (time) => { if (destroyed) return; if (runtime.mode === "loading" || options.mode === "loading") runtime.progress = Math.max(0, Math.min(1, (time - runtime.startedAt) / runtime.duration)); renderStatic(time, runtime); frame = raf(tick); };
+    const tick = (time) => { if (destroyed) return; if (runtime.mode === "loading" || options.mode === "loading") { runtime.startedAt ??= time; runtime.progress = Math.max(0, Math.min(1, (time - runtime.startedAt) / runtime.duration)); } renderStatic(time, runtime); frame = raf(tick); };
     frame = raf(tick); return true;
   }
   function destroy() { pause(); destroyed = true; resizeObserver?.disconnect?.(); document.removeEventListener?.("visibilitychange", visibilityHandler); }
