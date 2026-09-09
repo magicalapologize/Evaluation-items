@@ -205,7 +205,8 @@ test("loading grid uses dense ※ symbols and colorful highlighted strings", () 
     renderer.renderStatic(0, { mode: "loading", progress: 0.8, highlightWords: ["读取线索", "校准维度", "天赋地图"] });
     const second = draws.splice(0);
     assert.ok(first.some(({ text }) => text === "※"));
-    assert.ok(first.some(({ text }) => ["读取线索", "校准维度", "天赋地图"].includes(text)));
+    assert.ok(first.some(({ text }) => text === "※"));
+    assert.equal(first.filter(({ text }) => text !== "※").length, 0);
     assert.deepEqual(first.slice(0, 3200).map(({ x, y }) => ({ x, y })), second.slice(0, 3200).map(({ x, y }) => ({ x, y })));
     assert.notDeepEqual(first.map(({ alpha }) => alpha), second.map(({ alpha }) => alpha));
     renderer.destroy();

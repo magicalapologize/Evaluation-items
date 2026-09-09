@@ -275,14 +275,16 @@ export function createParticleRenderer(canvas, options = {}) {
       const ring = shape === "talent-map" ? Math.exp(-((distance - 0.22) ** 2) / 0.0028) : 0;
       const core = shape === "talent-map" ? Math.exp(-(((dx + 0.055) ** 2) + ((dy + 0.02) ** 2)) / 0.018) : 0;
       const diagonal = loadingMode ? xRatio * 0.92 + yRatio * 1.18 : 0;
-      const bandCenter = loadingMode ? progress * 2.1 - 0.18 : 0;
-      const bandGlow = loadingMode ? Math.exp(-((diagonal - bandCenter) ** 2) / 0.018) : 0;
+      const loadingColors = ["#2CB7A5", "#5B3FA3", "#F5C451"];
+      const bandGlows = loadingMode ? loadingColors.map((_, bandIndex) => Math.exp(-((diagonal - (progress * 2.2 - 0.42 + bandIndex * 0.25)) ** 2) / (0.012 + bandIndex * 0.004))) : [];
+      const bandIndex = bandGlows.length ? bandGlows.indexOf(Math.max(...bandGlows)) : -1;
+      const bandGlow = bandIndex >= 0 ? bandGlows[bandIndex] : 0;
       const reveal = loadingMode ? Math.max(0, Math.min(1, progress * 1.45 - cell.revealOrder * 0.95)) : 1;
       const energy = loadingMode ? Math.min(1, 0.03 + cell.brightness * 0.16 + bandGlow * 0.92 + reveal * ring * 0.18) : Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
       const glyph = loadingMode ? loadingSymbol : glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
       context.globalAlpha = loadingMode ? Math.min(0.95, 0.16 + energy * 0.78) : Math.min(0.7, 0.12 + energy * 0.48);
       const matrixColorIndex = Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
-      context.fillStyle = loadingMode && bandGlow > 0.22 ? activeBestColor : (ring > 0.35 || core > 0.35 ? activeBestColor : colorFor(matrixColorIndex));
+      context.fillStyle = loadingMode && bandGlow > 0.18 ? loadingColors[bandIndex] : (ring > 0.35 || core > 0.35 ? activeBestColor : colorFor(matrixColorIndex));
       const x = xRatio * width; const y = yRatio * height;
       if (typeof context.fillText === "function") {
         context.font = `${Math.max(8, Math.min(13, width / 95))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
@@ -295,7 +297,7 @@ export function createParticleRenderer(canvas, options = {}) {
     if (typeof context.fillText === "function") {
       context.font = `${Math.max(12, Math.min(20, width / 46))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
       context.textBaseline = "middle";
-      for (const fragment of fragments) {
+      if (!loadingMode) for (const fragment of fragments) {
         const drift = loadingMode ? 0 : Math.sin(now * 0.0002 * fragment.drift + fragment.phase);
         const x = (loadingMode ? fragment.x : ((fragment.x + drift * 0.04) % 1 + 1) % 1) * width;
         const y = (loadingMode ? fragment.y : ((fragment.y + Math.cos(now * 0.00017 * fragment.drift + fragment.phase) * 0.025) % 1 + 1) % 1) * height;
@@ -304,7 +306,7 @@ export function createParticleRenderer(canvas, options = {}) {
         context.fillStyle = colorFor(Number.isInteger(bestIndex) && fragment.colorIndex === bestIndex ? bestIndex : fragment.colorIndex);
         context.fillText(fragment.text, x, y);
       }
-      if (runtime.highlightWords?.length || options.highlightWords?.length) {
+      if (!loadingMode && (runtime.highlightWords?.length || options.highlightWords?.length)) {
         const highlightChars = Array.from(activeWords.join(""));
         if (signalMode || runtime.mode === "signal") {
           context.font = `${Math.max(8, Math.min(13, width / 95))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
