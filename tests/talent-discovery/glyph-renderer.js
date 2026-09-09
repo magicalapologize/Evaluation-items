@@ -212,7 +212,7 @@ export function createParticleRenderer(canvas, options = {}) {
   const background = options.background || "#05070B";
   const words = Array.isArray(options.talentWords) && options.talentWords.length ? options.talentWords : ["语言", "逻辑", "空间", "身体", "音乐", "人际", "内在", "自然"];
   const glyphs = ".:·×▫+=*#%@";
-  const loadingSymbols = ["·", "米", "日", "X", "田", "窗"];
+  const loadingSymbol = "※";
   const bestKey = String(options.bestKey || "");
   const bestIndex = { language: 0, logic: 1, spatial: 2, body: 3, music: 4, interpersonal: 5, introspection: 6, nature: 7 }[bestKey];
   const bestColor = options.bestColor || (Number.isInteger(bestIndex) ? palette[bestIndex % palette.length] : null);
@@ -279,7 +279,7 @@ export function createParticleRenderer(canvas, options = {}) {
       const bandGlow = loadingMode ? Math.exp(-((diagonal - bandCenter) ** 2) / 0.018) : 0;
       const reveal = loadingMode ? Math.max(0, Math.min(1, progress * 1.45 - cell.revealOrder * 0.95)) : 1;
       const energy = loadingMode ? Math.min(1, 0.03 + cell.brightness * 0.16 + bandGlow * 0.92 + reveal * ring * 0.18) : Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
-      const glyph = loadingMode ? loadingSymbols[index % loadingSymbols.length] : glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
+      const glyph = loadingMode ? loadingSymbol : glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
       context.globalAlpha = loadingMode ? Math.min(0.95, 0.16 + energy * 0.78) : Math.min(0.7, 0.12 + energy * 0.48);
       const matrixColorIndex = Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
       context.fillStyle = loadingMode && bandGlow > 0.22 ? activeBestColor : (ring > 0.35 || core > 0.35 ? activeBestColor : colorFor(matrixColorIndex));
@@ -314,20 +314,24 @@ export function createParticleRenderer(canvas, options = {}) {
             const x = ((index * step - offset) % (width + step) + width + step) % (width + step) - step;
             const y = height * (0.26 + ((index % 3) * 0.24));
             context.globalAlpha = 0.48 + 0.34 * ((Math.sin(now * 0.002 + index) + 1) * 0.5);
-            context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
+            context.fillStyle = colorFor((index + 1) % palette.length);
             context.fillText(character, x, y);
           });
         } else if (loadingMode) {
           context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-          const radius = Math.min(width, height) * 0.21;
-          highlightChars.forEach((character, index) => {
-            const angle = -Math.PI * 0.82 + index * 0.42;
-            const x = width * 0.5 + Math.cos(angle) * radius;
-            const y = height * 0.5 + Math.sin(angle) * radius * 0.7;
-            const reveal = Math.max(0, Math.min(1, progress * 1.7 - index / Math.max(1, highlightChars.length) * 1.1));
-            context.globalAlpha = 0.08 + reveal * 0.82;
-            context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
-            context.fillText(character, x, y);
+          const loadingWords = activeWords.length ? activeWords : ["读取线索", "校准维度", "天赋地图"];
+          const fontSize = Math.max(14, Math.min(24, width / 32));
+          context.font = `${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+          loadingWords.forEach((word, index) => {
+            const reveal = Math.max(0, Math.min(1, progress * 1.55 - index * 0.36));
+            if (reveal <= 0.01) return;
+            const phrase = String(word);
+            const phraseWidth = typeof context.measureText === "function" ? context.measureText(phrase).width : phrase.length * fontSize;
+            const x = width * 0.5 - phraseWidth * 0.5;
+            const y = height * (0.42 + index * 0.12);
+            context.globalAlpha = 0.14 + reveal * 0.86;
+            context.fillStyle = colorFor((index + 1) % palette.length);
+            context.fillText(phrase, x, y);
           });
         } else {
           context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;

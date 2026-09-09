@@ -60,7 +60,7 @@ function renderLoadingParticles(seed) {
   const canvas = $("loading-glyph-canvas");
   loadingParticleRenderer?.destroy();
   loadingParticleRenderer = createParticleRenderer(canvas, { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 3400, seed, mode: "loading", shape: "talent-map" });
-  loadingParticleRenderer.play({ mode: "loading", shape: "talent-map", highlightWords: ["读取", "校准", "天赋", "地图"], bestColor: "#F5F8F6" });
+  loadingParticleRenderer.play({ mode: "loading", shape: "talent-map", highlightWords: ["读取线索", "校准维度", "天赋地图"], bestColor: "#2CB7A5" });
 }
 
 function initializeGlyphs() {

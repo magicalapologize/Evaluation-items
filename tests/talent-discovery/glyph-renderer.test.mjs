@@ -152,8 +152,8 @@ test("loading field keeps character positions fixed while reveal progress change
     const first = draws.slice(); draws.length = 0;
     renderer.renderStatic(1000, { mode: "loading", progress: 0.8, highlightWords: ["读取", "天赋"] });
     const second = draws.slice();
-    assert.equal(first.length, second.length);
-    assert.deepEqual(first.map(({ x, y }) => ({ x, y })), second.map(({ x, y }) => ({ x, y })));
+    assert.ok(first.length > 3000 && second.length > 3000);
+    assert.deepEqual(first.slice(0, 3200).map(({ x, y }) => ({ x, y })), second.slice(0, 3200).map(({ x, y }) => ({ x, y })));
     assert.notDeepEqual(first.map(({ alpha }) => alpha), second.map(({ alpha }) => alpha));
     renderer.destroy();
   } finally {
@@ -187,7 +187,7 @@ test("loading animation advances reveal progress from the animation clock", () =
   }
 });
 
-test("loading grid uses the reference symbols and a moving diagonal light band", () => {
+test("loading grid uses dense ※ symbols and colorful highlighted strings", () => {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;
   const draws = [];
@@ -200,12 +200,13 @@ test("loading grid uses the reference symbols and a moving diagonal light band",
   globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: true }) };
   try {
     const renderer = createParticleRenderer({ clientWidth: 640, clientHeight: 520, getContext: () => context }, { palette: ["#1769AA", "#2CB7A5"], background: "#05070B", count: 3200, seed: 5, mode: "loading" });
-    renderer.renderStatic(0, { mode: "loading", progress: 0.2 });
+    renderer.renderStatic(0, { mode: "loading", progress: 0.2, highlightWords: ["读取线索", "校准维度", "天赋地图"] });
     const first = draws.splice(0);
-    renderer.renderStatic(0, { mode: "loading", progress: 0.8 });
+    renderer.renderStatic(0, { mode: "loading", progress: 0.8, highlightWords: ["读取线索", "校准维度", "天赋地图"] });
     const second = draws.splice(0);
-    assert.ok(first.some(({ text }) => ["·", "米", "日", "X", "田", "窗"].includes(text)));
-    assert.deepEqual(first.map(({ x, y }) => ({ x, y })), second.map(({ x, y }) => ({ x, y })));
+    assert.ok(first.some(({ text }) => text === "※"));
+    assert.ok(first.some(({ text }) => ["读取线索", "校准维度", "天赋地图"].includes(text)));
+    assert.deepEqual(first.slice(0, 3200).map(({ x, y }) => ({ x, y })), second.slice(0, 3200).map(({ x, y }) => ({ x, y })));
     assert.notDeepEqual(first.map(({ alpha }) => alpha), second.map(({ alpha }) => alpha));
     renderer.destroy();
   } finally {
