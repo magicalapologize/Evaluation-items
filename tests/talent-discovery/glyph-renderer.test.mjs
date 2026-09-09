@@ -133,6 +133,35 @@ test("loading data field renders highlighted strings without an image source", (
   }
 });
 
+test("loading field keeps character positions fixed while reveal progress changes brightness", () => {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const draws = [];
+  const context = {
+    setTransform() {}, clearRect() {}, fillRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
+    fillText(text, x, y) { draws.push({ text, x, y, alpha: this.globalAlpha }); },
+    set fillStyle(_) {}, set globalAlpha(value) { this._alpha = value; }, get globalAlpha() { return this._alpha; }, set font(_) {}, set textBaseline(_) {}, set lineWidth(_) {},
+  };
+  globalThis.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: true }) };
+  try {
+    const renderer = createParticleRenderer({ clientWidth: 640, clientHeight: 520, getContext: () => context }, {
+      palette: ["#1769AA", "#2CB7A5"], background: "#05070B", count: 3200, seed: 7, mode: "loading", talentWords: ["语言", "天赋"],
+    });
+    renderer.renderStatic(1000, { mode: "loading", progress: 0.2, highlightWords: ["读取", "天赋"] });
+    const first = draws.slice(); draws.length = 0;
+    renderer.renderStatic(1000, { mode: "loading", progress: 0.8, highlightWords: ["读取", "天赋"] });
+    const second = draws.slice();
+    assert.equal(first.length, second.length);
+    assert.deepEqual(first.map(({ x, y }) => ({ x, y })), second.map(({ x, y }) => ({ x, y })));
+    assert.notDeepEqual(first.map(({ alpha }) => alpha), second.map(({ alpha }) => alpha));
+    renderer.destroy();
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+  }
+});
+
 test("signal mode keeps the color strip visible under a transparent glyph layer", () => {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;

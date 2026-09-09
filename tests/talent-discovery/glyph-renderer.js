@@ -230,7 +230,7 @@ export function createParticleRenderer(canvas, options = {}) {
     : Math.max(mobile ? 1400 : 2800, Math.min(mobile ? 2200 : 4200, requestedCount));
   const matrix = Array.from({ length: count }, (_, index) => ({
     x: random(), y: random(), phase: random() * Math.PI * 2, drift: 0.2 + random() * 0.8,
-    brightness: 0.14 + random() * 0.6, colorIndex: index % palette.length,
+    brightness: 0.14 + random() * 0.6, colorIndex: index % palette.length, revealOrder: random(),
   }));
   const fragments = Array.from({ length: Math.max(18, Math.min(48, words.length * 5)) }, (_, index) => ({
     text: String(words[index % words.length] || "").slice(index % 2, (index % 2) + 1) || "·",
@@ -252,6 +252,8 @@ export function createParticleRenderer(canvas, options = {}) {
     if (destroyed) return false;
     resize(); context.clearRect(0, 0, width, height); if (background !== "transparent") { context.fillStyle = background; context.fillRect(0, 0, width, height); }
     const now = Number(time) || 0;
+    const loadingMode = runtime.mode === "loading" || options.mode === "loading";
+    const progress = loadingMode ? Math.max(0, Math.min(1, Number.isFinite(runtime.progress) ? runtime.progress : 0)) : 1;
     const activeWords = Array.isArray(runtime.highlightWords) && runtime.highlightWords.length ? runtime.highlightWords : (Array.isArray(options.highlightWords) && options.highlightWords.length ? options.highlightWords : words);
     const activeBestColor = runtime.bestColor || bestColor || palette[0];
     const shape = runtime.shape || options.shape || "field";
@@ -261,15 +263,16 @@ export function createParticleRenderer(canvas, options = {}) {
       return total + Math.max(0, 1 - distance / orb.radius) ** 2;
     }, 0);
     for (const cell of matrix) {
-      const wave = Math.sin(now * 0.00035 * cell.drift + cell.phase);
-      const xRatio = ((cell.x + wave * 0.012) % 1 + 1) % 1;
-      const yRatio = ((cell.y + Math.cos(now * 0.00022 * cell.drift + cell.phase) * 0.01) % 1 + 1) % 1;
+      const wave = loadingMode ? 0 : Math.sin(now * 0.00035 * cell.drift + cell.phase);
+      const xRatio = loadingMode ? cell.x : ((cell.x + wave * 0.012) % 1 + 1) % 1;
+      const yRatio = loadingMode ? cell.y : ((cell.y + Math.cos(now * 0.00022 * cell.drift + cell.phase) * 0.01) % 1 + 1) % 1;
       const dx = xRatio - 0.5;
       const dy = (yRatio - 0.5) * 1.1;
       const distance = Math.sqrt(dx * dx + dy * dy);
       const ring = shape === "talent-map" ? Math.exp(-((distance - 0.22) ** 2) / 0.0028) : 0;
       const core = shape === "talent-map" ? Math.exp(-(((dx + 0.055) ** 2) + ((dy + 0.02) ** 2)) / 0.018) : 0;
-      const energy = Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
+      const reveal = loadingMode ? Math.max(0, Math.min(1, progress * 1.45 - cell.revealOrder * 0.95)) : 1;
+      const energy = loadingMode ? Math.min(1, 0.04 + cell.brightness * 0.2 + reveal * (0.5 + ring * 0.55 + core * 0.32)) : Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
       const glyph = glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
       context.globalAlpha = Math.min(0.7, 0.12 + energy * 0.48);
       const matrixColorIndex = Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
@@ -287,11 +290,11 @@ export function createParticleRenderer(canvas, options = {}) {
       context.font = `${Math.max(12, Math.min(20, width / 46))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
       context.textBaseline = "middle";
       for (const fragment of fragments) {
-        const drift = Math.sin(now * 0.0002 * fragment.drift + fragment.phase);
-        const x = ((fragment.x + drift * 0.04) % 1 + 1) % 1 * width;
-        const y = ((fragment.y + Math.cos(now * 0.00017 * fragment.drift + fragment.phase) * 0.025) % 1 + 1) % 1 * height;
+        const drift = loadingMode ? 0 : Math.sin(now * 0.0002 * fragment.drift + fragment.phase);
+        const x = (loadingMode ? fragment.x : ((fragment.x + drift * 0.04) % 1 + 1) % 1) * width;
+        const y = (loadingMode ? fragment.y : ((fragment.y + Math.cos(now * 0.00017 * fragment.drift + fragment.phase) * 0.025) % 1 + 1) % 1) * height;
         const focus = bestColor && fragment.colorIndex === bestIndex ? 1.45 : 1;
-        context.globalAlpha = Math.min(0.62, fragment.alpha * focus + orbEnergy(x / width, y / height) * 0.12);
+        context.globalAlpha = loadingMode ? Math.min(0.3, fragment.alpha * 0.75 + progress * 0.12) : Math.min(0.62, fragment.alpha * focus + orbEnergy(x / width, y / height) * 0.12);
         context.fillStyle = colorFor(Number.isInteger(bestIndex) && fragment.colorIndex === bestIndex ? bestIndex : fragment.colorIndex);
         context.fillText(fragment.text, x, y);
       }
@@ -305,6 +308,18 @@ export function createParticleRenderer(canvas, options = {}) {
             const x = ((index * step - offset) % (width + step) + width + step) % (width + step) - step;
             const y = height * (0.26 + ((index % 3) * 0.24));
             context.globalAlpha = 0.48 + 0.34 * ((Math.sin(now * 0.002 + index) + 1) * 0.5);
+            context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
+            context.fillText(character, x, y);
+          });
+        } else if (loadingMode) {
+          context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+          const radius = Math.min(width, height) * 0.21;
+          highlightChars.forEach((character, index) => {
+            const angle = -Math.PI * 0.82 + index * 0.42;
+            const x = width * 0.5 + Math.cos(angle) * radius;
+            const y = height * 0.5 + Math.sin(angle) * radius * 0.7;
+            const reveal = Math.max(0, Math.min(1, progress * 1.7 - index / Math.max(1, highlightChars.length) * 1.1));
+            context.globalAlpha = 0.08 + reveal * 0.82;
             context.fillStyle = index % 2 ? activeBestColor : "#F5F8F6";
             context.fillText(character, x, y);
           });
@@ -322,7 +337,7 @@ export function createParticleRenderer(canvas, options = {}) {
         }
       }
     }
-    if (typeof context.beginPath === "function" && typeof context.moveTo === "function" && typeof context.lineTo === "function" && typeof context.stroke === "function") {
+    if (!loadingMode && typeof context.beginPath === "function" && typeof context.moveTo === "function" && typeof context.lineTo === "function" && typeof context.stroke === "function") {
       const scanY = ((now * 0.000035) % 1) * height;
       context.globalAlpha = 0.12;
       context.strokeStyle = bestColor || palette[0];
@@ -335,8 +350,9 @@ export function createParticleRenderer(canvas, options = {}) {
   function play(runtime = {}) {
     pause(); if (destroyed) return false;
     const reduced = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (runtime.mode === "loading" || options.mode === "loading") { runtime.startedAt = Date.now(); runtime.duration = Number(runtime.duration) || 2600; runtime.progress = reduced ? 1 : 0; }
     renderStatic(Date.now(), runtime); if (reduced) return true;
-    const tick = (time) => { if (destroyed) return; renderStatic(time, runtime); frame = raf(tick); };
+    const tick = (time) => { if (destroyed) return; if (runtime.mode === "loading" || options.mode === "loading") runtime.progress = Math.max(0, Math.min(1, (time - runtime.startedAt) / runtime.duration)); renderStatic(time, runtime); frame = raf(tick); };
     frame = raf(tick); return true;
   }
   function destroy() { pause(); destroyed = true; resizeObserver?.disconnect?.(); document.removeEventListener?.("visibilitychange", visibilityHandler); }
