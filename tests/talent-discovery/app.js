@@ -21,6 +21,7 @@ let homeParticleRenderer = null;
 let loadingParticleRenderer = null;
 let resultParticleRenderer = null;
 let answerAdvanceTimer = null;
+let activeMember = null;
 
 function answerFingerprint(answers) {
   let hash = 2166136261;
@@ -63,6 +64,24 @@ function initializeGlyphs() {
 
 function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }
 async function verify(code) { const response = await fetch("/api/verify-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: PRODUCT_ID, code }) }); const data = await response.json().catch(() => ({})); if (!response.ok || !data.success) throw new Error(data.message || "测试码验证失败"); }
+
+function applyMemberAccess(member) {
+  activeMember = member && member.active ? member : null;
+  $("member-unlock").classList.toggle("is-visible", Boolean(activeMember));
+  const gateRow = document.querySelector("#home-screen .gate-row");
+  const gateNote = document.querySelector("#home-screen .gate-note");
+  gateRow.classList.toggle("member-access-active", Boolean(activeMember));
+  gateNote.classList.toggle("member-access-hidden", Boolean(activeMember));
+  if (activeMember) {
+    $("member-plan-label").textContent = `${activeMember.planLabel} · ${globalThis.YunduMember.formatExpiry(activeMember)}`;
+    document.querySelector("#home-screen .gate-title").textContent = "会员通道已开启，可直接读取天赋线索";
+    $("start-btn").textContent = "会员直接开始";
+  }
+}
+
+const memberReady = globalThis.YunduMember?.getMember
+  ? globalThis.YunduMember.getMember().then(applyMemberAccess).catch(() => null)
+  : Promise.resolve(null);
 
 function renderQuestion() {
   if (answerAdvanceTimer) { window.clearTimeout(answerAdvanceTimer); answerAdvanceTimer = null; }
@@ -147,7 +166,7 @@ $("answer-list").addEventListener("click", (event) => {
     if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else finish();
   }, 120);
 });
-$("start-btn").addEventListener("click", async () => { const code = $("access-code").value.trim(); $("gate-error").textContent = ""; if (!code) { $("gate-error").textContent = "请输入测试码"; return; } const button = $("start-btn"); button.disabled = true; try { const member = globalThis.YunduMember?.getMember ? await globalThis.YunduMember.getMember().catch(() => null) : null; if (!member?.active) await verify(code); start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; } });
+$("start-btn").addEventListener("click", async () => { const button = $("start-btn"); $("gate-error").textContent = ""; button.disabled = true; try { await memberReady; if (!activeMember) { const code = $("access-code").value.trim(); if (!code) { $("gate-error").textContent = "请输入测试码"; return; } await verify(code); } start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始" : "验证并开始"; } });
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } }); $("restart-btn").addEventListener("click", start);
 $("copy-result-btn").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("copy-result-btn").dataset.summary || ""); $("copy-result-btn").textContent = "已复制"; window.setTimeout(() => { $("copy-result-btn").textContent = "复制结果摘要"; }, 1600); } catch { $("copy-result-btn").textContent = "请手动复制"; } }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("is-open"));
 $("save-poster-btn").addEventListener("click", async () => { const button = $("save-poster-btn"); button.disabled = true; button.textContent = "正在生成..."; try { state.posterUrl = await createPosterImage(); $("poster-image").src = state.posterUrl; $("poster-modal").classList.add("is-open"); } catch (error) { window.alert(error.message); } finally { button.disabled = false; button.textContent = "保存报告海报"; } }); document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("is-open"))); document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("is-open"); }));

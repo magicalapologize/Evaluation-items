@@ -102,7 +102,8 @@ test("growth reminder is presented as a highlighted closing card", () => {
 });
 
 test("loading particle field preserves the three-second finish contract", () => {
-  const finishSource = app.slice(app.indexOf("function finish()"), app.indexOf('$("start-btn")'));
+  const finishStart = app.indexOf("function finish()");
+  const finishSource = app.slice(finishStart, app.indexOf('$("start-btn")', finishStart));
   assert.match(finishSource, /loading-glyph-canvas|renderLoadingParticles/);
   assert.match(app, /play\(\{[^}]*mode:\s*["']loading["'][^}]*highlightWords/);
   assert.match(finishSource, /setTimeout\(\(\)\s*=>[\s\S]*?\},\s*1000\)/);
@@ -138,4 +139,14 @@ test("quiz answer interactions are touch-safe and isolate hover to fine pointers
   assert.match(app, /activeElement\s*&&\s*\$\("answer-list"\)\.contains\(activeElement\)\)\s*activeElement\.blur\(\)/);
   assert.match(app, /button\.classList\.add\("selected"\);\s*button\.blur\(\)/);
   assert.match(app, /setTimeout\(\(\)\s*=>\s*\{[\s\S]*?renderQuestion\(\)[\s\S]*?\},\s*120\)/);
+});
+
+test("talent discovery shares access codes and exposes the member path", () => {
+  assert.match(html, /id="member-unlock"[^>]*class="member-unlock"[\s\S]*id="member-plan-label"/);
+  assert.match(html, /天赋职业评估与天赋挖掘测试使用同一个测试码/);
+  assert.match(app, /function applyMemberAccess\(member\)/);
+  assert.match(app, /globalThis\.YunduMember\?\.getMember/);
+  assert.match(app, /if \(!activeMember\)/);
+  assert.match(app, /member-access-active/);
+  assert.match(app, /member-access-hidden/);
 });
