@@ -18,9 +18,9 @@ const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, historyAttemptId: null, posterUrl: null };
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
 let homeParticleRenderer = null;
-let quizSignalRenderer = null;
 let loadingParticleRenderer = null;
 let resultParticleRenderer = null;
+let answerAdvanceTimer = null;
 
 function answerFingerprint(answers) {
   let hash = 2166136261;
@@ -37,12 +37,6 @@ function renderHomeParticles() {
   homeParticleRenderer?.destroy();
   homeParticleRenderer = createParticleRenderer($("home-particle-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 3200, seed: 17 });
   homeParticleRenderer.play();
-}
-
-function renderQuizSignal() {
-  quizSignalRenderer?.destroy();
-  quizSignalRenderer = createParticleRenderer($("quiz-signal-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, highlightWords: TALENT_WORDS, background: "transparent", count: 720, seed: 41, mode: "signal" });
-  quizSignalRenderer.play({ mode: "signal", highlightWords: TALENT_WORDS });
 }
 
 function renderResultParticles(profile) {
@@ -65,16 +59,17 @@ function renderLoadingParticles(seed) {
 
 function initializeGlyphs() {
   renderHomeParticles();
-  renderQuizSignal();
 }
 
 function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }
 async function verify(code) { const response = await fetch("/api/verify-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: PRODUCT_ID, code }) }); const data = await response.json().catch(() => ({})); if (!response.ok || !data.success) throw new Error(data.message || "测试码验证失败"); }
 
 function renderQuestion() {
+  if (answerAdvanceTimer) { window.clearTimeout(answerAdvanceTimer); answerAdvanceTimer = null; }
+  const activeElement = document.activeElement;
+  if (activeElement && $("answer-list").contains(activeElement)) activeElement.blur();
   const question = QUESTIONS[state.index]; $("question-group").textContent = question.scene; $("question-number").textContent = String(state.index + 1); $("progress-bar").style.width = `${((state.index + 1) / QUESTIONS.length) * 100}%`; $("question-text").textContent = question.text; $("prev-btn").disabled = state.index === 0;
   $("answer-list").innerHTML = question.options.map((option, index) => `<button class="answer-btn${state.answers[state.index] === index ? " selected" : ""}" data-answer="${index}" type="button"><span class="answer-letter">${String.fromCharCode(65 + index)}</span>${esc(option.text)}</button>`).join("");
-  $("answer-list").querySelectorAll("button").forEach((button) => button.addEventListener("click", () => { state.answers[state.index] = Number(button.dataset.answer); if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else finish(); }));
 }
 
 function radar(profile) {
@@ -142,6 +137,16 @@ function finish() {
   window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); loadingParticleRenderer?.destroy(); loadingParticleRenderer = null; show("result-screen"); }, 3000);
 }
 
+$("answer-list").addEventListener("click", (event) => {
+  const button = event.target.closest(".answer-btn");
+  if (!button || !$("answer-list").contains(button) || answerAdvanceTimer) return;
+  state.answers[state.index] = Number(button.dataset.answer);
+  button.classList.add("selected"); button.blur();
+  answerAdvanceTimer = window.setTimeout(() => {
+    answerAdvanceTimer = null;
+    if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else finish();
+  }, 120);
+});
 $("start-btn").addEventListener("click", async () => { const code = $("access-code").value.trim(); $("gate-error").textContent = ""; if (!code) { $("gate-error").textContent = "请输入测试码"; return; } const button = $("start-btn"); button.disabled = true; try { const member = globalThis.YunduMember?.getMember ? await globalThis.YunduMember.getMember().catch(() => null) : null; if (!member?.active) await verify(code); start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; } });
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } }); $("restart-btn").addEventListener("click", start);
 $("copy-result-btn").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("copy-result-btn").dataset.summary || ""); $("copy-result-btn").textContent = "已复制"; window.setTimeout(() => { $("copy-result-btn").textContent = "复制结果摘要"; }, 1600); } catch { $("copy-result-btn").textContent = "请手动复制"; } }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("is-open"));

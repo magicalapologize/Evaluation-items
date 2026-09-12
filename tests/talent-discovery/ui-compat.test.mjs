@@ -8,7 +8,7 @@ const app = readFileSync(new URL("app.js", root), "utf8");
 test("talent discovery page keeps its public UI contract", () => {
   assert.match(html, /talent-discovery/);
   for (const label of ["语言表达天赋", "逻辑推演天赋", "空间想象天赋", "身体实践天赋", "音乐节奏天赋", "人际感知天赋", "内在觉察天赋", "自然观察天赋"]) assert.match(readFileSync(new URL("data.mjs", root), "utf8"), new RegExp(label));
-  for (const heading of ["01｜你的最佳天赋评估", "02｜8 项天赋综合解读", "03｜4 项活跃天赋深入分析", "04｜解锁隐藏天赋潜能", "05｜规避潜在发展瓶颈", "06｜锁定优势职业赛道", "07｜掌握天赋拓展策略", "08｜定位个人竞争力", "09｜获取进阶成长方案"]) assert.match(html, new RegExp(heading));
+  for (const heading of ["你的最佳天赋评估", "8 项天赋综合解读", "4 项活跃天赋深入分析", "解锁隐藏天赋潜能", "规避潜在发展瓶颈", "锁定优势职业赛道", "掌握天赋拓展策略", "定位个人竞争力", "获取进阶成长方案"]) assert.match(html, new RegExp(heading));
   assert.match(html, /多元智能理论/); assert.match(html, /\/api\/verify-code/); assert.match(app, /product-qrs\/talent-discovery\.png/); assert.match(html, /HistoryReplay|history-replay/);
   assert.match(html, /id="cashback-modal"[\s\S]*wechat-qr\.webp/); assert.doesNotMatch(html, /id="cashback-modal"[\s\S]*product-qrs\/talent-discovery\.png/);
 });
@@ -17,23 +17,17 @@ test("visual contract includes palette, mobile layout and isolated selected stat
   assert.match(css, /@media[^}]*max-width/); assert.match(css, /\.answer-btn\{[^}]*min-height:68px/); assert.doesNotMatch(css, /\.answer-btn:hover,\s*\.answer-btn\.selected/);
 });
 
-test("particle background mounts and quiz signal band keep a stable visual contract", () => {
+test("particle backgrounds mount while the quiz header stays lightweight", () => {
   for (const id of ["home-particle-canvas", "loading-glyph-canvas", "result-particle-canvas"]) {
     assert.match(html, new RegExp(`<canvas[^>]+id=["']${id}["'][^>]*aria-hidden=["']true["']`));
   }
   assert.equal((html.match(/data-glyph-fallback/g) || []).length, 0);
   assert.match(html, /home-particle-canvas[\s\S]*home-hero\.png/);
   assert.match(html, /result-particle-canvas[\s\S]*language\.png/);
-  assert.equal((html.match(/class=["'][^"']*quiz-signal-block[^"']*["']/g) || []).length, 8);
   assert.doesNotMatch(html, /id="quiz-particle-canvas"/);
-  assert.match(html, /id="quiz-signal-canvas"[^>]*class="quiz-signal-canvas"/);
-  assert.match(css, /@keyframes\s+quiz-signal-drift/);
-  assert.match(css, /quiz-signal-block[^}]*transform/);
-  assert.match(css, /quiz-signal-block[^}]*opacity/);
   assert.match(css, /prefers-reduced-motion\s*:\s*reduce/);
-  assert.match(css, /quiz-signal-band[^}]*pointer-events\s*:\s*none/);
-  assert.match(css, /quiz-signal-block[^}]*min-height\s*:\s*\d+px/);
-  assert.match(css, /\.quiz-signal-canvas\s*\{[^}]*height:\s*34px/);
+  assert.doesNotMatch(html, /quiz-signal-(?:band|canvas|block)/);
+  assert.doesNotMatch(css, /quiz-signal-(?:band|canvas|block)/);
 });
 
 test("data field stays behind the original artwork", () => {
@@ -81,6 +75,17 @@ test("result title keeps the colored talent name together on its own line", () =
   assert.match(css, /\.report-hero h1 strong\s*\{[^}]*white-space\s*:\s*nowrap/);
 });
 
+test("result sections use subdued Roman indices and modular shells", () => {
+  assert.equal((html.match(/class="report-section-index"/g) || []).length, 9);
+  assert.match(html, /class="report-section-index" aria-hidden="true">I<\/span>/);
+  assert.match(html, /class="report-section-index" aria-hidden="true">IX<\/span>/);
+  assert.match(css, /\.report-section\s*\{[^}]*border:\s*1px[^}]*border-radius/);
+  assert.match(css, /\.report-section-index\s*\{[^}]*opacity:/);
+  assert.match(css, /\.report-section h2\s*\{[^}]*display:\s*flex/);
+  assert.match(css, /@media\s*\(max-width:760px\)[\s\S]*\.report-section\s*\{/);
+  assert.doesNotMatch(html, /<h2>0[1-9]｜/);
+});
+
 test("radar labels are bold and ranked dimensions use short names with level hints", () => {
   assert.match(app, /font-size="11" font-weight="800" fill="\$\{dimension\.color\}"/);
   assert.match(app, /talentLevel\(score\)/);
@@ -93,7 +98,7 @@ test("radar labels are bold and ranked dimensions use short names with level hin
 test("growth reminder is presented as a highlighted closing card", () => {
   assert.match(html, /<blockquote id="result-reminder"><\/blockquote>/);
   assert.match(css, /#result-reminder\s*\{[^}]*background:[^;]+/);
-  assert.match(css, /#result-reminder::before\s*\{[^}]*background:\s*var\(--teal\)/);
+  assert.doesNotMatch(css, /#result-reminder::before/);
 });
 
 test("loading particle field preserves the three-second finish contract", () => {
@@ -118,12 +123,19 @@ test("loading particle field uses the dark data field and talent fragments", () 
 
 test("quiz screen uses the clean navy header and pale reading surface", () => {
   assert.doesNotMatch(html, /id="quiz-particle-canvas"/);
-  assert.doesNotMatch(app, /renderQuizParticles|quizParticleRenderer/);
-  assert.match(app, /renderQuizSignal[\s\S]*quiz-signal-canvas[\s\S]*mode:\s*["']signal["']/);
+  assert.doesNotMatch(app, /renderQuizParticles|quizParticleRenderer|renderQuizSignal|quizSignalRenderer/);
   assert.match(css, /\.quiz-screen\s*\{[^}]*background:\s*#05070B/i);
   assert.match(css, /\.quiz-card\s*\{[^}]*max-width:\s*1180px/);
   assert.match(css, /\.quiz-head\s*\{[^}]*background:\s*#142A43/);
-  assert.match(css, /\.quiz-signal-band\s*\{[^}]*height:\s*34px/);
   assert.doesNotMatch(css, /\.quiz-particle-background\s*\{/);
   assert.match(css, /\.question-block\s*\{[^}]*background:\s*#fff/);
+});
+
+test("quiz answer interactions are touch-safe and isolate hover to fine pointers", () => {
+  assert.match(css, /@media\s*\(hover:\s*hover\)\s*and\s*\(pointer:\s*fine\)\s*\{[\s\S]*\.answer-btn:hover/);
+  assert.doesNotMatch(css, /\.answer-btn:hover\s*,\s*\.answer-btn\.selected/);
+  assert.match(css, /\.answer-btn\s*\{[^}]*touch-action:\s*manipulation/);
+  assert.match(app, /activeElement\s*&&\s*\$\("answer-list"\)\.contains\(activeElement\)\)\s*activeElement\.blur\(\)/);
+  assert.match(app, /button\.classList\.add\("selected"\);\s*button\.blur\(\)/);
+  assert.match(app, /setTimeout\(\(\)\s*=>\s*\{[\s\S]*?renderQuestion\(\)[\s\S]*?\},\s*120\)/);
 });
