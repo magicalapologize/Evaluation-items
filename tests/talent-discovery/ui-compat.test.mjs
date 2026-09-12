@@ -5,6 +5,7 @@ const root = new URL("./", import.meta.url);
 const html = readFileSync(new URL("index.html", root), "utf8");
 const css = readFileSync(new URL("style.css", root), "utf8");
 const app = readFileSync(new URL("app.js", root), "utf8");
+const renderer = readFileSync(new URL("glyph-renderer.js", root), "utf8");
 test("talent discovery page keeps its public UI contract", () => {
   assert.match(html, /talent-discovery/);
   for (const label of ["语言表达天赋", "逻辑推演天赋", "空间想象天赋", "身体实践天赋", "音乐节奏天赋", "人际感知天赋", "内在觉察天赋", "自然观察天赋"]) assert.match(readFileSync(new URL("data.mjs", root), "utf8"), new RegExp(label));
@@ -117,7 +118,9 @@ test("loading particle field preserves the three-second finish contract", () => 
 test("loading particle field uses the dark data field and talent fragments", () => {
   assert.match(app, /function renderLoadingParticles[\s\S]*talentWords/);
   assert.match(app, /function renderLoadingParticles[\s\S]*background:\s*["']#05070B["']/);
-  assert.match(app, /highlightWords:\s*\[/);
+  assert.match(app, /highlightWords:\s*\["天赋"\]/);
+  assert.doesNotMatch(app, /shape:\s*["']talent-map["']/);
+  assert.match(renderer, /RAINBOW_COLORS\s*=\s*\[/);
   assert.doesNotMatch(html, /data-glyph-fallback/);
   assert.doesNotMatch(app, /renderer\.load\("home-hero\.png"\)/);
 });

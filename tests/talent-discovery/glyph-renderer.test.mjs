@@ -108,7 +108,7 @@ test("data-field reduced motion renders once without scheduling frames", () => {
   }
 });
 
-test("loading data field renders highlighted strings without an image source", () => {
+test("loading data field renders dense symbols without an image source", () => {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;
   let fillTextCalls = 0;
@@ -187,7 +187,7 @@ test("loading animation advances reveal progress from the animation clock", () =
   }
 });
 
-test("loading grid uses dense ※ symbols and colorful highlighted strings", () => {
+test("loading grid uses dense ※ symbols and lights the 天赋 word", () => {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;
   const draws = [];
@@ -200,15 +200,16 @@ test("loading grid uses dense ※ symbols and colorful highlighted strings", () 
   globalThis.window = { devicePixelRatio: 1, innerWidth: 1440, matchMedia: () => ({ matches: true }) };
   try {
     const renderer = createParticleRenderer({ clientWidth: 640, clientHeight: 520, getContext: () => context }, { palette: ["#1769AA", "#2CB7A5"], background: "#05070B", count: 3200, seed: 5, mode: "loading" });
-    renderer.renderStatic(0, { mode: "loading", progress: 0.2, highlightWords: ["读取线索", "校准维度", "天赋地图"] });
+    renderer.renderStatic(0, { mode: "loading", progress: 0.2, highlightWords: ["天赋"] });
     const first = draws.splice(0);
-    renderer.renderStatic(0, { mode: "loading", progress: 0.8, highlightWords: ["读取线索", "校准维度", "天赋地图"] });
+    renderer.renderStatic(0, { mode: "loading", progress: 0.8, highlightWords: ["天赋"] });
     const second = draws.splice(0);
     assert.ok(first.some(({ text }) => text === "※"));
     assert.ok(first.some(({ text }) => text === "※"));
     assert.equal(first.filter(({ text }) => text !== "※").length, 0);
     assert.deepEqual(first.slice(0, 3200).map(({ x, y }) => ({ x, y })), second.slice(0, 3200).map(({ x, y }) => ({ x, y })));
     assert.notDeepEqual(first.map(({ alpha }) => alpha), second.map(({ alpha }) => alpha));
+    assert.ok(second.some(({ alpha }) => alpha > 0.9));
     renderer.destroy();
   } finally {
     globalThis.document = originalDocument;

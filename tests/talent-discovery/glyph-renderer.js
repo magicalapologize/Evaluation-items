@@ -1,4 +1,16 @@
 const GLYPHS = ".:-=+*#%@";
+const TALENT_WORD_BITMAP = [
+  "111111100000001111111",
+  "001110000000001110001",
+  "001110001111101010101",
+  "111111001010101111111",
+  "001110001111101010101",
+  "001110001000101011111",
+  "010101001000101010001",
+  "100000101000101000001",
+  "000000000000000000000",
+];
+const RAINBOW_COLORS = ["#FF4D6D", "#FF9F1C", "#FFE66D", "#35D07F", "#39C6FF", "#7A5CFA", "#E056FD"];
 
 function clamp(value, min = 0, max = 1) {
   const number = Number(value);
@@ -69,6 +81,17 @@ function seededOrder(length, seed) {
     [order[index], order[swap]] = [order[swap], order[index]];
   }
   return order;
+}
+
+function talentWordMask(xRatio, yRatio) {
+  const left = 0.15;
+  const top = 0.2;
+  const width = 0.7;
+  const height = 0.6;
+  if (xRatio < left || xRatio >= left + width || yRatio < top || yRatio >= top + height) return 0;
+  const column = Math.floor((xRatio - left) / width * TALENT_WORD_BITMAP[0].length);
+  const row = Math.floor((yRatio - top) / height * TALENT_WORD_BITMAP.length);
+  return TALENT_WORD_BITMAP[row]?.[column] === "1" ? 1 : 0;
 }
 
 function noOpRenderer() {
@@ -220,6 +243,7 @@ export function createParticleRenderer(canvas, options = {}) {
   let destroyed = false;
   let width = 1;
   let height = 1;
+  const loadingMaskCache = new Map();
   let seed = (Number(options.seed) >>> 0) || 1;
   const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (callback) => setTimeout(() => callback(Date.now()), 16);
   const cancel = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : clearTimeout;
@@ -249,6 +273,25 @@ export function createParticleRenderer(canvas, options = {}) {
   const visibilityHandler = () => { if (document.hidden) pause(); };
   if (resizeObserver?.observe) resizeObserver.observe(canvas);
   document.addEventListener?.("visibilitychange", visibilityHandler);
+  const getLoadingMask = (columns, rows) => {
+    const key = `${columns}x${rows}`;
+    if (loadingMaskCache.has(key)) return loadingMaskCache.get(key);
+    let mask = null;
+    if (typeof document.createElement === "function") {
+      const maskCanvas = document.createElement("canvas");
+      const maskContext = maskCanvas.getContext?.("2d", { willReadFrequently: true });
+      if (maskContext?.getImageData && typeof maskContext.fillText === "function") {
+        maskCanvas.width = columns; maskCanvas.height = rows;
+        maskContext.clearRect?.(0, 0, columns, rows);
+        maskContext.font = `900 ${Math.max(12, Math.floor(rows * 0.72))}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+        maskContext.textAlign = "center"; maskContext.textBaseline = "middle"; maskContext.fillStyle = "#fff";
+        maskContext.fillText("天赋", columns / 2, rows / 2);
+        try { mask = maskContext.getImageData(0, 0, columns, rows).data; } catch { mask = null; }
+      }
+    }
+    loadingMaskCache.set(key, mask);
+    return mask;
+  };
   function renderStatic(time = 0, runtime = {}) {
     if (destroyed) return false;
     resize(); context.clearRect(0, 0, width, height); if (background !== "transparent") { context.fillStyle = background; context.fillRect(0, 0, width, height); }
@@ -257,34 +300,28 @@ export function createParticleRenderer(canvas, options = {}) {
     const progress = loadingMode ? Math.max(0, Math.min(1, Number.isFinite(runtime.progress) ? runtime.progress : 0)) : 1;
     const activeWords = Array.isArray(runtime.highlightWords) && runtime.highlightWords.length ? runtime.highlightWords : (Array.isArray(options.highlightWords) && options.highlightWords.length ? options.highlightWords : words);
     const activeBestColor = runtime.bestColor || bestColor || palette[0];
-    const shape = runtime.shape || options.shape || "field";
     const colorFor = (index) => palette[index % palette.length];
     const orbEnergy = (x, y) => orbs.reduce((total, orb) => {
       const dx = x - orb.x; const dy = (y - orb.y) * 0.72; const distance = Math.sqrt(dx * dx + dy * dy);
       return total + Math.max(0, 1 - distance / orb.radius) ** 2;
     }, 0);
+    const gridColumns = loadingMode ? Math.max(40, Math.min(120, Math.round(width / 8))) : 0;
+    const gridRows = loadingMode ? Math.ceil(count / gridColumns) : 0;
+    const loadingMask = loadingMode ? getLoadingMask(gridColumns, gridRows) : null;
     matrix.forEach((cell, index) => {
       const wave = loadingMode ? 0 : Math.sin(now * 0.00035 * cell.drift + cell.phase);
-      const gridColumns = loadingMode ? Math.max(40, Math.min(120, Math.round(width / 8))) : 0;
-      const gridRows = loadingMode ? Math.ceil(count / gridColumns) : 0;
       const xRatio = loadingMode ? ((index % gridColumns) + 0.5) / gridColumns : ((cell.x + wave * 0.012) % 1 + 1) % 1;
       const yRatio = loadingMode ? ((Math.floor(index / gridColumns) % gridRows) + 0.5) / gridRows : ((cell.y + Math.cos(now * 0.00022 * cell.drift + cell.phase) * 0.01) % 1 + 1) % 1;
-      const dx = xRatio - 0.5;
-      const dy = (yRatio - 0.5) * 1.1;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const ring = shape === "talent-map" ? Math.exp(-((distance - 0.22) ** 2) / 0.0028) : 0;
-      const core = shape === "talent-map" ? Math.exp(-(((dx + 0.055) ** 2) + ((dy + 0.02) ** 2)) / 0.018) : 0;
-      const diagonal = loadingMode ? xRatio * 0.92 + yRatio * 1.18 : 0;
-      const loadingColors = ["#2CB7A5", "#5B3FA3", "#F5C451"];
-      const bandGlows = loadingMode ? loadingColors.map((_, bandIndex) => Math.exp(-((diagonal - (progress * 2.2 - 0.42 + bandIndex * 0.25)) ** 2) / (0.012 + bandIndex * 0.004))) : [];
-      const bandIndex = bandGlows.length ? bandGlows.indexOf(Math.max(...bandGlows)) : -1;
-      const bandGlow = bandIndex >= 0 ? bandGlows[bandIndex] : 0;
-      const reveal = loadingMode ? Math.max(0, Math.min(1, progress * 1.45 - cell.revealOrder * 0.95)) : 1;
-      const energy = loadingMode ? Math.min(1, 0.03 + cell.brightness * 0.16 + bandGlow * 0.92 + reveal * ring * 0.18) : Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06 + ring * 0.46 + core * 0.3);
+      const pixelIndex = loadingMode ? (Math.floor(index / gridColumns) * gridColumns + index % gridColumns) * 4 : 0;
+      const textMask = loadingMode ? (loadingMask ? loadingMask[pixelIndex + 3] / 255 : talentWordMask(xRatio, yRatio)) : 0;
+      const reveal = loadingMode ? Math.max(0, Math.min(1, progress * 1.35 - cell.revealOrder * 0.42)) : 1;
+      const textGlow = textMask * reveal;
+      const energy = loadingMode ? Math.min(1, 0.04 + cell.brightness * 0.14 + textGlow * 0.92) : Math.min(1, cell.brightness + orbEnergy(xRatio, yRatio) * 0.5 + (wave + 1) * 0.06);
       const glyph = loadingMode ? loadingSymbol : glyphs[Math.max(0, Math.min(glyphs.length - 1, Math.floor(energy * (glyphs.length - 1))))];
-      context.globalAlpha = loadingMode ? Math.min(0.95, 0.16 + energy * 0.78) : Math.min(0.7, 0.12 + energy * 0.48);
+      context.globalAlpha = loadingMode ? Math.min(1, 0.12 + energy * 0.88) : Math.min(0.7, 0.12 + energy * 0.48);
       const matrixColorIndex = Number.isInteger(bestIndex) && cell.colorIndex % 3 === 0 ? bestIndex : cell.colorIndex;
-      context.fillStyle = loadingMode && bandGlow > 0.18 ? loadingColors[bandIndex] : (ring > 0.35 || core > 0.35 ? activeBestColor : colorFor(matrixColorIndex));
+      const rainbowIndex = Math.max(0, Math.min(RAINBOW_COLORS.length - 1, Math.floor(xRatio * RAINBOW_COLORS.length)));
+      context.fillStyle = loadingMode && textGlow > 0.08 ? RAINBOW_COLORS[rainbowIndex] : colorFor(matrixColorIndex);
       const x = xRatio * width; const y = yRatio * height;
       if (typeof context.fillText === "function") {
         context.font = `${Math.max(8, Math.min(13, width / 95))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
@@ -318,22 +355,6 @@ export function createParticleRenderer(canvas, options = {}) {
             context.globalAlpha = 0.48 + 0.34 * ((Math.sin(now * 0.002 + index) + 1) * 0.5);
             context.fillStyle = colorFor((index + 1) % palette.length);
             context.fillText(character, x, y);
-          });
-        } else if (loadingMode) {
-          context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-          const loadingWords = activeWords.length ? activeWords : ["读取线索", "校准维度", "天赋地图"];
-          const fontSize = Math.max(14, Math.min(24, width / 32));
-          context.font = `${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-          loadingWords.forEach((word, index) => {
-            const reveal = Math.max(0, Math.min(1, progress * 1.55 - index * 0.36));
-            if (reveal <= 0.01) return;
-            const phrase = String(word);
-            const phraseWidth = typeof context.measureText === "function" ? context.measureText(phrase).width : phrase.length * fontSize;
-            const x = width * 0.5 - phraseWidth * 0.5;
-            const y = height * (0.42 + index * 0.12);
-            context.globalAlpha = 0.14 + reveal * 0.86;
-            context.fillStyle = colorFor((index + 1) % palette.length);
-            context.fillText(phrase, x, y);
           });
         } else {
           context.font = `${Math.max(13, Math.min(22, width / 40))}px ui-monospace, SFMono-Regular, Menlo, monospace`;
