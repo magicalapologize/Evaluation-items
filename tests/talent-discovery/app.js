@@ -62,7 +62,26 @@ function initializeGlyphs() {
   renderHomeParticles();
 }
 
-function show(id) { document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id)); window.scrollTo(0, 0); }
+function stopRenderer(rendererName) {
+  if (rendererName === "home") {
+    homeParticleRenderer?.destroy();
+    homeParticleRenderer = null;
+  } else if (rendererName === "loading") {
+    loadingParticleRenderer?.destroy();
+    loadingParticleRenderer = null;
+  } else if (rendererName === "result") {
+    resultParticleRenderer?.destroy();
+    resultParticleRenderer = null;
+  }
+}
+
+function show(id) {
+  if (id !== "home-screen") stopRenderer("home");
+  if (id !== "loading-screen") stopRenderer("loading");
+  if (id !== "result-screen") stopRenderer("result");
+  document.querySelectorAll(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === id));
+  window.scrollTo(0, 0);
+}
 async function verify(code) { const response = await fetch("/api/verify-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: PRODUCT_ID, code }) }); const data = await response.json().catch(() => ({})); if (!response.ok || !data.success) throw new Error(data.message || "测试码验证失败"); }
 
 function applyMemberAccess(member) {
@@ -164,7 +183,7 @@ $("answer-list").addEventListener("click", (event) => {
   answerAdvanceTimer = window.setTimeout(() => {
     answerAdvanceTimer = null;
     if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else finish();
-  }, 120);
+  }, 80);
 });
 $("start-btn").addEventListener("click", async () => { const button = $("start-btn"); $("gate-error").textContent = ""; button.disabled = true; try { await memberReady; if (!activeMember) { const code = $("access-code").value.trim(); if (!code) { $("gate-error").textContent = "请输入测试码"; return; } await verify(code); } start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始" : "验证并开始"; } });
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } }); $("restart-btn").addEventListener("click", start);

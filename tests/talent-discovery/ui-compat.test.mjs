@@ -138,7 +138,16 @@ test("quiz answer interactions are touch-safe and isolate hover to fine pointers
   assert.match(css, /\.answer-btn\s*\{[^}]*touch-action:\s*manipulation/);
   assert.match(app, /activeElement\s*&&\s*\$\("answer-list"\)\.contains\(activeElement\)\)\s*activeElement\.blur\(\)/);
   assert.match(app, /button\.classList\.add\("selected"\);\s*button\.blur\(\)/);
-  assert.match(app, /setTimeout\(\(\)\s*=>\s*\{[\s\S]*?renderQuestion\(\)[\s\S]*?\},\s*120\)/);
+  assert.match(app, /setTimeout\(\(\)\s*=>\s*\{[\s\S]*?renderQuestion\(\)[\s\S]*?\},\s*80\)/);
+});
+
+test("particle renderers stop when their screen is left", () => {
+  assert.match(app, /function stopRenderer\(rendererName\)/);
+  assert.match(app, /homeParticleRenderer\?\.destroy\(\)/);
+  assert.match(app, /loadingParticleRenderer\?\.destroy\(\)/);
+  assert.match(app, /resultParticleRenderer\?\.destroy\(\)/);
+  assert.match(app, /if \(id !== "home-screen"\)/);
+  assert.match(app, /if \(id !== "result-screen"\)/);
 });
 
 test("talent discovery shares access codes and exposes the member path", () => {
