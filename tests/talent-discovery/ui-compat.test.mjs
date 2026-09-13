@@ -12,6 +12,7 @@ test("talent discovery page keeps its public UI contract", () => {
   for (const heading of ["你的最佳天赋评估", "8 项天赋综合解读", "4 项活跃天赋深入分析", "解锁隐藏天赋潜能", "规避潜在发展瓶颈", "锁定优势职业赛道", "掌握天赋拓展策略", "定位个人竞争力", "获取进阶成长方案"]) assert.match(html, new RegExp(heading));
   assert.match(html, /多元智能理论/); assert.match(html, /\/api\/verify-code/); assert.match(app, /product-qrs\/talent-discovery\.png/); assert.match(html, /HistoryReplay|history-replay/);
   assert.match(html, /id="cashback-modal"[\s\S]*wechat-qr\.webp/); assert.doesNotMatch(html, /id="cashback-modal"[\s\S]*product-qrs\/talent-discovery\.png/);
+  assert.match(html, /script src="\.\.\/\.\.\/assets\/js\/test-backdoor\.js/);
 });
 test("visual contract includes palette, mobile layout and isolated selected state", () => {
   for (const color of ["#142A43", "#2CB7A5", "#FF8A65", "#F5C451", "#F5F8F6", "#FFFFFF", "#DDE7E4"]) assert.match(css, new RegExp(color, "i"));
@@ -25,6 +26,8 @@ test("particle backgrounds mount while the quiz header stays lightweight", () =>
   assert.equal((html.match(/data-glyph-fallback/g) || []).length, 0);
   assert.match(html, /home-particle-canvas[\s\S]*home-hero\.png/);
   assert.match(html, /result-particle-canvas[\s\S]*language\.png/);
+  assert.match(html, /class="brand-mark"[^>]+src="assets\/talent-mark\.png"/);
+  assert.match(html, /class="report-home-link"[^>]+href="\.\.\/\.\.\/"/);
   assert.doesNotMatch(html, /id="quiz-particle-canvas"/);
   assert.match(css, /prefers-reduced-motion\s*:\s*reduce/);
   assert.doesNotMatch(html, /quiz-signal-(?:band|canvas|block)/);
@@ -125,12 +128,21 @@ test("loading particle field uses the dark data field and talent fragments", () 
   assert.doesNotMatch(app, /renderer\.load\("home-hero\.png"\)/);
 });
 
+test("loading phase copy sits below the progress bar and follows the three checkpoints", () => {
+  assert.match(html, /loading-progress[\s\S]*loading-phase[\s\S]*loading-state[\s\S]*loading-detail/);
+  assert.match(app, /正在整理答题线索/);
+  assert.match(app, /正在校准八项天赋/);
+  assert.match(app, /正在生成天赋报告/);
+  assert.match(css, /\.loading-phase\s*\{/);
+});
+
 test("quiz screen uses the clean navy header and pale reading surface", () => {
   assert.doesNotMatch(html, /id="quiz-particle-canvas"/);
   assert.doesNotMatch(app, /renderQuizParticles|quizParticleRenderer|renderQuizSignal|quizSignalRenderer/);
   assert.match(css, /\.quiz-screen\s*\{[^}]*background:\s*#05070B/i);
   assert.match(css, /\.quiz-card\s*\{[^}]*max-width:\s*1180px/);
   assert.match(css, /\.quiz-head\s*\{[^}]*background:\s*#142A43/);
+  assert.match(css, /\.quiz-head\s*\{[^}]*quiz-header-decor\.png/);
   assert.doesNotMatch(css, /\.quiz-particle-background\s*\{/);
   assert.match(css, /\.question-block\s*\{[^}]*background:\s*#fff/);
 });
@@ -158,7 +170,13 @@ test("talent discovery shares access codes and exposes the member path", () => {
   assert.match(html, /天赋职业评估与天赋挖掘测试使用同一个测试码/);
   assert.match(app, /function applyMemberAccess\(member\)/);
   assert.match(app, /globalThis\.YunduMember\?\.getMember/);
-  assert.match(app, /if \(!activeMember\)/);
+  assert.match(app, /if \(!activeMember && !isLocalPreview\)/);
   assert.match(app, /member-access-active/);
   assert.match(app, /member-access-hidden/);
+});
+
+test("local preview can start without a code while production keeps verification", () => {
+  assert.match(app, /isLocalPreview\s*=\s*window\.location\.hostname\s*===\s*["']127\.0\.0\.1["']\s*&&\s*window\.location\.port\s*===\s*["']8765["']/);
+  assert.match(app, /if \(!activeMember && !isLocalPreview\)/);
+  assert.match(css, /local-preview-mode/);
 });

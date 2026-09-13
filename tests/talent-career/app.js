@@ -31,6 +31,15 @@
   const state = { index: 0, answers: [], optionOrders: [], resultKey: null, rawProfile: null, displayProfile: null, rankedCareers: [], historyAttemptId: null };
   let activeMember = null;
 
+  window.YunduBackdoor.register("talent-career", {
+    getChoices: () => TYPE_KEYS.map((key) => ({ key, label: TYPES[key].name })),
+    choose: (key) => {
+      const answers = window.YunduBackdoor.findAnswerSet({ questionCount: QUESTIONS.length, optionCount: 4, target: key, getResultKey: (candidate) => matchType(rawProfileForAnswers(candidate), candidate).key });
+      if (!answers) return;
+      state.answers = answers; calculateResult(); renderResult(); showScreen("result-screen");
+    }
+  });
+
   function validateData() {
     if (QUESTIONS.length !== 45) throw new Error(`题库数量错误：${QUESTIONS.length}`);
     if (TYPE_KEYS.length !== 12) throw new Error(`结果数量错误：${TYPE_KEYS.length}`);

@@ -17,11 +17,21 @@ const RESULT_GLYPH_ASSETS = {
 const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, historyAttemptId: null, posterUrl: null };
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
+const isLocalPreview = window.location.hostname === "127.0.0.1" && window.location.port === "8765";
 let homeParticleRenderer = null;
 let loadingParticleRenderer = null;
 let resultParticleRenderer = null;
 let answerAdvanceTimer = null;
 let activeMember = null;
+
+YunduBackdoor.register(PRODUCT_ID, {
+  getChoices: () => RESULTS.map((result) => ({ key: result.key, label: result.name })),
+  choose: (key) => {
+    const answers = YunduBackdoor.findAnswerSet({ questionCount: QUESTIONS.length, optionCount: 4, target: key, getResultKey: (candidate) => calculateProfile(candidate).result.key });
+    if (!answers) return;
+    state.answers = answers; state.profile = calculateProfile(answers); renderResult(); saveHistory(); show("result-screen");
+  }
+});
 
 function answerFingerprint(answers) {
   let hash = 2166136261;
@@ -102,6 +112,14 @@ const memberReady = globalThis.YunduMember?.getMember
   ? globalThis.YunduMember.getMember().then(applyMemberAccess).catch(() => null)
   : Promise.resolve(null);
 
+if (isLocalPreview) {
+  $("access-code").hidden = true;
+  $("access-code").setAttribute("aria-hidden", "true");
+  document.querySelector("#home-screen .gate-row")?.classList.add("local-preview-mode");
+  document.querySelector("#home-screen .gate-title").textContent = "本地预览可直接开始测试";
+  $("start-btn").textContent = "直接开始测试";
+}
+
 function renderQuestion() {
   if (answerAdvanceTimer) { window.clearTimeout(answerAdvanceTimer); answerAdvanceTimer = null; }
   const activeElement = document.activeElement;
@@ -163,15 +181,15 @@ function renderHistorySnapshot(snapshot) { const result = RESULTS.find((item) =>
 function start() { state.index = 0; state.answers = []; state.profile = null; state.historyAttemptId = null; renderQuestion(); show("quiz-screen"); }
 function finish() {
   const loadingSeed = answerFingerprint(state.answers);
-  $("loading-state").textContent = "正在读取线索";
-  $("loading-detail").textContent = "正在汇总你在不同情境中的反应";
+  $("loading-state").textContent = "正在整理答题线索";
+  $("loading-detail").textContent = "归纳你在不同情境中的选择";
   $("loading-count").textContent = "00 / 08";
   $("loading-progress-bar").style.transform = "scaleX(0)";
   $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "0");
   show("loading-screen");
   renderLoadingParticles(loadingSeed);
-  window.setTimeout(() => { $("loading-state").textContent = "正在校准维度"; $("loading-detail").textContent = "比较八项天赋在本次答卷中的相对强弱"; $("loading-count").textContent = "05 / 08"; $("loading-progress-bar").style.transform = "scaleX(.62)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "62"); }, 1000);
-  window.setTimeout(() => { $("loading-state").textContent = "报告已就绪"; $("loading-detail").textContent = "正在打开你的天赋地图"; $("loading-count").textContent = "08 / 08"; $("loading-progress-bar").style.transform = "scaleX(1)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "100"); }, 2200);
+  window.setTimeout(() => { $("loading-state").textContent = "正在校准八项天赋"; $("loading-detail").textContent = "对比各维度在本次答卷中的相对倾向"; $("loading-count").textContent = "05 / 08"; $("loading-progress-bar").style.transform = "scaleX(.62)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "62"); }, 1000);
+  window.setTimeout(() => { $("loading-state").textContent = "正在生成天赋报告"; $("loading-detail").textContent = "整理你的优势组合与成长建议"; $("loading-count").textContent = "08 / 08"; $("loading-progress-bar").style.transform = "scaleX(1)"; $("loading-progress-bar").parentElement.setAttribute("aria-valuenow", "100"); }, 2200);
   window.setTimeout(() => { state.profile = calculateProfile(state.answers); renderResult(); saveHistory(); loadingParticleRenderer?.destroy(); loadingParticleRenderer = null; show("result-screen"); }, 3000);
 }
 
@@ -185,7 +203,7 @@ $("answer-list").addEventListener("click", (event) => {
     if (state.index < QUESTIONS.length - 1) { state.index += 1; renderQuestion(); } else finish();
   }, 80);
 });
-$("start-btn").addEventListener("click", async () => { const button = $("start-btn"); $("gate-error").textContent = ""; button.disabled = true; try { await memberReady; if (!activeMember) { const code = $("access-code").value.trim(); if (!code) { $("gate-error").textContent = "请输入测试码"; return; } await verify(code); } start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始" : "验证并开始"; } });
+$("start-btn").addEventListener("click", async () => { const button = $("start-btn"); $("gate-error").textContent = ""; button.disabled = true; try { await memberReady; if (!activeMember && !isLocalPreview) { const code = $("access-code").value.trim(); if (!code) { $("gate-error").textContent = "请输入测试码"; return; } await verify(code); } start(); } catch (error) { $("gate-error").textContent = error.message; } finally { button.disabled = false; button.textContent = activeMember ? "会员直接开始" : (isLocalPreview ? "直接开始测试" : "验证并开始"); } });
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("prev-btn").addEventListener("click", () => { if (state.index > 0) { state.index -= 1; renderQuestion(); } }); $("restart-btn").addEventListener("click", start);
 $("copy-result-btn").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("copy-result-btn").dataset.summary || ""); $("copy-result-btn").textContent = "已复制"; window.setTimeout(() => { $("copy-result-btn").textContent = "复制结果摘要"; }, 1600); } catch { $("copy-result-btn").textContent = "请手动复制"; } }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("is-open"));
 $("save-poster-btn").addEventListener("click", async () => { const button = $("save-poster-btn"); button.disabled = true; button.textContent = "正在生成..."; try { state.posterUrl = await createPosterImage(); $("poster-image").src = state.posterUrl; $("poster-modal").classList.add("is-open"); } catch (error) { window.alert(error.message); } finally { button.disabled = false; button.textContent = "保存报告海报"; } }); document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("is-open"))); document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("is-open"); }));

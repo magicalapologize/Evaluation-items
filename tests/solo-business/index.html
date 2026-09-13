@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#f3eadc" />
   <meta name="description" content="通过情境测试，找到适合你的副业方向和一人公司赛道。" />
-  <title>测你适合哪种副业 / 一人公司赛道</title>
+  <title>测你适合哪种副业 / 一人公司赛道</title><meta name="yundu-product-id" content="solo-business" /><meta name="yundu-backdoor-enabled" content="true" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="测你适合哪种副业｜一人公司赛道" />
@@ -1958,6 +1958,7 @@
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
+  <script src="../../assets/js/test-backdoor.js?v=20260912"></script>
   <script>
 	let activeMember = null;
 	const gateRow = document.querySelector("#home-screen .gate-row");
@@ -3070,6 +3071,7 @@
       });
       $("copy-btn").dataset.summary = `我的副业/一人公司原型是：${result.archetype}（${result.name}），匹配度 ${match}%。${result.quote}`;
     }, () => showScreen("result-screen"));
+    YunduBackdoor.register("solo-business", { getChoices: () => TYPE_KEYS.map((key) => ({ key, label: TYPES[key].archetype })), choose: (key) => { const original = state.answers; const answers = YunduBackdoor.findAnswerSet({ questionCount: QUESTIONS.length, optionCount: 4, target: key, getResultKey: (candidate) => { state.answers = candidate.map((index, questionIndex) => QUESTIONS[questionIndex].answers[index][2]); return getResult().key; } }); state.answers = original; if (!answers) return; state.answers = answers.map((index, questionIndex) => QUESTIONS[questionIndex].answers[index][2]); renderResult(); showScreen("result-screen"); } });
   </script>
 </body>
 </html>

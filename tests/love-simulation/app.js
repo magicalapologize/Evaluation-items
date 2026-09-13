@@ -388,4 +388,17 @@ YunduHistoryReplay.init("love-simulation", (snapshot) => {
   $("copy-btn").dataset.summary = `我的心动副本结果是「${result.tier.title}」：${result.ending.comment}`;
 }, () => showScreen("result-screen"));
 
+YunduBackdoor.register("love-simulation", {
+  getChoices: () => Object.entries(ROLES).flatMap(([roleKey, role]) => role.endings.map((ending, index) => ({ key: `${roleKey}:${index}`, label: `${role.name} · ${ending.title}` }))),
+  choose: (key) => {
+    const [roleKey, tierIndex] = key.split(":");
+    const role = ROLES[roleKey];
+    const target = role?.endings[Number(tierIndex)]?.title;
+    if (!role || !target) return;
+    const answers = YunduBackdoor.findAnswerSet({ questionCount: role.questions.length, optionCount: 4, target, getResultKey: (candidate) => calculateResult(role, candidate).tier.title });
+    if (!answers) return;
+    state.mode = "full"; state.roleKey = roleKey; state.answers = answers; renderResult(); showScreen("result-screen");
+  }
+});
+
 renderRoles();

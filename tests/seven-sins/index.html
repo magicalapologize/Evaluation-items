@@ -11,7 +11,7 @@
   <meta property="og:image" content="https://eval.yundu.app/images/cards/seven-sins.webp" />
   <meta property="og:url" content="https://eval.yundu.app/tests/seven-sins/" />
   <meta property="og:site_name" content="云渡测评实验室" />
-  <title>七宗罪主导倾向测试</title>
+  <title>七宗罪主导倾向测试</title><meta name="yundu-product-id" content="seven-sins" /><meta name="yundu-backdoor-enabled" content="true" />
   <link rel="stylesheet" href="../../assets/css/test-member.css?v=20260808" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -205,6 +205,7 @@
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
+  <script src="../../assets/js/test-backdoor.js?v=20260912"></script>
   <script type="module">
     import { DIMENSIONS, QUESTIONS, RESULTS } from "./data.mjs";
     import { calculateProfile } from "./model.mjs";
@@ -215,6 +216,15 @@
     let activeMember = null;
     const gateRow = document.querySelector("#home-screen .gate-row");
     const gateNote = document.querySelector("#home-screen .gate-note");
+
+    YunduBackdoor.register(PRODUCT_ID, {
+      getChoices: () => RESULTS.map((result) => ({ key: result.key, label: result.name })),
+      choose: (key) => {
+        const answers = YunduBackdoor.findAnswerSet({ questionCount: QUESTIONS.length, optionCount: 5, target: key, getResultKey: (candidate) => calculateProfile(candidate).result.key });
+        if (!answers) return;
+        clearAnalysisTimers(); state.index = QUESTIONS.length - 1; state.answers = answers; state.profile = calculateProfile(answers); renderReport(state.profile); showScreen("result-screen");
+      }
+    });
 
     function applyMemberAccess(member) {
       activeMember = member && member.active ? member : null;

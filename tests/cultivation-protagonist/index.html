@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="通过36道修真情境题，测试你是哪位修仙小说主角，并获得来自小说角色的现实人生建议。" />
   <meta name="theme-color" content="#0b1214" />
-  <title>测试你是哪位修仙小说主角</title>
+  <title>测试你是哪位修仙小说主角</title><meta name="yundu-product-id" content="cultivation-protagonist" /><meta name="yundu-backdoor-enabled" content="true" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="测试你是哪位修仙小说主角" />
@@ -165,6 +165,7 @@
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
+  <script src="../../assets/js/test-backdoor.js?v=20260912"></script>
   <script>
     let activeMember = null;
     const THEME_KEY = "cultivation-protagonist-theme";
@@ -397,6 +398,7 @@
       YunduHistoryReplay.renderDimensions($("dimension-list"), snapshot.dimensions);
       $("copy-btn").dataset.summary = `我的修仙小说主角结果是「${result.name}」：出自《${result.novel}》，${result.alias}。${result.quote}`;
     }, () => showScreen("result-screen"));
+    YunduBackdoor.register("cultivation-protagonist", { getChoices: () => Object.entries(TYPES).flatMap(([gender, results]) => Object.entries(results).map(([key, item]) => ({ key: `${gender}:${key}`, label: `${gender === "male" ? "男主" : "女主"} · ${item.name}` }))), choose: (choice) => { const [gender, key] = choice.split(":"); const previous = state.answers; state.gender = gender; const answers = YunduBackdoor.findAnswerSet({ questionCount: QUESTIONS.length, optionCount: 4, target: key, getResultKey: (candidate) => { state.answers = candidate; return resultKey(calculateScores()); } }); state.answers = previous; if (!answers) return; state.answers = answers; state.gender = gender; renderResult(); showScreen("result-screen"); } });
   </script>
   <script type="application/ld+json">
   {

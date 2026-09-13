@@ -11,7 +11,7 @@
   <meta property="og:url" content="https://magicassess.top/tests/socialization-degree/" />
   <link rel="canonical" href="https://magicassess.top/tests/socialization-degree/" />
   <link rel="icon" href="../../images/yundu-logo.webp" type="image/webp" />
-  <title>测你的社会化程度</title>
+  <title>测你的社会化程度</title><meta name="yundu-product-id" content="socialization-degree" /><meta name="yundu-backdoor-enabled" content="true" />
   <link rel="stylesheet" href="../../assets/css/test-member.css?v=20260808" />
   <link rel="stylesheet" href="style.css" />
   <script>
@@ -151,6 +151,7 @@
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
+  <script src="../../assets/js/test-backdoor.js?v=20260912"></script>
   <script type="module">
     import { DIMENSIONS, DIMENSION_STATUS_COPY, QUESTIONS, RESULTS, STAGES } from "./data.mjs";
     import { calculateProfile } from "./model.mjs";
@@ -160,6 +161,15 @@
     const $ = (id) => document.getElementById(id);
     const state = { index: 0, answers: [], profile: null, timers: [], posterUrl: "", historyAttemptId: null };
     let activeMember = null;
+
+    YunduBackdoor.register(PRODUCT_ID, {
+      getChoices: () => RESULTS.map((result) => ({ key: result.key, label: result.name })),
+      choose: (key) => {
+        const answers = YunduBackdoor.findAnswerSet({ questionCount: QUESTIONS.length, optionCount: 4, target: key, getResultKey: (candidate) => calculateProfile(candidate).result.key });
+        if (!answers) return;
+        clearTimers(); state.index = QUESTIONS.length - 1; state.answers = answers; state.profile = calculateProfile(answers); renderReport(state.profile); showScreen("result-screen");
+      }
+    });
 
     const THEME_KEY = "socialization-degree-theme";
     function applyTheme(theme) {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="通过25道三国情境题，测试你是哪位三国谋士，并获得属于你的谋略建议。" />
   <meta name="theme-color" content="#6f2028" />
-  <title>测试你是哪位三国谋士</title>
+  <title>测试你是哪位三国谋士</title><meta name="yundu-product-id" content="three-kingdoms-advisor" /><meta name="yundu-backdoor-enabled" content="true" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="测试你是哪位三国谋士" />
@@ -404,6 +404,7 @@
   <script src="../../assets/js/member-auth.js?v=20260721"></script>
   <script src="../../assets/js/test-history.js?v=20260808"></script>
   <script src="../../assets/js/history-replay.js?v=20260807"></script>
+  <script src="../../assets/js/test-backdoor.js?v=20260912"></script>
   <script>
 	let activeMember = null;
 	const gateRow = document.querySelector("#home-screen .gate-row");
@@ -933,6 +934,7 @@ const QUESTIONS = [
       YunduHistoryReplay.renderDimensions($("dimension-list"), snapshot.dimensions);
       $("copy-btn").dataset.summary = `我的三国谋士结果是「${result.name}」：${result.alias}。${result.quote}`;
     }, () => showScreen("result-screen"));
+    YunduBackdoor.register("three-kingdoms-advisor", { getChoices: () => Object.entries(TYPES).map(([key, item]) => ({ key, label: item.name })), choose: (key) => { const previous = state.answers; const answers = YunduBackdoor.findAnswerSet({ questionCount: QUESTIONS.length, optionCount: 4, target: key, getResultKey: (candidate) => { state.answers = candidate; return resultKey(calculateScores()); } }); state.answers = previous; if (!answers) return; state.answers = answers; renderResult(); showScreen("result-screen"); } });
   </script>
 </body>
 </html>
