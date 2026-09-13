@@ -7,7 +7,7 @@ body { margin:0; background:var(--paper); color:var(--ink); font-family:"Avenir 
 .screen { display:none; min-height:100vh; } .screen.active { display:block; }
 .shell { max-width:1180px; margin:auto; padding:24px; }
 .home-screen { position:relative; isolation:isolate; background:var(--navy); color:#fff; }
-.topbar,.report-nav { display:flex; justify-content:space-between; align-items:center; }
+.topbar,.report-nav { display:flex; justify-content:space-between; align-items:center; padding-right:126px; }
 .brand { display:inline-flex; gap:10px; align-items:center; color:inherit; text-decoration:none; font-weight:800; }
 .brand-mark { display:block; width:32px; height:32px; flex:0 0 32px; border-radius:8px; object-fit:cover; background:var(--teal); }
 .home-grid { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; min-height:calc(100vh - 130px); }
@@ -130,4 +130,72 @@ body { margin:0; background:var(--paper); color:var(--ink); font-family:"Avenir 
   .recommended-test strong { grid-column:1; grid-row:2; font-size:14px; }
   .recommended-test small { grid-column:1; grid-row:3; font-size:11px; }
   .recommended-test-action { grid-column:2; grid-row:2 / span 2; align-self:center; }
+}
+
+/* Alternate visual world: the artwork, copy and report structure stay unchanged. */
+.theme-toggle {
+  position: fixed;
+  z-index: 5;
+  top: 16px;
+  right: max(16px, calc(50vw - 560px));
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #ffffff45;
+  border-radius: 999px;
+  color: #dce9e6;
+  background: #ffffff12;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+.theme-toggle:hover { border-color: var(--teal); }
+.theme-toggle:focus-visible { outline: 3px solid #2cb7a577; outline-offset: 3px; }
+.theme-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.theme-icon-spark { display: none; }
+html[data-theme="violet"] .theme-icon-moon { display: none; }
+html[data-theme="violet"] .theme-icon-spark { display: block; }
+
+html[data-theme="violet"] {
+  --navy:#241843;
+  --teal:#a58cff;
+  --coral:#fa7caa;
+  --yellow:#f4c86a;
+  --paper:#f7f4ff;
+  --white:#fff;
+  --muted:#6c6380;
+  --line:#e1d9f0;
+  --ink:#27203a;
+  --data-field-bg:#080611;
+}
+html[data-theme="violet"] .theme-toggle { border-color:#ffffff52; color:#f3edff; background:#241843cc; }
+html[data-theme="violet"] .home-screen { background:var(--navy); }
+html[data-theme="violet"] .home-method,
+html[data-theme="violet"] .home-benefits,
+html[data-theme="violet"] .recommended-test a { background:#17112ecc; border-color:#a58cff55; }
+html[data-theme="violet"] .recommended-test a:hover { background:#21183d; border-color:#a58cffaa; }
+html[data-theme="violet"] .quiz-screen,
+html[data-theme="violet"] .loading-screen { background:#080611; }
+html[data-theme="violet"] .quiz-head {
+  background-color:#241843;
+  background-image:linear-gradient(180deg,#24184355,#241843dd),url("assets/quiz-header-decor.png");
+}
+html[data-theme="violet"] .progress-track,
+html[data-theme="violet"] .loading-progress { background:#493b68; }
+html[data-theme="violet"] .answer-btn.selected { border-color:#a58cff; background:#f1edff; }
+html[data-theme="violet"] .answer-letter { color:#765ad8; background:#ede7ff; }
+html[data-theme="violet"] .answer-btn:focus-visible { outline-color:#a58cff88; }
+html[data-theme="violet"] .report-hero { background:#241843; }
+html[data-theme="violet"] .loading-glyph-surface,
+html[data-theme="violet"] .glyph-surface { background:#080611; }
+html[data-theme="violet"] .result-tags span { background:#a58cff22; border-color:#a58cff66; }
+html[data-theme="violet"] #result-reminder { background:#eee9ff; border-color:#a58cff55; }
+html[data-theme="violet"] .history-link:hover { background:#eee9ff; border-color:#a58cff; }
+
+@media (max-width:760px) {
+  .theme-toggle { top:12px; right:12px; min-height:34px; padding:0 10px; }
+  .topbar,.report-nav { padding-right:118px; }
 }

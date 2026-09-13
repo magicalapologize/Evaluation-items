@@ -56,6 +56,21 @@ test("home page exposes the talent career assessment entry", () => {
   assert.match(css, /@media\s*\(max-width:760px\)[\s\S]*\.recommended-test a/);
 });
 
+test("talent discovery supports a persistent alternate visual theme", () => {
+  assert.match(html, /id="theme-toggle"/);
+  assert.match(html, /talent-discovery-theme/);
+  assert.match(html, /data-theme="violet"/);
+  assert.match(app, /function applyTheme\(theme\)/);
+  assert.match(app, /localStorage\.setItem\(THEME_KEY/);
+  assert.match(app, /renderHomeParticles\(\)|renderResultParticles\(state\.profile\)/);
+  assert.match(css, /html\[data-theme="violet"\]/);
+  assert.match(css, /--navy:\s*#[0-9a-f]{6}/i);
+  assert.match(css, /html\[data-theme="violet"\][\s\S]*\.quiz-head/);
+  assert.match(css, /html\[data-theme="violet"\][\s\S]*\.report-hero/);
+  assert.match(html, /home-hero\.png/);
+  assert.match(html, /id="result-visual-image"[^>]+src="language\.png"/);
+});
+
 test("particle backgrounds mount while the quiz header stays lightweight", () => {
   for (const id of ["home-particle-canvas", "loading-glyph-canvas", "result-particle-canvas"]) {
     assert.match(html, new RegExp(`<canvas[^>]+id=["']${id}["'][^>]*aria-hidden=["']true["']`));
@@ -129,6 +144,7 @@ test("result sections use subdued Roman indices and modular shells", () => {
 
 test("radar labels are bold and ranked dimensions use short names with level hints", () => {
   assert.match(app, /font-size="11" font-weight="800" fill="\$\{dimension\.color\}"/);
+  assert.match(app, /radar\(profile\)[\s\S]*profile\.displayScores\[dimension\.key\][\s\S]*tspan/);
   assert.match(app, /talentLevel\(score\)/);
   assert.match(app, /dimension-level-\$\{level\.key\}/);
   assert.match(app, /esc\(dimension\.short\)/);

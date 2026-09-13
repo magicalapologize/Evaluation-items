@@ -23,6 +23,7 @@ let loadingParticleRenderer = null;
 let resultParticleRenderer = null;
 let answerAdvanceTimer = null;
 let activeMember = null;
+let currentLoadingSeed = 1;
 
 YunduBackdoor.register(PRODUCT_ID, {
   getChoices: () => RESULTS.map((result) => ({ key: result.key, label: result.name })),
@@ -44,28 +45,81 @@ function answerFingerprint(answers) {
 
 const TALENT_WORDS = DIMENSIONS.map((dimension) => dimension.short || dimension.name.replace(/天赋$/, ""));
 
+const THEME_KEY = "talent-discovery-theme";
+const THEME_CONFIG = {
+  signal: {
+    label: "星图紫境",
+    ariaLabel: "切换星图紫境配色",
+    background: "#05070B",
+    palette: DIMENSIONS.map((dimension) => dimension.color),
+    loadingColor: "#FF4D6D",
+  },
+  violet: {
+    label: "深海信号",
+    ariaLabel: "切换深海信号配色",
+    background: "#080611",
+    palette: ["#FF6BB5", "#B892FF", "#62D7FF", "#FFD166", "#72E0BE", "#D77BFF", "#FF93B8"],
+    loadingColor: "#D8A7FF",
+  },
+};
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === "violet" ? "violet" : "signal";
+}
+
+function applyTheme(theme) {
+  const previousTheme = currentTheme();
+  const activeTheme = theme === "violet" ? "violet" : "signal";
+  const config = THEME_CONFIG[activeTheme];
+  document.documentElement.dataset.theme = activeTheme;
+
+  const toggle = $("theme-toggle");
+  if (toggle) {
+    toggle.setAttribute("aria-pressed", String(activeTheme === "violet"));
+    toggle.setAttribute("aria-label", config.ariaLabel);
+    toggle.querySelector(".theme-toggle-label").textContent = config.label;
+  }
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", activeTheme === "violet" ? "#241843" : "#142A43");
+  try { localStorage.setItem(THEME_KEY, activeTheme); } catch {}
+
+  if (previousTheme === activeTheme) return;
+  if ($("home-screen")?.classList.contains("active") && homeParticleRenderer) renderHomeParticles();
+  if ($("result-screen")?.classList.contains("active") && state.profile) renderResultParticles(state.profile);
+  if ($("loading-screen")?.classList.contains("active")) renderLoadingParticles(currentLoadingSeed);
+}
+
 function renderHomeParticles() {
+  const theme = THEME_CONFIG[currentTheme()];
   homeParticleRenderer?.destroy();
-  homeParticleRenderer = createParticleRenderer($("home-particle-canvas"), { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 3200, seed: 17 });
+  homeParticleRenderer = createParticleRenderer($("home-particle-canvas"), { palette: theme.palette, talentWords: TALENT_WORDS, background: theme.background, count: 3200, seed: 17 });
   homeParticleRenderer.play();
 }
 
 function renderResultParticles(profile) {
+  const theme = THEME_CONFIG[currentTheme()];
   const canvas = $("result-particle-canvas");
   const asset = RESULT_GLYPH_ASSETS[profile.bestKey];
   const color = DIMENSIONS.find((dimension) => dimension.key === profile.bestKey)?.color || "#2CB7A5";
   const image = $("result-visual-image");
   if (image && asset) image.src = asset;
   resultParticleRenderer?.destroy();
-  resultParticleRenderer = createParticleRenderer(canvas, { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, bestKey: profile.bestKey, bestColor: color, background: "#05070B", count: 3000, seed: 29 + answerFingerprint(state.answers) });
+  resultParticleRenderer = createParticleRenderer(canvas, { palette: theme.palette, talentWords: TALENT_WORDS, bestKey: profile.bestKey, bestColor: activeThemeColor(color, theme), background: theme.background, count: 3000, seed: 29 + answerFingerprint(state.answers) });
   resultParticleRenderer.play();
 }
 
-function renderLoadingParticles(seed) {
+function activeThemeColor(color, theme) {
+  return currentTheme() === "violet" ? theme.palette[1] : color;
+}
+
+function renderLoadingParticles(seed = currentLoadingSeed) {
+  const theme = THEME_CONFIG[currentTheme()];
   const canvas = $("loading-glyph-canvas");
   loadingParticleRenderer?.destroy();
-  loadingParticleRenderer = createParticleRenderer(canvas, { palette: DIMENSIONS.map((dimension) => dimension.color), talentWords: TALENT_WORDS, background: "#05070B", count: 3400, seed, mode: "loading" });
-  loadingParticleRenderer.play({ mode: "loading", highlightWords: ["天赋"], bestColor: "#FF4D6D" });
+  // Signal default background remains #05070B for the original visual language.
+  const particleConfig = { palette: theme.palette, talentWords: TALENT_WORDS, background: "#05070B", count: 3400, seed, mode: "loading" };
+  if (currentTheme() === "violet") particleConfig.background = theme.background;
+  loadingParticleRenderer = createParticleRenderer(canvas, particleConfig);
+  loadingParticleRenderer.play({ mode: "loading", highlightWords: ["天赋"], bestColor: theme.loadingColor });
 }
 
 function initializeGlyphs() {
@@ -132,7 +186,12 @@ function radar(profile) {
   const svg = $("radar-svg"); const center = 180; const radius = 126; const count = DIMENSIONS.length;
   const point = (index, value) => { const angle = -Math.PI / 2 + index * Math.PI * 2 / count; return `${center + Math.cos(angle) * value},${center + Math.sin(angle) * value}`; };
   const rings = [0.33, 0.66, 1].map((scale) => `<polygon points="${DIMENSIONS.map((_, index) => point(index, radius * scale)).join(" ")}" fill="none" stroke="#dbe6e2" stroke-width="1"/>`).join("");
-  const axes = DIMENSIONS.map((dimension, index) => { const [x, y] = point(index, radius).split(","); const [lx, ly] = point(index, radius + 22).split(","); return `<line x1="${center}" y1="${center}" x2="${x}" y2="${y}" stroke="#dbe6e2"/><text x="${lx}" y="${ly}" text-anchor="middle" font-size="11" font-weight="800" fill="${dimension.color}">${dimension.short}</text>`; }).join("");
+  const axes = DIMENSIONS.map((dimension, index) => {
+    const [x, y] = point(index, radius).split(",");
+    const [lx, ly] = point(index, radius + 22).split(",");
+    const score = Number(profile.displayScores[dimension.key] || 0);
+    return `<line x1="${center}" y1="${center}" x2="${x}" y2="${y}" stroke="#dbe6e2"/><text x="${lx}" y="${ly}" text-anchor="middle" font-size="11" font-weight="800" fill="${dimension.color}">${dimension.short}<tspan x="${lx}" dy="14" font-size="10" font-weight="800" fill="${dimension.color}">${score}</tspan></text>`;
+  }).join("");
   const shape = DIMENSIONS.map((dimension, index) => point(index, radius * Number(profile.displayScores[dimension.key] || 0) / 100)).join(" "); svg.innerHTML = `${rings}${axes}<polygon points="${shape}" fill="#2CB7A533" stroke="#2CB7A5" stroke-width="3"/>`;
 }
 
@@ -181,6 +240,7 @@ function renderHistorySnapshot(snapshot) { const result = RESULTS.find((item) =>
 function start() { state.index = 0; state.answers = []; state.profile = null; state.historyAttemptId = null; renderQuestion(); show("quiz-screen"); }
 function finish() {
   const loadingSeed = answerFingerprint(state.answers);
+  currentLoadingSeed = loadingSeed;
   $("loading-state").textContent = "正在整理答题线索";
   $("loading-detail").textContent = "归纳你在不同情境中的选择";
   $("loading-count").textContent = "00 / 08";
@@ -208,4 +268,6 @@ $("access-code").addEventListener("keydown", (event) => { if (event.key === "Ent
 $("copy-result-btn").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("copy-result-btn").dataset.summary || ""); $("copy-result-btn").textContent = "已复制"; window.setTimeout(() => { $("copy-result-btn").textContent = "复制结果摘要"; }, 1600); } catch { $("copy-result-btn").textContent = "请手动复制"; } }); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("is-open"));
 $("save-poster-btn").addEventListener("click", async () => { const button = $("save-poster-btn"); button.disabled = true; button.textContent = "正在生成..."; try { state.posterUrl = await createPosterImage(); $("poster-image").src = state.posterUrl; $("poster-modal").classList.add("is-open"); } catch (error) { window.alert(error.message); } finally { button.disabled = false; button.textContent = "保存报告海报"; } }); document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => $(button.dataset.closeModal).classList.remove("is-open"))); document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) modal.classList.remove("is-open"); }));
 initializeGlyphs();
+$("theme-toggle")?.addEventListener("click", () => applyTheme(currentTheme() === "violet" ? "signal" : "violet"));
+applyTheme(document.documentElement.dataset.theme || "signal");
 if (globalThis.YunduHistoryReplay?.init) globalThis.YunduHistoryReplay.init(PRODUCT_ID, renderHistorySnapshot, () => show("result-screen"));

@@ -57,3 +57,13 @@ test("深度解读保持关系偏好边界，不伪装成诊断或匹配保证",
   const copy = JSON.stringify(RESULTS.map((result) => result.insights));
   assert.doesNotMatch(copy, /绝对适合|天生一对|注定|保证匹配|诊断为|你就是/);
 });
+
+test("核心吸引力使用用户能读懂的关系语言", () => {
+  const copy = JSON.stringify(RESULTS.map((result) => result.insights.find((insight) => insight.key === "coreAttraction")?.body));
+  assert.doesNotMatch(copy, /常见功能模型|功能描述|\b(?:Ni|Ne|Si|Se|Ti|Te|Fi|Fe)\b/);
+});
+
+test("相处建议不复用统一免责声明尾句", () => {
+  const boundaries = RESULTS.flatMap((result) => result.advices.map((advice) => advice.boundary).filter(Boolean));
+  assert.ok(boundaries.length === 0 || new Set(boundaries).size > 1, "建议不应全部以同一条尾句结尾");
+});

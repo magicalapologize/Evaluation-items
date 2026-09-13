@@ -26,15 +26,19 @@ function getDisplayValue(rawScore) {
   return Math.round(50 + strength * 45);
 }
 
+function getMatchScore(profile, letter) {
+  const sameDirection = letter === profile.direction;
+  const confidence = Math.min(1, Math.abs(Number(profile.displayValue) - 50) / 45);
+  return sameDirection ? 90 + confidence * 8 : 10 - confidence * 8;
+}
+
 export function rankAttractions(axisProfiles) {
   if (!Array.isArray(axisProfiles) || axisProfiles.length !== AXES.length) throw new Error("需要四条关系偏好轴");
   const preferredCode = axisProfiles.map((profile) => profile.direction).join("");
   const ranking = RESULTS.map((result) => {
     const axisScores = result.code.split("").map((letter, index) => {
       const profile = axisProfiles[index];
-      const axis = AXES[index];
-      const distance = letter === profile.direction ? profile.displayValue : 100 - profile.displayValue;
-      return Math.max(0, Math.min(100, distance));
+      return getMatchScore(profile, letter);
     });
     const exactScore = axisScores.reduce((sum, score) => sum + score, 0) / axisScores.length;
     return { code: result.code, mbtiName: result.mbtiName, name: result.name, score: Math.round(exactScore), exactScore };

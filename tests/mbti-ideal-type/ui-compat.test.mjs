@@ -29,6 +29,6 @@ test("结果页解释十六型排行的分数边界", () => {
 test("结果页提供四个详细关系解读板块", () => {
   assert.match(app, /insight\.title/);
   assert.match(html, /深入解读你的理想伴侣/);
-  assert.match(app, /deep-insights/);
+  assert.match(html, /deep-insights/);
   assert.match(app, /insight\.body/);
 });

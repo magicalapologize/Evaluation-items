@@ -45,9 +45,16 @@ test("十六型吸引力排行完整、稳定且理想型居首", () => {
   assert.equal(ranking.length, 16);
   assert.equal(new Set(ranking.map((item) => item.code)).size, 16);
   assert.equal(ranking[0].code, profile.code);
-  assert.equal(ranking[0].score, 95);
-  assert.equal(ranking.at(-1).score, 5);
+  assert.equal(ranking[0].score, 98);
+  assert.equal(ranking.at(-1).score, 2);
   assert.ok(ranking.every((item, index) => item.rank === index + 1 && item.score >= 0 && item.score <= 100));
   assert.deepEqual(ranking, rankAttractions(profile.axisProfiles));
   assert.deepEqual(profile.attractionRanking, ranking);
+});
+
+test("四条偏好方向一致时，理想型匹配分不应被弱偏好压低", () => {
+  const answers = QUESTIONS.map((question) => question.options.findIndex((option) => option.score === -1));
+  const profile = calculateIdealType(answers);
+  assert.equal(profile.attractionRanking[0].code, profile.code);
+  assert.ok(profile.attractionRanking[0].score >= 90, `理想型分数过低：${profile.attractionRanking[0].score}`);
 });
