@@ -14,9 +14,37 @@ test("talent discovery page keeps its public UI contract", () => {
   assert.match(html, /id="cashback-modal"[\s\S]*wechat-qr\.webp/); assert.doesNotMatch(html, /id="cashback-modal"[\s\S]*product-qrs\/talent-discovery\.png/);
   assert.match(html, /script src="\.\.\/\.\.\/assets\/js\/test-backdoor\.js/);
 });
+
+test("home page includes a compact explanation of the talent test", () => {
+  for (const heading of ["为什么做这项测试", "测试依据", "你将获得什么", "适合谁"]) {
+    assert.match(html, new RegExp(heading));
+  }
+  assert.match(html, /id="home-method"/);
+  assert.match(html, /aria-label="为什么做这项测试"/);
+  assert.equal((html.match(/class="home-reasons"/g) || []).length, 1);
+  assert.equal((html.match(/class="home-reasons"[\s\S]*?<article>/g) || []).length, 1);
+  const intro = html.slice(html.indexOf('id="home-method"'), html.indexOf('</section>', html.indexOf('id="home-method"')));
+  assert.equal((intro.match(/class="home-reasons"/g) || []).length, 1);
+  assert.equal((intro.match(/class="home-benefits"/g) || []).length, 1);
+  assert.equal((intro.match(/<article>/g) || []).length, 7);
+  assert.equal((intro.match(/class="home-fit-list"/g) || []).length, 1);
+  const fit = intro.slice(intro.indexOf('class="home-fit-list"'));
+  assert.equal((fit.match(/<span>/g) || []).length, 3);
+  assert.match(intro, /参考加德纳的多元智能理论/);
+  assert.match(intro, /不是智力诊断/);
+  assert.match(html, /了解测试方法/);
+});
 test("visual contract includes palette, mobile layout and isolated selected state", () => {
   for (const color of ["#142A43", "#2CB7A5", "#FF8A65", "#F5C451", "#F5F8F6", "#FFFFFF", "#DDE7E4"]) assert.match(css, new RegExp(color, "i"));
   assert.match(css, /@media[^}]*max-width/); assert.match(css, /\.answer-btn\{[^}]*min-height:68px/); assert.doesNotMatch(css, /\.answer-btn:hover,\s*\.answer-btn\.selected/);
+});
+
+test("home explanation uses constrained grids and remains two columns for benefits on mobile", () => {
+  assert.match(css, /\.home-intro\s*\{[^}]*max-width\s*:\s*1180px/);
+  assert.match(css, /\.home-reasons\s*\{[^}]*display\s*:\s*grid/);
+  assert.match(css, /\.home-benefits\s*\{[^}]*display\s*:\s*grid[^}]*grid-template-columns\s*:\s*repeat\(2,1fr\)/);
+  assert.match(css, /@media\s*\(max-width:760px\)[\s\S]*\.home-benefits\s*\{[^}]*grid-template-columns\s*:\s*repeat\(2,1fr\)/);
+  assert.match(css, /\.home-fit-list\s*\{[^}]*display\s*:\s*flex/);
 });
 
 test("particle backgrounds mount while the quiz header stays lightweight", () => {
