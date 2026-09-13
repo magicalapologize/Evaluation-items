@@ -47,6 +47,15 @@ test("home explanation uses constrained grids and remains two columns for benefi
   assert.match(css, /\.home-fit-list\s*\{[^}]*display\s*:\s*flex/);
 });
 
+test("home page exposes the talent career assessment entry", () => {
+  assert.match(html, /class="recommended-test"[^>]*aria-label="推荐测试"/);
+  assert.match(html, /href="\.\.\/talent-career\/"/);
+  assert.match(html, /天赋能力与职业发展方向评估/);
+  assert.match(html, /天赋职业评估与天赋挖掘测试使用同一个测试码/);
+  assert.match(css, /\.recommended-test a\s*\{[^}]*display\s*:\s*grid/);
+  assert.match(css, /@media\s*\(max-width:760px\)[\s\S]*\.recommended-test a/);
+});
+
 test("particle backgrounds mount while the quiz header stays lightweight", () => {
   for (const id of ["home-particle-canvas", "loading-glyph-canvas", "result-particle-canvas"]) {
     assert.match(html, new RegExp(`<canvas[^>]+id=["']${id}["'][^>]*aria-hidden=["']true["']`));

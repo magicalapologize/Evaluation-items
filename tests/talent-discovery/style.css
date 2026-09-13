@@ -53,6 +53,15 @@ body { margin:0; background:var(--paper); color:var(--ink); font-family:"Avenir 
 .home-method-link { display:inline-flex; align-items:center; gap:8px; margin-top:22px; color:var(--teal); font-size:13px; font-weight:800; text-decoration:none; }
 .home-method-link span { font-size:18px; line-height:1; transition:transform .2s ease; }
 .home-method-link:hover span { transform:translateY(3px); }
+.recommended-test { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px 24px; }
+.recommended-test a { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:5px 16px; padding:16px 18px; border:1px solid #2CB7A555; border-radius:8px; color:#fff; background:#0d2034cc; text-decoration:none; transition:border-color .2s ease, background-color .2s ease, transform .2s ease; }
+.recommended-test a:hover { border-color:#2CB7A5aa; background:#102941; transform:translateY(-1px); }
+.recommended-test a:focus-visible { outline:3px solid #2CB7A577; outline-offset:3px; }
+.recommended-test-label { align-self:start; padding:5px 8px; border-radius:4px; color:#062b2a; background:var(--teal); font-size:11px; font-weight:900; letter-spacing:.08em; }
+.recommended-test strong { font-size:16px; line-height:1.35; }
+.recommended-test small { grid-column:2; color:#a9bfba; font-size:12px; line-height:1.45; }
+.recommended-test-action { grid-column:3; grid-row:1 / span 2; color:var(--teal); font-size:13px; font-weight:800; white-space:nowrap; }
+.recommended-test-action span { margin-left:5px; font-size:18px; }
 .quiz-screen { position:relative; isolation:isolate; padding:24px; background:#05070B; } .quiz-card { position:relative; z-index:1; max-width:1180px; margin:auto; background:#fff; border:1px solid #d9e2e0; border-radius:8px; overflow:hidden; }
 .quiz-head { min-height:214px; background:#142A43; background-image:linear-gradient(180deg,#142A4355,#142A4399),url("assets/quiz-header-decor.png"); background-position:center; background-size:cover; color:#fff; padding:28px 24px 24px; } .quiz-head .brand { margin-top:0; } .progress-meta { display:flex; justify-content:space-between; margin-top:28px; color:#b4c8c4; }
 .progress-track,.loading-bar { height:6px; background:#365269; margin-top:10px; } .progress-track span,.loading-bar span { display:block; height:100%; background:var(--teal); width:0; }
@@ -115,4 +124,10 @@ body { margin:0; background:var(--paper); color:var(--ink); font-family:"Avenir 
   .home-fit-list { gap:6px; }
   .home-fit-list span { font-size:11px; }
   .home-method-link { margin-top:18px; }
+  .recommended-test { padding:0 18px 18px; }
+  .recommended-test a { grid-template-columns:minmax(0,1fr) auto; gap:6px 12px; padding:14px; }
+  .recommended-test-label { grid-column:1 / -1; justify-self:start; }
+  .recommended-test strong { grid-column:1; grid-row:2; font-size:14px; }
+  .recommended-test small { grid-column:1; grid-row:3; font-size:11px; }
+  .recommended-test-action { grid-column:2; grid-row:2 / span 2; align-self:center; }
 }

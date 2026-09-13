@@ -1,0 +1,223 @@
+.gate-row.local-preview-mode {
+  display: block;
+}
+
+.gate-row.local-preview-mode button {
+  width: 100%;
+}
+
+.result-type {
+  margin: 14px 0 4px;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 700;
+}
+
+.result-name {
+  margin-top: 8px;
+}
+
+.section-note {
+  max-width: 760px;
+  margin: -6px 0 24px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.insight-list {
+  display: grid;
+  gap: 18px;
+}
+
+.insight-card {
+  padding: 24px 26px 26px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,246,247,.88));
+}
+
+.insight-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+.insight-head span {
+  color: var(--accent);
+  font-family: Georgia, serif;
+  font-size: 13px;
+  letter-spacing: .12em;
+}
+
+.insight-head h3 {
+  margin: 0;
+  color: var(--wine);
+  font-size: 21px;
+}
+
+.insight-card p {
+  margin: 0;
+  color: #4f4d58;
+  font-size: 16px;
+  line-height: 2;
+}
+
+.ranking-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ranking-item {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 82px;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .75);
+}
+
+.ranking-item.is-top {
+  border-color: #c98b99;
+  background: #fff2f4;
+  box-shadow: 0 8px 24px rgba(109, 48, 67, .08);
+}
+
+.ranking-rank {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f3e8ea;
+  color: var(--wine);
+  font-family: Georgia, serif;
+  font-size: 17px;
+}
+
+.ranking-item.is-top .ranking-rank {
+  background: var(--wine);
+  color: #fff;
+}
+
+.ranking-main {
+  min-width: 0;
+}
+
+.ranking-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ranking-heading strong {
+  color: #3b2730;
+  font-size: 18px;
+}
+
+.ranking-heading span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #eadcdf;
+}
+
+.ranking-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d39aaa, var(--wine));
+}
+
+.ranking-score {
+  justify-self: end;
+  color: var(--wine);
+  font-family: Georgia, serif;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-score small {
+  margin-left: 2px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+@media (max-width: 600px) {
+  .ranking-item {
+    grid-template-columns: 38px minmax(0, 1fr) 52px;
+    gap: 8px;
+    padding: 12px 10px;
+  }
+
+  .ranking-rank {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .ranking-heading {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .ranking-heading strong,
+  .ranking-heading span {
+    display: block;
+  }
+
+  .ranking-heading strong {
+    font-size: 15px;
+  }
+
+  .ranking-heading span {
+    margin-top: 3px;
+    font-size: 11px;
+  }
+
+  .ranking-score {
+    font-size: 21px;
+  }
+
+  .ranking-score small {
+    font-size: 9px;
+  }
+
+  .section-note {
+    font-size: 13px;
+  }
+
+  .insight-card {
+    padding: 18px 16px 20px;
+  }
+
+  .insight-head {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .insight-head h3 {
+    font-size: 18px;
+  }
+
+  .insight-card p {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+}

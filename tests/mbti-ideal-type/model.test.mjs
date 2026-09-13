@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { AXES, QUESTIONS } from "./data.mjs";
-import { calculateIdealType, getAxisQuestionCounts, resolveAxis, simulateDistribution } from "./model.mjs";
+import { calculateIdealType, getAxisQuestionCounts, rankAttractions, resolveAxis, simulateDistribution } from "./model.mjs";
 
 test("非法答案长度和索引不可计算", () => {
   assert.throws(() => calculateIdealType([]), /需要 32 个答案/);
@@ -36,4 +36,18 @@ test("十万份随机答卷覆盖十六型且单型命中率在范围内", () =>
     const rate = count / 100000;
     assert.ok(rate >= 0.03 && rate <= 0.15, `${code}: ${rate}`);
   }
+});
+
+test("十六型吸引力排行完整、稳定且理想型居首", () => {
+  const answers = QUESTIONS.map((question) => question.options.findIndex((option) => option.score === -2));
+  const profile = calculateIdealType(answers);
+  const ranking = rankAttractions(profile.axisProfiles);
+  assert.equal(ranking.length, 16);
+  assert.equal(new Set(ranking.map((item) => item.code)).size, 16);
+  assert.equal(ranking[0].code, profile.code);
+  assert.equal(ranking[0].score, 95);
+  assert.equal(ranking.at(-1).score, 5);
+  assert.ok(ranking.every((item, index) => item.rank === index + 1 && item.score >= 0 && item.score <= 100));
+  assert.deepEqual(ranking, rankAttractions(profile.axisProfiles));
+  assert.deepEqual(profile.attractionRanking, ranking);
 });

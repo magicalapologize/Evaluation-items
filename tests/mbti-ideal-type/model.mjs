@@ -26,6 +26,22 @@ function getDisplayValue(rawScore) {
   return Math.round(50 + strength * 45);
 }
 
+export function rankAttractions(axisProfiles) {
+  if (!Array.isArray(axisProfiles) || axisProfiles.length !== AXES.length) throw new Error("需要四条关系偏好轴");
+  const preferredCode = axisProfiles.map((profile) => profile.direction).join("");
+  const ranking = RESULTS.map((result) => {
+    const axisScores = result.code.split("").map((letter, index) => {
+      const profile = axisProfiles[index];
+      const axis = AXES[index];
+      const distance = letter === profile.direction ? profile.displayValue : 100 - profile.displayValue;
+      return Math.max(0, Math.min(100, distance));
+    });
+    const exactScore = axisScores.reduce((sum, score) => sum + score, 0) / axisScores.length;
+    return { code: result.code, mbtiName: result.mbtiName, name: result.name, score: Math.round(exactScore), exactScore };
+  }).sort((left, right) => right.exactScore - left.exactScore || (right.code === preferredCode ? 1 : 0) - (left.code === preferredCode ? 1 : 0) || left.code.localeCompare(right.code));
+  return ranking.map((item, index) => ({ rank: index + 1, code: item.code, mbtiName: item.mbtiName, name: item.name, score: item.score }));
+}
+
 export function resolveAxis(axis, answers) {
   const questions = QUESTIONS.filter((question) => question.axis === axis.key);
   let rawScore = 0;
@@ -68,7 +84,7 @@ export function calculateIdealType(answerIndexes) {
   });
   const axisProfiles = AXES.map((axis) => resolveAxis(axis, answerIndexes));
   const code = axisProfiles.map((profile) => profile.direction).join("");
-  return { code, result: RESULTS.find((result) => result.code === code), axisProfiles, fingerprint: hashAnswers(answerIndexes).toString(16) };
+  return { code, result: RESULTS.find((result) => result.code === code), axisProfiles, attractionRanking: rankAttractions(axisProfiles), fingerprint: hashAnswers(answerIndexes).toString(16) };
 }
 
 export function simulateDistribution(sampleCount = 100000, seed = 20260913) {

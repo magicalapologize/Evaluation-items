@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { brightnessToGlyph, calculateGlyphGrid, linearToSrgb, mixLinearColor, relativeLuminance, srgbToLinear, createGlyphRenderer, createParticleRenderer } from "./glyph-renderer.js";
+import { brightnessToGlyph, calculateGlyphGrid, calculateLoadingMaskFontSize, linearToSrgb, mixLinearColor, relativeLuminance, srgbToLinear, createGlyphRenderer, createParticleRenderer } from "./glyph-renderer.js";
 
 test("particle renderer animates a background without sampling an image", () => {
   const originalDocument = globalThis.document;
@@ -279,6 +279,13 @@ test("glyph grid stays within the responsive density bands", () => {
   const mobileGrid = calculateGlyphGrid(320, 260, 320);
   assert.ok(mobileGrid.columns >= 52 && mobileGrid.columns <= 72);
   assert.ok(mobileGrid.rows >= 32 && mobileGrid.rows <= 46);
+});
+
+test("loading word mask fits two glyphs inside the narrow mobile grid", () => {
+  const mobileFontSize = calculateLoadingMaskFontSize(40, 55);
+  const desktopFontSize = calculateLoadingMaskFontSize(80, 43);
+  assert.ok(mobileFontSize * 2 < 40);
+  assert.equal(desktopFontSize, 30);
 });
 
 test("renderer safely falls back without browser APIs", async () => {

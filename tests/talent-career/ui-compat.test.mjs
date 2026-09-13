@@ -18,6 +18,12 @@ test("talent career recommends talent discovery with the shared code", () => {
   assert.match(css, /@media\s*\(max-width:\s*640px\)[\s\S]*\.recommended-test a/);
 });
 
+test("talent career keeps the home disclaimer clear of the recommendation card", () => {
+  assert.match(css, /\.home-note\s*\{[^}]*margin:\s*18px\s+auto\s+0/);
+  assert.doesNotMatch(css, /\.home-note\s*\{[^}]*margin(?:-top)?:\s*-\d+px/);
+  assert.doesNotMatch(css, /\.home-layout\s*\{[^}]*min-height:\s*calc\(100vh\s*-\s*115px\)/);
+});
+
 test("talent career keeps member access free of code entry", () => {
   assert.match(html, /id="member-plan-label"/);
   assert.match(app, /function applyMemberAccess\(member\)/);

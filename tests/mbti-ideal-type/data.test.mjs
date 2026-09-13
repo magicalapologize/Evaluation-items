@@ -29,3 +29,31 @@ test("选项位置有打散且结果字段完整", () => {
   assert.equal(new Set(RESULTS.map((result) => result.reminder)).size, 16);
   assert.match(DISCLAIMER, /不构成官方 MBTI/);
 });
+
+test("十六种结果带有常见中文人格称谓", () => {
+  const expectedNames = {
+    ISTJ: "物流师", ISFJ: "守卫者", INFJ: "提倡者", INTJ: "建筑师",
+    ISTP: "鉴赏家", ISFP: "探险家", INFP: "调停者", INTP: "逻辑学家",
+    ESTP: "企业家", ESFP: "表演者", ENFP: "竞选者", ENTP: "辩论家",
+    ESTJ: "总经理", ESFJ: "执政官", ENFJ: "主人公", ENTJ: "指挥官"
+  };
+  assert.deepEqual(Object.fromEntries(RESULTS.map((result) => [result.code, result.mbtiName])), expectedNames);
+});
+
+test("每种结果都有四个独立的深度关系解读板块", () => {
+  const expectedKeys = ["desireDecode", "coreAttraction", "relationshipScene", "realityWarning"];
+  for (const result of RESULTS) {
+    assert.deepEqual(result.insights.map((insight) => insight.key), expectedKeys, `${result.code} 解读板块不完整`);
+    assert.equal(new Set(result.insights.map((insight) => insight.body)).size, 4, `${result.code} 解读内容重复`);
+    for (const insight of result.insights) {
+      assert.ok(insight.title && insight.body, `${result.code} 缺少 ${insight.key}`);
+      assert.ok(insight.body.length >= 100, `${result.code}/${insight.key} 内容过短`);
+    }
+  }
+  assert.equal(new Set(RESULTS.flatMap((result) => result.insights.map((insight) => insight.body))).size, 64);
+});
+
+test("深度解读保持关系偏好边界，不伪装成诊断或匹配保证", () => {
+  const copy = JSON.stringify(RESULTS.map((result) => result.insights));
+  assert.doesNotMatch(copy, /绝对适合|天生一对|注定|保证匹配|诊断为|你就是/);
+});

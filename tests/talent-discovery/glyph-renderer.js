@@ -37,6 +37,12 @@ export function calculateGlyphGrid(width, height, viewportWidth = width, options
   return { columns, rows };
 }
 
+export function calculateLoadingMaskFontSize(columns, rows) {
+  const safeColumns = Math.max(1, Number(columns) || 1);
+  const safeRows = Math.max(1, Number(rows) || 1);
+  return Math.max(12, Math.floor(Math.min(safeRows * 0.72, safeColumns * 0.38)));
+}
+
 export function srgbToLinear(channel) {
   const value = clamp(channel);
   return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
@@ -283,7 +289,7 @@ export function createParticleRenderer(canvas, options = {}) {
       if (maskContext?.getImageData && typeof maskContext.fillText === "function") {
         maskCanvas.width = columns; maskCanvas.height = rows;
         maskContext.clearRect?.(0, 0, columns, rows);
-        maskContext.font = `900 ${Math.max(12, Math.floor(rows * 0.72))}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+        maskContext.font = `900 ${calculateLoadingMaskFontSize(columns, rows)}px "PingFang SC", "Microsoft YaHei", sans-serif`;
         maskContext.textAlign = "center"; maskContext.textBaseline = "middle"; maskContext.fillStyle = "#fff";
         maskContext.fillText("天赋", columns / 2, rows / 2);
         try { mask = maskContext.getImageData(0, 0, columns, rows).data; } catch { mask = null; }
