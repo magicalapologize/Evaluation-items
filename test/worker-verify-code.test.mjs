@@ -37,3 +37,12 @@ test("未知产品仍被拒绝", async () => {
   const response = await worker.fetch(request({ productId: "unknown", code: "CAREER-01" }), env([]));
   assert.equal(response.status, 400);
 });
+
+test("MBTI理想型码只可进入自身产品", async () => {
+  const database = [{ product_id: "mbti-ideal-type", code: "MB-TEST-ONLY", enabled: 1 }];
+  const response = await worker.fetch(request({ productId: "mbti-ideal-type", code: "MB-TEST-ONLY" }), env(database));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("Cache-Control"), "no-store");
+  const cross = await worker.fetch(request({ productId: "love-personality", code: "MB-TEST-ONLY" }), env(database));
+  assert.equal(cross.status, 403);
+});

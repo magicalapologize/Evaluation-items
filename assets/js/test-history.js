@@ -14,7 +14,7 @@
     "three-kingdoms-advisor", "historical-emperor",
     "historical-heroines", "cultivation-protagonist",
     "talent-career", "love-simulation", "seven-sins",
-    "socialization-degree", "talent-discovery"
+    "socialization-degree", "talent-discovery", "mbti-ideal-type"
   ]);
   const PRODUCT_PATHS = Object.freeze({
     "solo-business": "/tests/solo-business/",
@@ -28,7 +28,8 @@
     "love-simulation": "/tests/love-simulation/",
     "seven-sins": "/tests/seven-sins/",
     "socialization-degree": "/tests/socialization-degree/",
-    "talent-discovery": "/tests/talent-discovery/"
+    "talent-discovery": "/tests/talent-discovery/",
+    "mbti-ideal-type": "/tests/mbti-ideal-type/"
   });
 
   function assertKeys(value, allowed, label) {

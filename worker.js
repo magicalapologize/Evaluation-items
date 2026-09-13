@@ -10,7 +10,8 @@ const PRODUCT_IDS = new Set([
   "love-simulation",
   "seven-sins",
   "socialization-degree",
-  "talent-discovery"
+  "talent-discovery",
+  "mbti-ideal-type"
 ]);
 
 const PLAN_LABELS = {

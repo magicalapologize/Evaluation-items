@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <rect width="800" height="800" fill="#f3dfe4"/>
+  <circle cx="660" cy="120" r="210" fill="#d9a9b6" opacity=".55"/>
+  <circle cx="120" cy="700" r="250" fill="#fff8f7" opacity=".8"/>
+  <path d="M120 190h560M120 610h560" stroke="#8d3f57" stroke-width="2" opacity=".35"/>
+  <text x="120" y="150" font-family="Arial,sans-serif" font-size="28" fill="#8d3f57" letter-spacing="6">YUNDU EVALUATION</text>
+  <text x="120" y="315" font-family="Georgia,serif" font-size="104" font-weight="700" fill="#8d3f57">MBTI</text>
+  <text x="120" y="395" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="#3b2730">理想型测试</text>
+  <text x="120" y="480" font-family="Arial,sans-serif" font-size="26" fill="#683344">恋爱与长期关系 · 伴侣偏好</text>
+  <text x="120" y="680" font-family="Arial,sans-serif" font-size="24" fill="#8d3f57">32 道情境题　16 种结果</text>
+</svg>

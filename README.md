@@ -48,6 +48,8 @@ python3 -m http.server 8765
 - 路径：`tests/love-simulation/`
 - 七宗罪主导倾向测试
 - 路径：`tests/seven-sins/`
+- MBTI 理想型测试
+- 路径：`tests/mbti-ideal-type/`
 
 十款测试统一通过 Worker 路由 `/api/verify-code` 查询 D1 中当前启用的测试码，前端不保存固定正确码。测试码不会在零点自动失效，只有手动更新 D1 或将 `enabled` 改为 `0` 后才会失效。
 
