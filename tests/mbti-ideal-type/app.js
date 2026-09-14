@@ -41,7 +41,80 @@ function buildHistorySnapshot(profile) { return { schemaVersion: 1, attemptId: s
 function finishQuiz() { state.profile = calculateIdealType(state.answers); state.attemptId = globalThis.crypto?.randomUUID?.() || `mbti-${Date.now()}`; showScreen("loading-screen"); setTimeout(() => { renderReport(state.profile); showScreen("result-screen"); globalThis.YunduHistory?.saveResult?.(buildHistorySnapshot(state.profile)).catch?.(() => {}); }, 500); }
 function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 4) { const chars = [...String(text)]; let line = ""; let lines = []; chars.forEach((char) => { const next = line + char; if (ctx.measureText(next).width > maxWidth && line) { lines.push(line); line = char; } else line = next; }); if (line) lines.push(line); lines = lines.slice(0, maxLines); lines.forEach((item, index) => ctx.fillText(item, x, y + index * lineHeight)); return lines.length; }
 function loadPosterImage(src) { return new Promise((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src; }); }
-export async function createPosterImage(profile) { const qrImage = await loadPosterImage("../../assets/product-qrs/mbti-ideal-type.png"); const canvas = document.createElement("canvas"); canvas.width = 1800; canvas.height = 2350; const ctx = canvas.getContext("2d"); ctx.fillStyle = "#fffaf9"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#8d3f57"; ctx.fillRect(0, 0, canvas.width, 570); ctx.fillStyle = "#ffffff"; ctx.font = "700 30px sans-serif"; ctx.fillText("MBTI IDEAL TYPE", 120, 100); ctx.font = "700 70px Georgia"; ctx.fillText(profile.result.code, 120, 245); ctx.font = "600 42px sans-serif"; ctx.fillText(profile.result.name, 120, 325); ctx.font = "28px sans-serif"; wrapText(ctx, profile.result.summary, 120, 400, 1250, 42, 3); ctx.fillStyle = "#3b2730"; ctx.font = "700 32px sans-serif"; ctx.fillText("FOUR PREFERENCE AXES", 120, 680); profile.axisProfiles.forEach((axis, index) => { const x = 120 + (index % 2) * 810; const y = 770 + Math.floor(index / 2) * 170; const axisDef = AXES[index]; ctx.fillStyle = "#8d3f57"; ctx.font = "700 28px sans-serif"; ctx.fillText(`${axisDef.key.toUpperCase()} · ${axis.label}`, x, y); ctx.fillStyle = "#e8d8dc"; ctx.fillRect(x, y + 28, 660, 18); ctx.fillStyle = "#c36b7f"; ctx.fillRect(x, y + 28, 660 * axis.displayValue / 100, 18); ctx.fillStyle = "#686a77"; ctx.font = "24px sans-serif"; ctx.fillText(axis.status, x, y + 86); }); ctx.fillStyle = "#3b2730"; ctx.font = "700 32px sans-serif"; ctx.fillText("RELATIONSHIP NOTES", 120, 1150); ctx.font = "27px sans-serif"; wrapText(ctx, profile.result.attraction, 120, 1210, 1560, 40, 4); ctx.fillStyle = "#8d3f57"; ctx.font = "700 30px sans-serif"; ctx.fillText("THREE NEXT MOVES", 120, 1410); profile.result.advices.forEach((advice, index) => { ctx.fillStyle = "#3b2730"; ctx.font = "700 26px sans-serif"; ctx.fillText(`${index + 1}. ${advice.title}`, 140, 1480 + index * 145); ctx.font = "24px sans-serif"; wrapText(ctx, `${advice.action} ${advice.boundary}`, 190, 1520 + index * 145, 1400, 34, 3); }); ctx.fillStyle = "#3b2730"; ctx.fillRect(0, 1990, 1800, 360); ctx.drawImage(qrImage, 120, 2050, 240, 240); ctx.fillStyle = "#ffffff"; ctx.font = "700 30px sans-serif"; ctx.fillText("MBTI 理想型测试", 430, 2120); ctx.font = "24px sans-serif"; ctx.fillText("长按识别二维码 · 分享你的理想伴侣偏好", 430, 2175); ctx.fillText("真实关系比四个字母更丰富", 430, 2230); return canvas.toDataURL("image/png"); }
+export async function createPosterImage(profile) {
+  const qrImage = await loadPosterImage("../../assets/product-qrs/mbti-ideal-type.png");
+  const canvas = document.createElement("canvas");
+  canvas.width = 1800;
+  canvas.height = 2350;
+  const ctx = canvas.getContext("2d");
+  const margin = 120;
+  const contentWidth = canvas.width - margin * 2;
+
+  ctx.fillStyle = "#fffaf9";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#8d3f57";
+  ctx.fillRect(0, 0, canvas.width, 480);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "700 30px sans-serif";
+  ctx.fillText("MBTI 理想型", margin, 92);
+  ctx.font = "700 76px Georgia";
+  ctx.fillText(profile.result.code, margin, 218);
+  ctx.font = "600 42px sans-serif";
+  ctx.fillText(profile.result.name, margin, 285);
+  ctx.font = "600 24px sans-serif";
+  ctx.fillText(profile.result.tags.map((tag) => `#${tag}`).join("  "), margin, 342);
+  ctx.font = "28px sans-serif";
+  wrapText(ctx, profile.result.summary, margin, 405, contentWidth, 40, 2);
+
+  ctx.fillStyle = "#3b2730";
+  ctx.font = "700 32px sans-serif";
+  ctx.fillText("四条关系偏好", margin, 560);
+  profile.axisProfiles.forEach((axis, index) => {
+    const x = margin + (index % 2) * 810;
+    const y = 625 + Math.floor(index / 2) * 205;
+    const axisDef = AXES[index];
+    ctx.fillStyle = "#8d3f57";
+    ctx.font = "700 27px sans-serif";
+    ctx.fillText(`${axisDef.key.toUpperCase()} · ${axis.label}`, x, y);
+    ctx.fillStyle = "#eadcdf";
+    ctx.fillRect(x, y + 30, 660, 18);
+    ctx.fillStyle = "#c36b7f";
+    ctx.fillRect(x, y + 30, 660 * axis.displayValue / 100, 18);
+    ctx.fillStyle = "#686a77";
+    ctx.font = "24px sans-serif";
+    ctx.fillText(axis.status, x, y + 90);
+  });
+
+  ctx.fillStyle = "#3b2730";
+  ctx.font = "700 32px sans-serif";
+  ctx.fillText("为什么会被吸引", margin, 1060);
+  ctx.fillStyle = "#4f4d58";
+  ctx.font = "27px sans-serif";
+  wrapText(ctx, profile.result.attraction, margin, 1120, contentWidth, 40, 3);
+
+  ctx.fillStyle = "#8d3f57";
+  ctx.font = "700 30px sans-serif";
+  ctx.fillText("把偏好带回真实关系", margin, 1305);
+  profile.result.advices.forEach((advice, index) => {
+    const y = 1375 + index * 170;
+    ctx.fillStyle = "#3b2730";
+    ctx.font = "700 26px sans-serif";
+    ctx.fillText(`${index + 1}. ${advice.title}`, margin + 20, y);
+    ctx.font = "24px sans-serif";
+    wrapText(ctx, advice.action, margin + 70, y + 42, contentWidth - 70, 34, 3);
+  });
+
+  ctx.fillStyle = "#3b2730";
+  ctx.fillRect(0, 1925, canvas.width, 425);
+  ctx.drawImage(qrImage, margin, 2010, 250, 250);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "700 32px sans-serif";
+  ctx.fillText("MBTI 理想型测试", 450, 2080);
+  ctx.font = "24px sans-serif";
+  ctx.fillText("长按识别二维码 · 分享你的理想伴侣偏好", 450, 2140);
+  ctx.fillText("真实关系比四个字母更丰富", 450, 2200);
+  return canvas.toDataURL("image/png");
+}
 async function openPoster() { $("poster-modal").classList.add("open"); $("poster-status").hidden = false; $("poster-image").hidden = true; try { state.posterUrl = await createPosterImage(state.profile); $("poster-image").src = state.posterUrl; $("poster-image").hidden = false; $("poster-status").hidden = true; } catch { setText("poster-status", "报告生成失败，请稍后重试"); } }
 function closeModal(id) { $(id).classList.remove("open"); }
 function start() { state.index = 0; state.answers = []; renderQuestion(); showScreen("quiz-screen"); }

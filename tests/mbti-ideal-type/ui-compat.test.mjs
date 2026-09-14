@@ -14,6 +14,13 @@ test("页面具备授权、答题、四轴报告和操作区契约", () => {
 
 test("移动端答案和弹窗有稳定约束", () => { assert.match(css, /min-height:58px/); assert.match(css, /@media/); assert.match(css, /overflow:auto/); });
 
+test("保存报告弹窗保留标题并让海报预览独立滚动", () => {
+  assert.match(css, /\.modal-panel\s*\{[^}]*max-height:\s*calc\(100dvh - 28px\)/);
+  assert.match(css, /\.modal-panel\s*\{[^}]*display:\s*flex/);
+  assert.match(css, /\.poster-preview\s*\{[^}]*overflow:\s*auto/);
+  assert.match(css, /\.poster-preview\s*\{[^}]*min-height:\s*0/);
+});
+
 test("首页使用用户能理解的关系维度介绍", () => {
   assert.doesNotMatch(html, /把恋爱里的“心动”拆成四条偏好轴|4 条 MBTI 偏好轴/);
   assert.match(html, /相处方式、沟通习惯、生活节奏和长期价值观/);

@@ -67,3 +67,23 @@ test("相处建议不复用统一免责声明尾句", () => {
   const boundaries = RESULTS.flatMap((result) => result.advices.map((advice) => advice.boundary).filter(Boolean));
   assert.ok(boundaries.length === 0 || new Set(boundaries).size > 1, "建议不应全部以同一条尾句结尾");
 });
+
+test("题目选项没有重复文本或明显的抽象模板句", () => {
+  const options = QUESTIONS.flatMap((question) => question.options.map((option) => option.text.trim()));
+  assert.equal(new Set(options).size, options.length, "选项存在完全重复文本");
+  const abstractTemplates = /这段相遇对彼此意味着什么|这件事会把你们带向怎样的关系状态|空间能否承载你们共同的想象与故事|符合你们真正想过的生活|不被过早定义/;
+  assert.doesNotMatch(options.join("\n"), abstractTemplates);
+});
+
+test("相处建议具体、完整且不使用统一套话", () => {
+  const advices = RESULTS.flatMap((result) => result.advices.map((advice) => advice.action.trim()));
+  assert.equal(advices.length, 48);
+  assert.equal(new Set(advices).size, advices.length, "相处建议存在重复文本");
+  for (const advice of advices) {
+    assert.ok(advice.length >= 45, `建议过短：${advice}`);
+    assert.doesNotMatch(advice, /共同成长|情绪价值|提升关系质量|建立深度连接|实现自我价值/);
+  }
+  for (const result of RESULTS) {
+    assert.ok(new Set(result.advices.map((advice) => advice.action.length)).size >= 2, `${result.code} 的建议长度过于整齐`);
+  }
+});

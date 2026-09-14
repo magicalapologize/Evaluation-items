@@ -65,6 +65,43 @@
   line-height: 2;
 }
 
+.modal-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 28px);
+  width: min(920px, 100%);
+  margin: 14px auto;
+  padding: 20px;
+}
+
+.modal-head {
+  flex: 0 0 auto;
+  min-height: 42px;
+}
+
+.modal-head h2 {
+  margin: 0;
+  font-size: clamp(20px, 4vw, 26px);
+}
+
+.poster-preview {
+  min-height: 0;
+  margin-top: 12px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.poster-preview img {
+  display: block;
+  width: min(100%, 860px);
+  margin: 0 auto;
+}
+
+.poster-preview #poster-status {
+  padding: 24px 0;
+}
+
 .ranking-list {
   display: grid;
   gap: 10px;
@@ -219,5 +256,15 @@
   .insight-card p {
     font-size: 14px;
     line-height: 1.9;
+  }
+
+  .modal-panel {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .modal-head button {
+    min-width: 40px;
+    min-height: 40px;
   }
 }

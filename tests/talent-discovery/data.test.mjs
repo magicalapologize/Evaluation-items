@@ -39,6 +39,19 @@ test("八个结果包含深度报告字段且提醒独立", () => {
   }
 });
 
+test("八个结果提供具体且互不重复的三个月成长行动", () => {
+  const expectedStages = ["第 1 周：", "第 2–4 周：", "第 2 个月：", "第 3 个月："];
+  const allActions = [];
+  for (const result of RESULTS) {
+    assert.equal(result.growth.length, 4);
+    assert.deepEqual(result.growth.map((item) => expectedStages.find((stage) => item.startsWith(stage))), expectedStages);
+    assert.ok(result.growth.every((item) => /\d|一个|一位|一张|一页|一件|一段|一份|一句/.test(item.slice(item.indexOf("：") + 1))));
+    assert.ok(result.reminder.length >= 45);
+    allActions.push(...result.growth);
+  }
+  assert.equal(new Set(allActions).size, RESULTS.length * 4);
+});
+
 test("结果评估文案和八项天赋分析按维度独立编写", () => {
   const assessments = RESULTS.map((result) => result.assessment);
   assert.equal(new Set(assessments).size, RESULTS.length);
