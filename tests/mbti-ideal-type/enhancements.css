@@ -196,6 +196,16 @@
   font-weight: 400;
 }
 
+.site-return {
+  display: none;
+}
+
+body:has(#result-screen.active) .site-return {
+  display: block;
+  position: absolute;
+  top: 24px;
+}
+
 @media (max-width: 600px) {
   .ranking-item {
     grid-template-columns: 38px minmax(0, 1fr) 52px;

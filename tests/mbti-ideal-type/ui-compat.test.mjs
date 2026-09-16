@@ -39,3 +39,10 @@ test("结果页提供四个详细关系解读板块", () => {
   assert.match(html, /deep-insights/);
   assert.match(app, /insight\.body/);
 });
+
+test("返回测试首页入口只在结果页显示且不固定悬浮", () => {
+  assert.match(html, /class="site-return" href="\.\/">← 返回测试首页<\/a>/);
+  assert.match(css, /\.site-return\s*\{[^}]*display:\s*none/);
+  assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*display:\s*block/);
+  assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*position:\s*absolute/);
+});
