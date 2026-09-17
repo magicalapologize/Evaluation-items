@@ -46,3 +46,14 @@ test("返回测试首页入口只在结果页显示且不固定悬浮", () => {
   assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*display:\s*block/);
   assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*position:\s*absolute/);
 });
+
+test("MBTI 理想型接入统一开发后门并只允许选择合法结果", () => {
+  assert.match(html, /meta name="yundu-backdoor-enabled" content="true"/);
+  assert.match(html, /script src="\.\.\/\.\.\/assets\/js\/test-backdoor\.js/);
+  assert.match(app, /YunduBackdoor\.register\(PRODUCT_ID/);
+  assert.match(app, /getChoices:\s*\(\)\s*=>\s*RESULTS\.map/);
+  assert.match(app, /RESULTS\.some\(\(result\)\s*=>\s*result\.code\s*===\s*key\)/);
+  assert.match(app, /YunduBackdoor\.findAnswerSet/);
+  assert.match(app, /calculateIdealType\(candidate\)\.code/);
+  assert.match(app, /finishQuiz\(\)/);
+});

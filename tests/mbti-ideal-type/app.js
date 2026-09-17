@@ -9,6 +9,24 @@ const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, posterUrl: "", attemptId: null };
 const isLocalPreview = isLocalPreviewLocation(window.location);
 
+if (globalThis.YunduBackdoor) {
+  globalThis.YunduBackdoor.register(PRODUCT_ID, {
+    getChoices: () => RESULTS.map((result) => ({ key: result.code, label: `${result.code} · ${result.mbtiName}｜${result.name}` })),
+    choose: (key) => {
+      if (!RESULTS.some((result) => result.code === key)) return;
+      const answers = globalThis.YunduBackdoor.findAnswerSet({
+        questionCount: QUESTIONS.length,
+        optionCount: 4,
+        target: key,
+        getResultKey: (candidate) => calculateIdealType(candidate).code
+      });
+      if (!answers) return;
+      state.answers = answers;
+      finishQuiz();
+    }
+  });
+}
+
 function showScreen(id) { document.querySelectorAll(".screen").forEach((screen) => { const active = screen.id === id; screen.classList.toggle("active", active); screen.setAttribute("aria-hidden", String(!active)); }); window.scrollTo({ top: 0, behavior: "smooth" }); }
 function setText(id, value) { $(id).textContent = value || ""; }
 function getMember() { return globalThis.YunduMember?.getMember ? globalThis.YunduMember.getMember() : Promise.resolve({ authenticated: false }); }
