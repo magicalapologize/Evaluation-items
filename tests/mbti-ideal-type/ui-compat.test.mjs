@@ -43,8 +43,10 @@ test("结果页提供四个详细关系解读板块", () => {
 test("返回测试首页入口只在结果页显示且不固定悬浮", () => {
   assert.match(html, /class="site-return" href="https:\/\/magicassess\.top\/">← 返回评测实验室<\/a>/);
   assert.match(css, /\.site-return\s*\{[^}]*display:\s*none/);
-  assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*display:\s*block/);
-  assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*position:\s*absolute/);
+  assert.match(css, /body:has\(#home-screen\.active\)\s+\.site-return/);
+  assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return/);
+  assert.doesNotMatch(css, /body:has\(#quiz-screen\.active\)\s+\.site-return\s*\{[^}]*display:\s*block/);
+  assert.doesNotMatch(css, /body:has\(#loading-screen\.active\)\s+\.site-return\s*\{[^}]*display:\s*block/);
 });
 
 test("MBTI 理想型接入统一开发后门并只允许选择合法结果", () => {

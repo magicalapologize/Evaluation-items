@@ -200,6 +200,7 @@
   display: none;
 }
 
+body:has(#home-screen.active) .site-return,
 body:has(#result-screen.active) .site-return {
   display: block;
   position: absolute;
