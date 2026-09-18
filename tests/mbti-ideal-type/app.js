@@ -5,9 +5,28 @@ import { formatAnswerOption, formatMbtiType } from "./view.mjs";
 
 const PRODUCT_ID = "mbti-ideal-type";
 const PRODUCT_TITLE = "MBTI 理想型测试";
+const THEME_STORAGE_KEY = "mbti-ideal-type-theme";
 const $ = (id) => document.getElementById(id);
 const state = { index: 0, answers: [], profile: null, posterUrl: "", attemptId: null };
 const isLocalPreview = isLocalPreviewLocation(window.location);
+
+function applyTheme(theme) {
+  const activeTheme = theme === "dark" ? "dark" : "light";
+  document.documentElement.dataset.theme = activeTheme;
+  const toggle = $("theme-toggle");
+  if (toggle) {
+    const dark = activeTheme === "dark";
+    toggle.setAttribute("aria-pressed", String(dark));
+    toggle.setAttribute("aria-label", dark ? "切换亮色主题" : "切换暗色主题");
+    toggle.textContent = dark ? "亮色主题" : "暗色主题";
+  }
+}
+
+function loadTheme() {
+  let savedTheme = "light";
+  try { savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "light"; } catch {}
+  applyTheme(savedTheme);
+}
 
 if (globalThis.YunduBackdoor) {
   globalThis.YunduBackdoor.register(PRODUCT_ID, {
@@ -136,6 +155,12 @@ export async function createPosterImage(profile) {
 async function openPoster() { $("poster-modal").classList.add("open"); $("poster-status").hidden = false; $("poster-image").hidden = true; try { state.posterUrl = await createPosterImage(state.profile); $("poster-image").src = state.posterUrl; $("poster-image").hidden = false; $("poster-status").hidden = true; } catch { setText("poster-status", "报告生成失败，请稍后重试"); } }
 function closeModal(id) { $(id).classList.remove("open"); }
 function start() { state.index = 0; state.answers = []; renderQuestion(); showScreen("quiz-screen"); }
+loadTheme();
+$("theme-toggle")?.addEventListener("click", () => {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(nextTheme);
+  try { localStorage.setItem(THEME_STORAGE_KEY, nextTheme); } catch {}
+});
 if (isLocalPreview) { $("access-code").hidden = true; $("access-code").setAttribute("aria-hidden", "true"); document.querySelector("#home-screen .gate-row")?.classList.add("local-preview-mode"); document.querySelector("#home-screen .gate-panel h2").textContent = "本地预览可直接开始测试"; $("start-btn").textContent = "直接开始测试"; }
 $("start-btn").addEventListener("click", async () => { const button = $("start-btn"); const member = isLocalPreview ? null : await getMember().catch(() => null); if (!isLocalPreview && !member?.active) { const code = $("access-code").value.trim(); if (!code) { setText("gate-error", "请输入测试码"); return; } button.disabled = true; setText("gate-error", ""); try { await verifyAccessCode(code); } catch (error) { setText("gate-error", error.message); button.disabled = false; return; } button.disabled = false; } start(); });
 $("access-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("start-btn").click(); }); $("save-poster-btn").addEventListener("click", openPoster); $("restart-btn").addEventListener("click", start); $("cashback-btn").addEventListener("click", () => $("cashback-modal").classList.add("open")); $("copy-btn").addEventListener("click", async () => { const text = `${PRODUCT_TITLE}：${formatMbtiType(state.profile.result)} ${state.profile.result.name}\n${state.profile.result.summary}`; try { await navigator.clipboard.writeText(text); $("copy-btn").textContent = "已复制"; setTimeout(() => { $("copy-btn").textContent = "复制结果摘要"; }, 1500); } catch {} }); document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => closeModal(button.dataset.closeModal))); document.addEventListener("keydown", (event) => { if (event.key === "Escape") document.querySelectorAll(".modal.open").forEach((modal) => modal.classList.remove("open")); });

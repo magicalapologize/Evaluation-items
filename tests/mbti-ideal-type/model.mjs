@@ -26,10 +26,42 @@ function getDisplayValue(rawScore) {
   return Math.round(50 + strength * 45);
 }
 
-function getMatchScore(profile, letter) {
+function getAxisStrength(profile) {
+  const rawScore = Number(profile?.rawScore);
+  if (Number.isFinite(rawScore)) return Math.min(1, Math.abs(rawScore) / 16);
+  return Math.min(1, Math.abs(Number(profile?.displayValue) - 50) / 45);
+}
+
+function getAxisSimilarity(profile, letter) {
+  const strength = getAxisStrength(profile);
   const sameDirection = letter === profile.direction;
-  const confidence = Math.min(1, Math.abs(Number(profile.displayValue) - 50) / 45);
-  return sameDirection ? 90 + confidence * 8 : 10 - confidence * 8;
+  // A neutral axis should sit close to 50/50. As the user's preference gets
+  // stronger, the matching pole moves continuously toward 1 and the opposite
+  // pole toward 0; no information is discarded by rounding to a direction.
+  return sameDirection ? 0.5 + strength / 2 : 0.5 - strength / 2;
+}
+
+function assignDisplayScores(ranking, topScore, bottomScore) {
+  const values = ranking.map((item) => item.exactScore);
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
+  const span = maximum - minimum || 1;
+  const curvature = 0.82;
+  let previous = topScore + 1;
+  ranking.forEach((item, index) => {
+    const normalized = (item.exactScore - minimum) / span;
+    const curved = Math.pow(normalized, curvature);
+    let score = Math.round(bottomScore + (topScore - bottomScore) * curved);
+    if (index === 0) score = topScore;
+    if (index === ranking.length - 1) score = bottomScore;
+    // Scores are displayed as whole numbers. Keep adjacent candidates
+    // visually distinguishable when rounding would otherwise create a large
+    // block of identical values.
+    score = Math.min(score, previous - 1);
+    score = Math.max(bottomScore, score);
+    item.score = score;
+    previous = score;
+  });
 }
 
 export function rankAttractions(axisProfiles) {
@@ -38,11 +70,13 @@ export function rankAttractions(axisProfiles) {
   const ranking = RESULTS.map((result) => {
     const axisScores = result.code.split("").map((letter, index) => {
       const profile = axisProfiles[index];
-      return getMatchScore(profile, letter);
+      return getAxisSimilarity(profile, letter);
     });
     const exactScore = axisScores.reduce((sum, score) => sum + score, 0) / axisScores.length;
     return { code: result.code, mbtiName: result.mbtiName, name: result.name, score: Math.round(exactScore), exactScore };
   }).sort((left, right) => right.exactScore - left.exactScore || (right.code === preferredCode ? 1 : 0) - (left.code === preferredCode ? 1 : 0) || left.code.localeCompare(right.code));
+  const confidence = axisProfiles.reduce((sum, profile) => sum + getAxisStrength(profile), 0) / axisProfiles.length;
+  assignDisplayScores(ranking, Math.round(90 + confidence * 8), Math.round(10 - confidence * 8));
   return ranking.map((item, index) => ({ rank: index + 1, code: item.code, mbtiName: item.mbtiName, name: item.name, score: item.score }));
 }
 

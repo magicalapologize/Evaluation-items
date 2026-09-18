@@ -58,3 +58,17 @@ test("四条偏好方向一致时，理想型匹配分不应被弱偏好压低",
   assert.equal(profile.attractionRanking[0].code, profile.code);
   assert.ok(profile.attractionRanking[0].score >= 90, `理想型分数过低：${profile.attractionRanking[0].score}`);
 });
+
+test("排行榜保留连续差异，不应因四轴平均造成大面积并列", () => {
+  let seed = 20260917;
+  const uniqueCounts = [];
+  for (let sample = 0; sample < 12; sample += 1) {
+    const answers = Array.from({ length: QUESTIONS.length }, () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return (seed >>> 28) % 4;
+    });
+    const ranking = calculateIdealType(answers).attractionRanking;
+    uniqueCounts.push(new Set(ranking.map((item) => item.score)).size);
+  }
+  assert.ok(Math.min(...uniqueCounts) >= 12, `排行榜有效分值过少：${uniqueCounts.join(",")}`);
+});

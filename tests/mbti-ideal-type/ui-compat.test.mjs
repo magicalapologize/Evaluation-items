@@ -41,7 +41,7 @@ test("结果页提供四个详细关系解读板块", () => {
 });
 
 test("返回测试首页入口只在结果页显示且不固定悬浮", () => {
-  assert.match(html, /class="site-return" href="\.\/">← 返回测试首页<\/a>/);
+  assert.match(html, /class="site-return" href="https:\/\/magicassess\.top\/">← 返回评测实验室<\/a>/);
   assert.match(css, /\.site-return\s*\{[^}]*display:\s*none/);
   assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*display:\s*block/);
   assert.match(css, /body:has\(#result-screen\.active\)\s+\.site-return\s*\{[^}]*position:\s*absolute/);
@@ -56,4 +56,14 @@ test("MBTI 理想型接入统一开发后门并只允许选择合法结果", () 
   assert.match(app, /YunduBackdoor\.findAnswerSet/);
   assert.match(app, /calculateIdealType\(candidate\)\.code/);
   assert.match(app, /finishQuiz\(\)/);
+});
+
+test("页面提供可持久化的亮暗主题切换", () => {
+  assert.match(html, /id="theme-toggle"/);
+  assert.match(html, /切换暗色主题/);
+  assert.match(app, /mbti-ideal-type-theme/);
+  assert.match(app, /localStorage/);
+  assert.match(app, /dataset\.theme/);
+  assert.match(css, /html\[data-theme="dark"\]/);
+  assert.match(css, /#theme-toggle/);
 });

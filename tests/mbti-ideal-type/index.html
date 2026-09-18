@@ -8,7 +8,8 @@
   <link rel="icon" href="../../images/yundu-logo.webp" type="image/webp" /><link rel="stylesheet" href="../../assets/css/test-member.css?v=20260808" /><link rel="stylesheet" href="style.css" /><link rel="stylesheet" href="enhancements.css" />
 </head>
 <body>
-  <a class="site-return" href="./">← 返回测试首页</a>
+  <a class="site-return" href="https://magicassess.top/">← 返回评测实验室</a>
+  <button id="theme-toggle" type="button" aria-pressed="false" aria-label="切换暗色主题">暗色主题</button>
   <main>
     <section id="home-screen" class="screen active"><div class="shell home-shell"><p class="eyebrow">MBTI IDEAL TYPE</p><h1>你的<br /><em>MBTI 理想型</em></h1><p class="lead">从相处方式、沟通习惯、生活节奏和长期价值观等关系线索出发，看看哪一种伴侣气质更容易让你心动，也更符合你对长期相处的期待。</p><div class="meta"><span>32 道亲密关系情境题</span><span>四个关系维度</span><span>约 6 分钟</span></div><div class="gate-panel"><h2>输入测试码，开始读取你的理想伴侣偏好</h2><div class="gate-row"><input id="access-code" type="text" autocomplete="off" placeholder="例如：MB-AB12-CD34" aria-label="测试码" /><button id="start-btn" class="primary-btn" type="button">开始测试</button></div><p id="gate-error" role="alert"></p><p id="member-unlock"></p><p class="gate-note">测试码以小红书订单信息或公众号发货内容为准。本测试用于恋爱与长期关系中的偏好探索，不构成官方 MBTI 测评、心理诊断或关系成功保证。</p></div></div></section>
     <section id="quiz-screen" class="screen" aria-hidden="true"><div class="quiz-shell"><div class="quiz-head"><div><span class="eyebrow">RELATIONSHIP PREFERENCE</span><h2 id="quiz-title">MBTI 理想型测试</h2></div><span id="progress-text">第 1 / 32 题</span></div><div class="progress-track"><div id="progress-bar"></div></div><div class="question-panel"><p id="question-stage" class="question-stage"></p><p id="question-num" class="question-num"></p><h3 id="question-text"></h3><p class="question-help">按你长期相处时更舒服的感觉选择，没有标准答案。</p><div id="answer-list" class="answer-list"></div><div class="quiz-actions"><button id="prev-btn" type="button" disabled>上一题</button><span>选择后自动进入下一题</span></div></div></div></section>
